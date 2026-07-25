@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SOIS - Sales Operation Improvement System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#F5EDE0;--bg2:#EBE0D0;--card:#FFFCF7;--card2:#EBE0D0;--border:#E2D5C5;--fg:#2C1810;--fg2:#5C3D2E;--muted:#9C7A6A;--accent:#8B4513;--accent2:#A0522D;--glow:rgba(139,69,19,0.15);--danger:#8B2020;--warning:#8B6914;--info:#3A5A8C;--pass:#2D6A4F;--fail:#8B2020;--open:#8B6914;--prog:#3A5A8C;--done:#2D6A4F;--overdue:#8B2020;--nav-h:64px;--hdr-h:56px;--rad:14px;--rads:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#F5EDE0}::-webkit-scrollbar-thumb{background:#E2D5C5;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#9C7A6A}
+#setupScreen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#setupScreen.hidden{display:none}
+.setup-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:28px}
+.setup-logo{width:60px;height:60px;background:linear-gradient(135deg,#B8860B,#D4A843);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#FFFFFF;margin:0 auto 16px;box-shadow:0 0 30px rgba(184,134,11,0.3)}
+.setup-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:4px}
+.setup-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--fg2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:13px;outline:none;transition:border .2s,box-shadow .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.fg textarea{resize:vertical;min-height:70px}
+.fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239C7A6A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border:none;border-radius:var(--rads);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-p{background:linear-gradient(135deg,var(--accent),#A0522D);color:#FFFFFF;width:100%}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(139,69,19,0.4)}
+.btn-s{background:var(--card2);color:var(--fg);border:1px solid var(--border)}.btn-s:hover{border-color:var(--accent)}
+.btn-d{background:var(--danger);color:#fff}
+.btn-sm{padding:7px 12px;font-size:11px}.btn-xs{padding:5px 9px;font-size:10px;border-radius:7px}.btn-full{width:100%}
+.login-error{color:var(--danger);font-size:11px;text-align:center;margin-bottom:10px;min-height:16px}
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#loginScreen.hidden{display:none}
+.login-logo{width:80px;height:80px;background:linear-gradient(135deg,#B8860B,#D4A843);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#FFFFFF;margin-bottom:16px;box-shadow:0 0 40px rgba(184,134,11,0.3);animation:lp 2s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 40px rgba(184,134,11,0.3)}50%{box-shadow:0 0 60px rgba(184,134,11,0.5)}}
+.login-title{font-size:24px;font-weight:800;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;text-align:center}
+.login-box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px}
+#appShell{display:none}#appShell.active{display:flex;flex-direction:column;min-height:100vh}
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);z-index:100;background:rgba(245,237,224,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px}
+.header-title{font-size:15px;font-weight:700;flex:1}
+.header-user{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--fg2)}
+.header-avatar{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#B8860B,#D4A843);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#FFFFFF}
+.header-logout{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px;transition:color .2s}.header-logout:hover{color:var(--danger)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:100;background:rgba(245,237,224,0.92);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;min-width:0;flex:1;user-select:none;-webkit-user-select:none}
+.nav-item.active{color:var(--accent)}
+.nav-item i{font-size:17px}.nav-item span{font-size:9px;font-weight:600;letter-spacing:.3px}
+.nav-more-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;user-select:none;-webkit-user-select:none}
+.nav-more-btn.active{color:var(--accent)}.nav-more-btn i{font-size:17px}.nav-more-btn span{font-size:9px;font-weight:600}
+.more-menu{position:fixed;bottom:calc(var(--nav-h) + 8px);left:16px;right:16px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:6px;display:none;animation:su .25s ease;box-shadow:0 -8px 30px rgba(44,24,16,0.15)}
+.more-menu.show{display:block}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.more-menu-item{display:flex;align-items:center;gap:11px;padding:11px;border-radius:var(--rads);cursor:pointer;color:var(--fg2);transition:all .15s;font-size:13px;font-weight:500}
+.more-menu-item:hover,.more-menu-item.active{background:var(--glow);color:var(--accent)}
+.more-menu-item i{width:18px;text-align:center;font-size:14px}
+.main-content{flex:1;padding:calc(var(--hdr-h) + 14px) 14px calc(var(--nav-h) + 14px);max-width:640px;margin:0 auto;width:100%}
+.page{display:none;animation:fi .3s ease}.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;margin-bottom:10px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:50%;filter:blur(25px);opacity:.15}
+.stat-card.g::after{background:var(--accent)}.stat-card.r::after{background:var(--danger)}.stat-card.y::after{background:var(--warning)}.stat-card.b::after{background:var(--info)}
+.stat-num{font-size:26px;font-weight:900;line-height:1;margin-bottom:3px}.stat-label{font-size:10px;color:var(--muted);font-weight:500}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.b-draft{background:rgba(156,122,106,.2);color:var(--muted)}.b-sub{background:#F0F4FA;color:var(--info)}
+.b-pass{background:#F0F7F0;color:var(--pass)}.b-fail{background:#FDF0F0;color:var(--fail)}
+.b-open{background:#FFF8E7;color:var(--open)}.b-prog{background:#F0F4FA;color:var(--prog)}
+.b-done{background:#F0F7F0;color:var(--done)}.b-over{background:#FDF0F0;color:var(--overdue)}
+.b-high{background:#FDF0F0;color:var(--danger)}.b-med{background:#FFF8E7;color:var(--warning)}.b-low{background:#F0F4FA;color:var(--info)}
+.list-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:12px;margin-bottom:7px;cursor:pointer;transition:all .15s}
+.list-item:hover{border-color:var(--accent)}
+.li-title{font-size:13px;font-weight:600;margin-bottom:3px}.li-sub{font-size:11px;color:var(--muted);margin-bottom:7px}
+.li-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.li-meta span{font-size:10px;color:var(--fg2)}
+.li-actions{display:flex;gap:5px;margin-top:9px}
+.detail-back{display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:14px;padding:0}.detail-back:hover{text-decoration:underline}
+.dl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}.dv{font-size:13px;color:var(--fg)}.ds{margin-bottom:12px}
+.filter-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:11px;outline:none;flex:1;min-width:110px}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(44,24,16,0.4);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:22px 18px;animation:ms .3s ease}
+@keyframes ms{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:18px}
+.toast-container{position:fixed;top:calc(var(--hdr-h) + 8px);left:14px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:#2C1810;color:#FFFFFF;border:1px solid #2C1810;border-radius:var(--rads);padding:10px 14px;font-size:12px;font-weight:500;pointer-events:auto;animation:ti .3s ease,to .3s ease 2.7s forwards;display:flex;align-items:center;gap:7px;box-shadow:0 8px 30px rgba(44,24,16,0.3)}
+.toast.success{border-left:3px solid var(--pass)}.toast.error{border-left:3px solid var(--danger)}.toast.info{border-left:3px solid var(--info)}
+@keyframes ti{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+.chart-bar-container{display:flex;align-items:flex-end;gap:7px;height:130px;padding-top:8px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.chart-bar{width:100%;border-radius:5px 5px 2px 2px;min-height:4px;transition:height .6s ease}
+.chart-bar-label{font-size:8px;color:var(--muted);margin-top:5px;text-align:center;word-break:break-all}
+.chart-bar-val{font-size:9px;font-weight:700;margin-bottom:3px}
+.progress-bar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.empty-state{text-align:center;padding:36px 18px;color:var(--muted)}.empty-state i{font-size:36px;margin-bottom:10px;opacity:.3}.empty-state p{font-size:13px}
+.fab{position:fixed;bottom:calc(var(--nav-h) + 14px);right:14px;width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,var(--accent),#A0522D);color:#FFFFFF;border:none;font-size:19px;cursor:pointer;z-index:90;box-shadow:0 4px 20px rgba(139,69,19,0.4);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fab:hover{transform:scale(1.05)}.fab.hidden{display:none}
+.section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}.section-title i{color:var(--accent);font-size:13px}
+.tabs{display:flex;gap:3px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}.tabs::-webkit-scrollbar{display:none}
+.tab-btn{padding:7px 12px;border-radius:7px;border:none;background:var(--card);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#FFFFFF}
+.loading-spinner{display:flex;align-items:center;justify-content:center;padding:40px}.loading-spinner i{font-size:24px;color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(min-width:768px){.main-content{max-width:800px}.stat-grid{grid-template-columns:repeat(4,1fr)}.modal{border-radius:var(--rad);margin-bottom:20px;max-height:80vh}.modal-overlay{align-items:center}}
+@media(min-width:1024px){.main-content{max-width:960px}}
+@media print{.app-header,.bottom-nav,.fab,.filter-bar,.btn,.more-menu{display:none!important}.main-content{padding:0}body{background:#fff;color:#000}.card,.list-item,.stat-card{border:1px solid #ddd;background:#fff}.stat-num,.li-title,.card-title{color:#000}.stat-label,.li-sub,.dl{color:#666}}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+
+<div id="setupScreen">
+  <div class="setup-logo">S</div>
+  <div class="setup-box">
+    <div class="setup-title">SOIS Configuration</div>
+    <div class="setup-sub">Masukkan kredensial Supabase untuk memulai</div>
+    <div class="fg"><label>Supabase URL</label><input type="url" id="cfgUrl" placeholder="https://xxxxx.supabase.co"></div>
+    <div class="fg"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
+    <button class="btn btn-p" onclick="saveConfig()" style="margin-top:8px"><i class="fas fa-plug"></i> Hubungkan</button>
+  </div>
+</div>
+
+<div id="loginScreen" class="hidden">
+  <div class="login-logo">S</div>
+  <div class="login-title">SOIS</div>
+  <div class="login-sub">Sales Operation Improvement System</div>
+  <div class="login-box">
+    <div class="login-error" id="loginError"></div>
+    <div class="fg"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="off"></div>
+    <div class="fg"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password"></div>
+    <button class="btn btn-p" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+  </div>
+</div>
+
+<div id="appShell">
+  <header class="app-header">
+    <div class="header-title" id="headerTitle">Dashboard</div>
+    <div class="header-user">
+      <div class="header-avatar" id="headerAvatar">O</div>
+      <span id="headerName">Owner</span>
+      <button class="header-logout" onclick="doLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </header>
+  <main class="main-content" id="mainContent">
+    <div class="page active" id="pageDashboard"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageSchedule"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageVisit"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageIssue"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageActionPlan"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageValidation"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageBusinessReview"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageReport"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+    <div class="page" id="pageMaster"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+  </main>
+  <button class="fab hidden" id="fabBtn" onclick="fabAction()"><i class="fas fa-plus"></i></button>
+  <div class="more-menu" id="moreMenu"></div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"><div class="modal-handle"></div><div id="modalBody"></div></div>
+</div>
+
+<script>
+let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
+const debounceTimers = {};
+
+// UTILITAS DENGAN DEBOUNCE UNTUK MENCEGAH BAN API
+function debounce(id, fn, delay = 800) {
+  clearTimeout(debounceTimers[id]);
+  debounceTimers[id] = setTimeout(() => fn(), delay);
+}
+
+function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDF(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
+function today(){return new Date().toISOString().split('T')[0]}
+function sbadge(s){const m={DRAFT:'b-draft',SUBMITTED:'b-sub',PASS:'b-pass',FAIL:'b-fail',OPEN:'b-open','ON PROGRESS':'b-prog',DONE:'b-done',OVERDUE:'b-over',HIGH:'b-high',MEDIUM:'b-med',LOW:'b-low'};return'<span class="badge '+(m[s]||'b-draft')+'">'+s+'</span>'}
+// FIX BUG: Hanya DRAFT yang boleh diedit agar data final aman
+function canEdit(s){return s==='DRAFT'}
+
+async function saveConfig(){
+  const u=document.getElementById('cfgUrl').value.trim(),k=document.getElementById('cfgKey').value.trim();
+  if(!u||!k){toast('Lengkapi URL dan Key','error');return}
+  try{
+    sb=window.supabase.createClient(u,k);
+    // FIX BUG: Validasi koneksi sebelum menyembunyikan setup screen
+    const { error } = await sb.from('master_user').select('id_user', { count: 'exact', head: true });
+    if(error) throw error;
+    
+    localStorage.setItem('sois_url',u);localStorage.setItem('sois_key',k);
+    document.getElementById('setupScreen').classList.add('hidden');
+    checkSession();
+  }catch(e){toast('Koneksi gagal: '+e.message,'error');return}
+}
+
+async function checkSession(){
+  if(!sb)return;
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){
+    const email = session.user.email || '';
+    let{data:u}=await sb.from('master_user').select('*').eq('email',email).single();
+    if(!u){
+      const username = email.replace('@sois.local','');
+      const{data:u2}=await sb.from('master_user').select('*').eq('username',username).single();
+      u = u2;
+    }
+    if(u){currentUser=u;showApp();return}
+  }
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+async function doLogin(){
+  const username=document.getElementById('loginUser').value.trim(),password=document.getElementById('loginPass').value.trim();
+  if(!username||!password){document.getElementById('loginError').textContent='Username dan password wajib diisi';return}
+  document.getElementById('loginError').textContent='';
+  try{
+    const{data:u,error:errU}=await sb.from('master_user').select('*').eq('username',username).single();
+    if(errU||!u)throw new Error('Username tidak ditemukan');
+    const userEmail = u.email || (username + '@sois.local');
+    const{data,error}=await sb.auth.signInWithPassword({email:userEmail,password});
+    if(error)throw error;
+    currentUser=u;
+    document.getElementById('loginScreen').classList.add('hidden');
+    showApp();
+  }catch(e){document.getElementById('loginError').textContent=e.message==='Username tidak ditemukan'?'Username tidak ditemukan':'Password salah'}
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  currentUser=null;
+  document.getElementById('appShell').classList.remove('active');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';document.getElementById('loginError').textContent='';
+  closeMore();
+}
+
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus()});
+
+function hasAccess(p){
+  if(!currentUser)return false;const r=currentUser.role;
+  if(r==='Owner')return['pageDashboard','pageBusinessReview','pageReport','pageMaster'].includes(p);
+  if(r==='Sales Operations Manager')return true;
+  if(r==='Area Manager')return['pageDashboard','pageSchedule','pageVisit','pageActionPlan','pageValidation'].includes(p);
+  if(r==='Leader')return['pageDashboard','pageVisit','pageIssue','pageActionPlan'].includes(p);
+  if(r==='SPG')return['pageDashboard','pageIssue','pageVisit'].includes(p);
+  return false;
+}
+
+function showApp(){
+  document.getElementById('appShell').classList.add('active');
+  document.getElementById('headerAvatar').textContent=currentUser.nama_user.charAt(0);
+  document.getElementById('headerName').textContent=currentUser.nama_user;
+  buildNav();navTo('pageDashboard');
+}
+
+const allPages=[{id:'pageDashboard',icon:'fa-th-large',label:'Dashboard'},{id:'pageSchedule',icon:'fa-calendar-alt',label:'Schedule'},{id:'pageVisit',icon:'fa-store',label:'Visit'},{id:'pageIssue',icon:'fa-exclamation-triangle',label:'Issue'}];
+const morePages=[{id:'pageActionPlan',icon:'fa-tasks',label:'Action Plan'},{id:'pageValidation',icon:'fa-check-double',label:'Validation'},{id:'pageMaster',icon:'fa-database',label:'Master Data'},{id:'pageBusinessReview',icon:'fa-chart-line',label:'Business Review'},{id:'pageReport',icon:'fa-file-alt',label:'Report'}];
+
+function buildNav(){
+  let h='';
+  allPages.forEach(p=>{if(hasAccess(p.id))h+='<div class="nav-item" data-page="'+p.id+'" onclick="navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i><span>'+p.label+'</span></div>'});
+  const vm=morePages.filter(p=>hasAccess(p.id));
+  if(vm.length>0){
+    h+='<div class="nav-more-btn" id="moreBtn" onclick="toggleMore()"><i class="fas fa-ellipsis-h"></i><span>More</span></div>';
+    let mh='';vm.forEach(p=>{mh+='<div class="more-menu-item" data-page="'+p.id+'" onclick="navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i> '+p.label+'</div>'});
+    document.getElementById('moreMenu').innerHTML=mh;
+  }
+  document.getElementById('bottomNav').innerHTML=h;
+}
+
+function navTo(p){
+  if(!hasAccess(p)){toast('Tidak memiliki akses','error');return}
+  closeMore();currentPage=p;
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById(p).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+  document.querySelectorAll('.more-menu-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+  // FIX BUG: Menambahkan pageMaster agar judul header tidak kosong
+  const t={pageDashboard:'Dashboard',pageSchedule:'Schedule',pageVisit:'Visit',pageIssue:'Issue',pageActionPlan:'Action Plan',pageValidation:'Validation',pageBusinessReview:'Business Review',pageReport:'Report',pageMaster:'Master Data'};
+  document.getElementById('headerTitle').textContent=t[p]||'SOIS';
+  document.getElementById('fabBtn').classList.toggle('hidden',!{pageSchedule:1,pageVisit:1,pageIssue:1,pageActionPlan:1,pageValidation:1}[p]);
+  renderPage(p);
+}
+
+function toggleMore(){moreOpen=!moreOpen;document.getElementById('moreMenu').classList.toggle('show',moreOpen);document.getElementById('moreBtn')?.classList.toggle('active',moreOpen)}
+function closeMore(){moreOpen=false;document.getElementById('moreMenu')?.classList.remove('show');document.getElementById('moreBtn')?.classList.remove('active')}
+function fabAction(){({pageSchedule:openScheduleForm,pageVisit:openVisitForm,pageIssue:openIssueSourceMenu,pageActionPlan:openActionPlanForm,pageValidation:openValidationForm})[currentPage]?.()}
+function openModal(h){document.getElementById('modalBody').innerHTML=h;document.getElementById('modalOverlay').classList.add('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function renderPage(p){({pageDashboard:renderDashboard,pageSchedule:renderSchedule,pageVisit:renderVisit,pageIssue:renderIssue,pageActionPlan:renderActionPlan,pageValidation:renderValidation,pageMaster:renderMasterData,pageBusinessReview:renderBusinessReview,pageReport:renderReport})[p]?.()}
+
+let DB_C={counters:[],users:[],items4p:[]};
+async function loadCache(){
+  if(DB_C.counters.length)return;
+  const[c,u,i]=await Promise.all([sb.from('master_counter').select('*'),sb.from('master_user').select('*'),sb.from('master_4p').select('*')]);
+  DB_C.counters=c.data||[];DB_C.users=u.data||[];DB_C.items4p=i.data||[];
+}
+function cn(id){return DB_C.counters.find(c=>c.id_counter===id)?.nama_counter||'-'}
+function un(id){return DB_C.users.find(u=>u.id_user===id)?.nama_user||'-'}
+// FIX BUG: fallback jika item 4P dihapus dari database, mencegah crash
+function fp(id){return DB_C.items4p.find(m=>m.id_item===id) || {item_check:'Item Tidak Ditemukan', category_4p:'-', sub_category:'-', root_driver:'-'}}
+
+// ==================== DASHBOARD ====================
+async function renderDashboard(){
+  const el=document.getElementById('pageDashboard');
+  el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+  await loadCache();
+  const[v,is,ap,val,comp]=await Promise.all([sb.from('visit').select('*'),sb.from('issue').select('*'),sb.from('action_plan').select('*'),sb.from('validation').select('*'),sb.from('complaint').select('*')]);
+  const vd=v.data||[],id=is.data||[],ad=ap.data||[],cd=comp.data||[];
+  const openAP=ad.filter(a=>a.status!=='DONE').length,doneAP=ad.filter(a=>a.status==='DONE').length;
+  let h='<div class="stat-grid">';
+  h+='<div class="stat-card g"><div class="stat-num" style="color:var(--accent)">'+vd.length+'</div><div class="stat-label">Total Visit</div></div>';
+  h+='<div class="stat-card r"><div class="stat-num" style="color:var(--danger)">'+id.length+'</div><div class="stat-label">Total Issue</div></div>';
+  h+='<div class="stat-card y"><div class="stat-num" style="color:var(--warning)">'+openAP+'</div><div class="stat-label">Open Action</div></div>';
+  h+='<div class="stat-card b"><div class="stat-num" style="color:var(--info)">'+doneAP+'</div><div class="stat-label">Done Action</div></div>';
+  h+='</div>';
+  const cm={};id.forEach(i=>{cm[i.category_4p]=(cm[i.category_4p]||0)+1});
+  const cc={PEOPLE:'#3A5A8C',PRODUCT:'#8B6914',PLACE:'#2D6A4F',PROMOTION:'#8B2020'};
+  h+='<div class="card"><div class="card-header"><div class="card-title">Issue by 4P Category</div></div><div class="chart-bar-container">';
+  ['PEOPLE','PRODUCT','PLACE','PROMOTION'].forEach(c=>{const v=cm[c]||0;const ht=id.length>0?Math.max(4,(v/id.length)*110):4;h+='<div class="chart-bar-wrap"><div class="chart-bar-val">'+v+'</div><div class="chart-bar" style="height:'+ht+'px;background:'+cc[c]+'"></div><div class="chart-bar-label">'+c.charAt(0)+c.charAt(1)+'</div></div>'});
+  h+='</div></div>';
+  const pct=ad.length>0?Math.round((doneAP/ad.length)*100):0;
+  h+='<div class="card"><div class="card-header"><div class="card-title">Action Plan Progress</div><span style="font-size:18px;font-weight:800;color:var(--accent)">'+pct+'%</span></div>';
+  h+='<div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--accent),#A0522D)"></div></div></div>';
+  h+='<div class="section-title"><i class="fas fa-exclamation-circle"></i> Recent Issues</div>';
+  const recent=[...id].reverse().slice(0,5);
+  if(!recent.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada issue</p></div>';
+  recent.forEach(is2=>{h+='<div class="list-item" onclick="viewIssueDetail('+is2.id_issue+')"><div class="li-title">'+is2.problem+'</div><div class="li-sub">'+is2.source_type+' &middot; '+fmtD(is2.created_at)+'</div><div class="li-meta">'+sbadge(is2.priority)+'<span style="color:var(--muted)">'+is2.category_4p+'</span></div></div>'});
+  if(currentUser&&(currentUser.role==='Owner'||currentUser.role==='Sales Operations Manager')){
+    h+='<div class="section-title" style="margin-top:14px"><i class="fas fa-comment-dots"></i> Recent Complaints</div>';
+    const rc=[...cd].reverse().slice(0,3);
+    if(!rc.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada complaint</p></div>';
+    rc.forEach(c2=>{h+='<div class="list-item"><div class="li-title">'+c2.customer_name+' - '+c2.category+'</div><div class="li-sub">'+c2.detail+'</div><div class="li-meta"><span>'+cn(c2.counter_id)+'</span><span>'+fmtD(c2.tanggal)+'</span></div></div>'});
+  }
+  el.innerHTML=h;
+}
+
+// ==================== SCHEDULE ====================
+async function renderSchedule(){
+  const el=document.getElementById('pageSchedule');
+  const fv=document.getElementById('schedFilter')?.value;
+  await loadCache();
+  let{data}=await sb.from('jadwal').select('*').order('created_at',{ascending:false});
+  if(fv)data=(data||[]).filter(s=>{const fm=s.tanggal_mulai?.substring(0,7),tm=s.tanggal_selesai?.substring(0,7);return fm===fv||tm===fv||(fv>=fm&&fv<=tm)});
+  // FIX BUG: Menghapus spinner awal agar tidak flicker saat render ulang
+  let h='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()" value="'+(fv||'')+'"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div>';
+  if(!data||!data.length)h+='<div class="empty-state"><i class="fas fa-calendar-plus"></i><p>Belum ada schedule</p></div>';
+  data.forEach(s=>{
+    const ed=canEdit(s.status);
+    h+='<div class="list-item"><div class="li-title">'+cn(s.counter_id)+'</div><div class="li-sub">'+s.activity_plan+' &middot; '+(s.notes||'')+'</div><div class="li-meta"><span><i class="fas fa-user" style="margin-right:3px"></i>'+un(s.pic_id)+'</span><span>'+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+'</span>'+sbadge(s.status)+'</div>';
+    if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="editSchedule('+s.id_jadwal+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-s btn-xs" onclick="submitSchedule('+s.id_jadwal+')"><i class="fas fa-paper-plane"></i> Submit</button><button class="btn btn-d btn-xs" onclick="deleteSchedule('+s.id_jadwal+')"><i class="fas fa-trash"></i></button></div>';
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+
+async function openScheduleForm(eid){
+  await loadCache();
+  const s=eid?(await sb.from('jadwal').select('*').eq('id_jadwal',eid).single()).data:null;
+  let h='<div class="modal-title">'+(s?'Edit':'Tambah')+' Schedule</div>';
+  h+='<div class="fg"><label>From Date</label><input type="date" id="sfFrom" value="'+(s?s.tanggal_mulai:today())+'"></div>';
+  h+='<div class="fg"><label>To Date</label><input type="date" id="sfTo" value="'+(s?s.tanggal_selesai:today())+'"></div>';
+  h+='<div class="fg"><label>PIC</label><select id="sfPic">';
+  DB_C.users.filter(u=>['Sales Operations Manager','Area Manager','Leader','SPG'].includes(u.role)).forEach(u=>{h+='<option value="'+u.id_user+'"'+(s&&s.pic_id===u.id_user?' selected':'')+'>'+u.nama_user+' ('+u.role+')</option>'});
+  h+='</select></div>';
+  h+='<div class="fg"><label>Counter</label><select id="sfCounter">'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'"'+(s&&s.counter_id===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')+'</select></div>';
+  h+='<div class="fg"><label>Activity Plan</label><input type="text" id="sfActivity" value="'+(s?s.activity_plan:'')+'"></div>';
+  h+='<div class="fg"><label>Notes</label><textarea id="sfNotes">'+(s?s.notes||'':'')+'</textarea></div>';
+  h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveSchedule('+(eid||0)+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+  openModal(h);
+}
+
+async function saveSchedule(eid){
+  try{
+    const d={tanggal_mulai:document.getElementById('sfFrom').value,tanggal_selesai:document.getElementById('sfTo').value,pic_id:parseInt(document.getElementById('sfPic').value),counter_id:parseInt(document.getElementById('sfCounter').value),activity_plan:document.getElementById('sfActivity').value,notes:document.getElementById('sfNotes').value};
+    if(!d.tanggal_mulai||!d.tanggal_selesai||!d.activity_plan){toast('Lengkapi semua field','error');return}
+    if(eid){await sb.from('jadwal').update(d).eq('id_jadwal',eid)}
+    else{await sb.from('jadwal').insert({...d,status:'DRAFT',created_at:new Date().toISOString()})}
+    closeModal();toast(eid?'Schedule diperbarui':'Schedule ditambahkan');renderSchedule();
+  }catch(e){toast('Gagal menyimpan: '+e.message,'error')}
+}
+function editSchedule(id){openScheduleForm(id)}
+async function submitSchedule(id){await sb.from('jadwal').update({status:'SUBMITTED'}).eq('id_jadwal',id);toast('Schedule disubmit');renderSchedule()}
+async function deleteSchedule(id){openModal('<div class="modal-title">Hapus Schedule?</div><p style="color:var(--fg2);margin-bottom:18px">Data yang dihapus tidak bisa dikembalikan.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelSched('+id+')">Hapus</button></div>')}
+async function confirmDelSched(id){await sb.from('jadwal').delete().eq('id_jadwal',id);closeModal();toast('Schedule dihapus');renderSchedule()}
+
+// ==================== VISIT ====================
+async function renderVisit(){
+  const el=document.getElementById('pageVisit');
+  el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+  await loadCache();
+  const{data:visits}=await sb.from('visit').select('*').order('created_at',{ascending:false});
+  let h='<div class="section-title"><i class="fas fa-store"></i> Visits</div>';
+  if(!visits||!visits.length)h+='<div class="empty-state"><i class="fas fa-store"></i><p>Belum ada visit</p></div>';
+  for(const v of visits){
+    const{data:details}=await sb.from('visit_detail').select('*').eq('visit_id',v.id_visit);
+    const failCount=(details||[]).filter(d=>d.status==='FAIL').length;
+    h+='<div class="list-item" onclick="viewVisitDetail('+v.id_visit+')"><div class="li-title">'+cn(v.counter_id)+'</div><div class="li-sub">'+fmtDF(v.tanggal)+' &middot; '+v.check_in+' - '+v.check_out+'</div><div class="li-meta"><span><i class="fas fa-user" style="margin-right:3px"></i>'+un(v.pic_id)+'</span>'+sbadge(v.status);
+    if(failCount>0)h+=' <span style="color:var(--danger)"><i class="fas fa-times-circle"></i> '+failCount+' fail</span>';
+    h+='</div></div>';
+  }
+  el.innerHTML=h;
+}
+
+async function openVisitForm(){
+  await loadCache();
+  const{data:subs}=await sb.from('jadwal').select('*').eq('status','SUBMITTED');
+  if(!subs||!subs.length){toast('Tidak ada schedule yang disubmit','error');return}
+  let h='<div class="modal-title">Buat Visit</div>';
+  h+='<div class="fg"><label>Pilih Schedule</label><select id="vfSched" onchange="vfSchedChange()">';
+  subs.forEach(s=>{h+='<option value="'+s.id_jadwal+'">'+cn(s.counter_id)+' ('+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+')</option>'});
+  h+='</select></div><div id="vfDetails"></div>';
+  h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="startVisit()"><i class="fas fa-play"></i> Mulai Visit</button></div>';
+  openModal(h);vfSchedChange();
+}
+
+async function vfSchedChange(){
+  const sid=parseInt(document.getElementById('vfSched').value);
+  const{data:s}=await sb.from('jadwal').select('*').eq('id_jadwal',sid).single();
+  if(!s)return;
+  document.getElementById('vfDetails').innerHTML='<div class="fg"><label>Tanggal</label><input type="date" id="vfDate" value="'+today()+'"></div><div class="fg"><label>Counter</label><input type="text" value="'+cn(s.counter_id)+'" disabled></div><div class="fg"><label>PIC</label><input type="text" value="'+un(s.pic_id)+'" disabled></div><div class="fg"><label>Check In</label><input type="time" id="vfIn" value="'+new Date().toTimeString().substring(0,5)+'"></div><div class="fg"><label>Check Out</label><input type="time" id="vfOut"></div>';
+}
+
+async function startVisit(){
+  const sid=parseInt(document.getElementById('vfSched').value);
+  const{data:s}=await sb.from('jadwal').select('*').eq('id_jadwal',sid).single();
+  const{data:v}=await sb.from('visit').insert({jadwal_id:sid,counter_id:s.counter_id,pic_id:s.pic_id,tanggal:document.getElementById('vfDate').value,check_in:document.getElementById('vfIn').value,check_out:document.getElementById('vfOut').value,photo_url:'',status:'DRAFT',created_at:new Date().toISOString()}).select().single();
+  closeModal();openVisitObservation(v.id_visit);
+}
+
+async function openVisitObservation(vid){
+  await loadCache();
+  const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+  const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+  let h='<div class="modal-title">Observation - '+cn(v.counter_id)+'</div><div id="obsList">';
+  if(obs&&obs.length){
+    obs.forEach((o,i)=>{
+      const m=fp(o.item_id); // Aman sekarang karena sudah ada fallback di fungsi fp()
+      h+='<div class="card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:7px"><div><div style="font-size:12px;font-weight:600">'+m.item_check+'</div><div style="font-size:10px;color:var(--muted)">'+m.category_4p+' / '+m.sub_category+'</div></div><div style="display:flex;gap:3px"><button class="btn btn-xs '+(o.status==='PASS'?'btn-p':'btn-s')+'" onclick="setObsSt('+vid+','+o.id_detail+',\'PASS\')">PASS</button><button class="btn btn-xs '+(o.status==='FAIL'?'btn-d':'btn-s')+'" onclick="setObsSt('+vid+','+o.id_detail+',\'FAIL\')">FAIL</button></div></div>';
+      if(o.status==='FAIL'){
+        // FIX BUG: Menggunakan oninput yang aman berkat fungsi Debounce
+        h+='<div class="fg" style="margin-bottom:6px"><label>Problem</label><input type="text" value="'+(o.problem||'')+'" oninput="debounce(\'prob_'+o.id_detail+'\', ()=>setObsF('+o.id_detail+',\'problem\',this.value))"></div>';
+        h+='<div class="fg" style="margin-bottom:6px"><label>Root Cause</label><input type="text" value="'+(o.root_cause||'')+'" oninput="debounce(\'rc_'+o.id_detail+'\', ()=>setObsF('+o.id_detail+',\'root_cause\',this.value))"></div>';
+        h+='<div class="fg" style="margin-bottom:6px"><label>Impact</label><input type="text" value="'+(o.impact||'')+'" oninput="debounce(\'imp_'+o.id_detail+'\', ()=>setObsF('+o.id_detail+',\'impact\',this.value))"></div>';
+        h+='<div class="fg" style="margin-bottom:0"><label>Recommendation</label><input type="text" value="'+(o.recommendation||'')+'" oninput="debounce(\'rec_'+o.id_detail+'\', ()=>setObsF('+o.id_detail+',\'recommendation\',this.value))"></div>';
+      }
+      h+='</div>';
+    });
+  }
+  h+='</div>';
+  h+='<div style="display:flex;gap:7px;margin-top:14px"><button class="btn btn-s btn-full" onclick="renderVisit();closeModal()">Cancel</button><button class="btn btn-p btn-full" onclick="saveVisitObs('+vid+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+  openModal(h);
+}
+
+async function setObsSt(vid,did,st){
+  await sb.from('visit_detail').update({status:st,problem:st==='PASS'?'':undefined,root_cause:st==='PASS'?'':undefined,impact:st==='PASS'?'':undefined,recommendation:st==='PASS'?'':undefined}).eq('id_detail',did);
+  openVisitObservation(vid);
+}
+
+async function setObsF(did,field,val){await sb.from('visit_detail').update({[field]:val}).eq('id_detail',did)}
+async function saveVisitObs(vid){closeModal();toast('Visit disimpan sebagai draft');renderVisit()}
+
+async function viewVisitDetail(vid){
+  await loadCache();
+  const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+  const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+  const ed=canEdit(v.status);
+  let h='<button class="detail-back" onclick="renderVisit();closeModal()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">'+cn(v.counter_id)+'</div>'+sbadge(v.status)+'</div>';
+  h+='<div class="ds"><div class="dl">Tanggal</div><div class="dv">'+fmtDF(v.tanggal)+'</div></div>';
+  h+='<div class="ds"><div class="dl">PIC</div><div class="dv">'+un(v.pic_id)+'</div></div>';
+  h+='<div class="ds"><div class="dl">Waktu</div><div class="dv">'+v.check_in+' - '+v.check_out+'</div></div></div>';
+  h+='<div class="section-title"><i class="fas fa-clipboard-check"></i> Observations</div>';
+  if(!obs||!obs.length){
+    h+='<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>Belum ada observation</p></div>';
+    if(ed)h+='<button class="btn btn-p btn-full" onclick="initObs('+vid+')"><i class="fas fa-clipboard-check"></i> Mulai Observation</button>';
+  }else{
+    obs.forEach(o=>{
+      const m=fp(o.item_id);
+      h+='<div class="card" style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600">'+m.item_check+'</div><div style="font-size:10px;color:var(--muted)">'+m.category_4p+' / '+m.sub_category+'</div></div>'+sbadge(o.status)+'</div>';
+      if(o.status==='FAIL'){
+        h+='<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">';
+        h+='<div class="ds"><div class="dl">Problem</div><div class="dv" style="color:var(--danger)">'+o.problem+'</div></div>';
+        h+='<div class="ds"><div class="dl">Root Cause</div><div class="dv">'+o.root_cause+'</div></div>';
+        h+='<div class="ds"><div class="dl">Impact</div><div class="dv">'+o.impact+'</div></div>';
+        h+='<div class="ds"><div class="dl">Recommendation</div><div class="dv" style="color:var(--accent)">'+o.recommendation+'</div></div></div>';
+      }
+      h+='</div>';
+    });
+    if(ed){
+      h+='<div style="display:flex;gap:7px;margin-top:10px"><button class="btn btn-s btn-full" onclick="openVisitObservation('+vid+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-p btn-full" onclick="submitVisit('+vid+')"><i class="fas fa-paper-plane"></i> Submit</button></div>';
+      h+='<button class="btn btn-d btn-full" style="margin-top:7px" onclick="deleteVisit('+vid+')"><i class="fas fa-trash"></i> Hapus</button>';
+    }
+  }
+  openModal(h);
+}
+
+async function initObs(vid){
+  await loadCache();
+  const rows=DB_C.items4p.map(m=>({visit_id:vid,item_id:m.id_item,status:'PASS',problem:'',root_cause:'',impact:'',recommendation:''}));
+  await sb.from('visit_detail').insert(rows);
+  openVisitObservation(vid);
+}
+
+async function submitVisit(vid){
+  const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+  await sb.from('visit').update({status:'SUBMITTED'}).eq('id_visit',vid);
+  const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+  const fails=(obs||[]).filter(o=>o.status==='FAIL');
+  for(const o of fails){
+    const m=fp(o.item_id);
+    await sb.from('issue').insert({source_type:'Visit Observation',source_id:vid,counter_id:v.counter_id,category_4p:m.category_4p,root_driver:m.root_driver,problem:o.problem,root_cause:o.root_cause,impact:o.impact,priority:'HIGH',status:'OPEN',created_at:new Date().toISOString()});
+  }
+  closeModal();toast('Visit disubmit'+(fails.length?'. '+fails.length+' issue dibuat otomatis':''));renderVisit();
+}
+
+async function deleteVisit(vid){openModal('<div class="modal-title">Hapus Visit?</div><p style="color:var(--fg2);margin-bottom:18px">Data visit dan detail akan dihapus.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelVisit('+vid+')">Hapus</button></div>')}
+async function confirmDelVisit(vid){await sb.from('visit_detail').delete().eq('visit_id',vid);await sb.from('visit').delete().eq('id_visit',vid);closeModal();toast('Visit dihapus');renderVisit()}
+
+// ==================== ISSUE ====================
+async function renderIssue(){
+  const el=document.getElementById('pageIssue');
+  el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+  await loadCache();
+  const isSPG=currentUser&&currentUser.role==='SPG';
+  if(isSPG){
+    let h='<div style="display:flex;gap:7px;margin-bottom:14px"><button class="btn btn-s btn-full" onclick="openComplaintForm()"><i class="fas fa-comment-dots"></i> Complaint</button><button class="btn btn-s btn-full" onclick="openPendingForm()"><i class="fas fa-clock"></i> Pending Issue</button></div>';
+    h+='<div class="section-title"><i class="fas fa-comment-dots"></i> My Complaints</div>';
+    const{data:mc}=await sb.from('complaint').select('*').eq('pic_id',currentUser.id_user).order('created_at',{ascending:false});
+    if(!mc||!mc.length)h+='<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Belum ada complaint</p></div>';
+    mc.forEach(c=>{h+='<div class="list-item"><div class="li-title">'+c.category+'</div><div class="li-sub">'+c.detail+'</div><div class="li-meta"><span>'+cn(c.counter_id)+'</span><span>'+fmtD(c.tanggal)+'</span>'+sbadge(c.status)+'</div></div>'});
+    el.innerHTML=h;return;
+  }
+  
+  let h='<div class="filter-bar"><input type="text" id="issueSearch" placeholder="Cari issue..." oninput="renderIssue()"><select id="issueFilter" onchange="renderIssue()"><option value="">Semua Status</option><option value="OPEN">Open</option><option value="ON PROGRESS">On Progress</option><option value="DONE">Done</option><option value="OVERDUE">Overdue</option></select></div>';
+  h+='<div class="section-title"><i class="fas fa-exclamation-triangle"></i> Issues</div>';
+  
+  let{data:issues}=await sb.from('issue').select('*').order('created_at',{ascending:false});
+  const search=(document.getElementById('issueSearch')?.value||'').toLowerCase();
+  const filter=document.getElementById('issueFilter')?.value||'';
+  if(search)issues=(issues||[]).filter(i=>i.problem?.toLowerCase().includes(search)||i.category_4p?.toLowerCase().includes(search));
+  if(filter)issues=(issues||[]).filter(i=>i.status===filter);
+  
+  if(!issues||!issues.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada issue</p></div>';
+  issues.forEach(i=>{
+    h+='<div class="list-item" onclick="viewIssueDetail('+i.id_issue+')"><div class="li-title">'+i.problem+'</div><div class="li-sub">'+i.source_type+' &middot; '+cn(i.counter_id)+'</div><div class="li-meta">'+sbadge(i.priority)+sbadge(i.status)+'<span style="color:var(--muted)">'+i.category_4p+'</span></div></div>';
+  });
+  el.innerHTML=h;
+}
+
+function openIssueSourceMenu(){
+  openModal('<div class="modal-title">Pilih Sumber Issue</div><div style="display:flex;flex-direction:column;gap:10px"><button class="btn btn-s btn-full" onclick="closeModal();openManualIssueForm()"><i class="fas fa-keyboard"></i> Input Manual</button><button class="btn btn-s btn-full" onclick="closeModal();openComplaintForm()"><i class="fas fa-comment-dots"></i> Dari Complaint</button><button class="btn btn-s btn-full" onclick="closeModal();openPendingForm()"><i class="fas fa-clock"></i> Dari Pending Issue</button></div>');
+}
+
+async function openManualIssueForm(){
+  await loadCache();
+  let h='<div class="modal-title">Input Issue Manual</div>';
+  h+='<div class="fg"><label>Counter</label><select id="miCounter">'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
+  h+='<div class="fg"><label>Category 4P</label><select id="mi4p"><option value="PEOPLE">PEOPLE</option><option value="PRODUCT">PRODUCT</option><option value="PLACE">PLACE</option><option value="PROMOTION">PROMOTION</option></select></div>';
+  h+='<div class="fg"><label>Root Driver</label><select id="miRoot"><option value="QUALITY">QUALITY</option><option value="SERVICE">SERVICE</option><option value="CLEANLINESS">CLEANLINESS</option></select></div>';
+  h+='<div class="fg"><label>Problem</label><textarea id="miProblem"></textarea></div>';
+  h+='<div class="fg"><label>Root Cause</label><input type="text" id="miCause"></div>';
+  h+='<div class="fg"><label>Impact</label><input type="text" id="miImpact"></div>';
+  h+='<div class="fg"><label>Priority</label><select id="miPri"><option value="HIGH">HIGH</option><option value="MEDIUM">MEDIUM</option><option value="LOW">LOW</option></select></div>';
+  h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveManualIssue()"><i class="fas fa-save"></i> Simpan</button></div>';
+  openModal(h);
+}
+
+async function saveManualIssue(){
+  try{
+    const d={source_type:'Manual Input',counter_id:parseInt(document.getElementById('miCounter').value),category_4p:document.getElementById('mi4p').value,root_driver:document.getElementById('miRoot').value,problem:document.getElementById('miProblem').value,root_cause:document.getElementById('miCause').value,impact:document.getElementById('miImpact').value,priority:document.getElementById('miPri').value,status:'OPEN',created_at:new Date().toISOString()};
+    if(!d.problem){toast('Problem wajib diisi','error');return}
+    await sb.from('issue').insert(d);
+    closeModal();toast('Issue ditambahkan');renderIssue();
+  }catch(e){toast('Gagal menyimpan issue','error')}
+}
+
+async function openComplaintForm(){
+  await loadCache();
+  let h='<div class="modal-title">Buat Complaint</div>';
+  h+='<div class="fg"><label>Counter</label><select id="cpCounter">'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
+  h+='<div class="fg"><label>Customer Name</label><input type="text" id="cpName"></div>';
+  h+='<div class="fg"><label>Category</label><input type="text" id="cpCat"></div>';
+  h+='<div class="fg"><label>Detail</label><textarea id="cpDetail"></textarea></div>';
+  h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveComplaint()"><i class="fas fa-save"></i> Simpan</button></div>';
+  openModal(h);
+}
+
+async function saveComplaint(){
+  try{
+    const d={pic_id:currentUser.id_user,counter_id:parseInt(document.getElementById('cpCounter').value),customer_name:document.getElementById('cpName').value,category:document.getElementById('cpCat').value,detail:document.getElementById('cpDetail').value,status:'OPEN',tanggal:today()};
+    if(!d.customer_name||!d.detail){toast('Lengkapi data complaint','error');return}
+    await sb.from('complaint').insert(d);
+    closeModal();toast('Complaint disimpan');renderIssue();
+  }catch(e){toast('Gagal menyimpan complaint','error')}
+}
+
+async function openPendingForm(){
+  await loadCache();
+  let h='<div class="modal-title">Input Pending Issue</div>';
+  h+='<div class="fg"><label>Counter</label><select id="piCounter">'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
+  h+='<div class="fg"><label>Issue</label><textarea id="piIssue"></textarea></div>';
+  h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="savePendingIssue()"><i class="fas fa-save"></i> Simpan</button></div>';
+  openModal(h);
+}
+
+async function savePendingIssue(){
+  try{
+    const d={pic_id:currentUser.id_user,counter_id:parseInt(document.getElementById('piCounter').value),issue:document.getElementById('piIssue').value,status:'OPEN',tanggal:today()};
+    if(!d.issue){toast('Issue wajib diisi','error');return}
+    await sb.from('pending_issue').insert(d);
+    closeModal();toast('Pending issue disimpan');renderIssue();
+  }catch(e){toast('Gagal menyimpan','error')}
+}
+
+async function viewIssueDetail(id){
+  await loadCache();
+  const{data:i}=await sb.from('issue').select('*').eq('id_issue',id).single();
+  const ed=i.status==='OPEN'||i.status==='ON PROGRESS';
+  let h='<button class="detail-back" onclick="renderIssue();closeModal()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+  h+='<div class="card"><div class="card-header"><div class="card-title">'+i.problem+'</div>'+sbadge(i.priority)+'</div>';
+  h+='<div class="ds"><div class="dl">Counter</div><div class="dv">'+cn(i.counter_id)+'</div></div>';
+  h+='<div class="ds"><div class="dl">Sumber</div><div class="dv">'+i.source_type+'</div></div>';
+  h+='<div class="ds"><div class="dl">4P / Root</div><div class="dv">'+i.category_4p+' / '+i.root_driver+'</div></div>';
+  h+='<div class="ds"><div class="dl">Root Cause</div><div class="dv">'+(i.root_cause||'-')+'</div></div>';
+  h+='<div class="ds"><div class="dl">Impact</div><div class="dv">'+(i.impact||'-')+'</div></div>';
+  h+='<div class="ds"><div class="dl">Status</div><div class="dv">'+sbadge(i.status)+'</div></div></div>';
+  
+  if(ed) h+='<button class="btn btn-p btn-full" onclick="createActionPlanFromIssue('+id+')"><i class="fas fa-plus"></i> Buat Action Plan</button>';
+  openModal(h);
+}
+
+async function createActionPlanFromIssue(issueId){
+  const{data:i}=await sb.from('issue').select('*').eq('id_issue',issueId).single();
+  let h='<div class="modal-title">Action Plan untuk Issue</div>';
+  h+='<div class="fg"><label>PIC</label><select id="apPic">';
+  DB_C.users.filter(u=>['Sales Operations Manager','Area Manager','Leader'].includes(u.role)).forEach(u=>{h+='<option value="'+u.id_user+'">'+u.nama_user+'</option>'});
+  h+='</select></div>';
+  h+='<div class="fg"><label>Action</label><textarea id="apAction"></textarea></div>';
+  h+='<div class="fg"><label>Due Date</label><input type="date" id="apDue" value="'+today()+'"></div>';
+  h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="viewIssueDetail('+issueId+')">Batal</button><button class="btn btn-p btn-full" onclick="saveActionPlan('+issueId+')"><i class="fas fa-save"></i> Simpan AP & Update Status</button></div>';
+  openModal(h);
+}
+
+async function saveActionPlan(issueId){
+  try{
+    const d={issue_id:issueId,pic_id:parseInt(document.getElementById('apPic').value),action:document.getElementById('apAction').value,due_date:document.getElementById('apDue').value,status:'OPEN',created_at:new Date().toISOString()};
+    if(!d.action){toast('Action wajib diisi','error');return}
+    await sb.from('action_plan').insert(d);
+    await sb.from('issue').update({status:'ON PROGRESS'}).eq('id_issue',issueId);
+    closeModal();toast('Action Plan dibuat, status issue diupdate');renderIssue();
+  }catch(e){toast('Gagal menyimpan','error')}
+}
+
+// ==================== ACTION PLAN & VALIDATION (COMPLETENESS) ====================
+async function renderActionPlan(){
+  const el=document.getElementById('pageActionPlan');
+  el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+  await loadCache();
+  const{data:ap}=await sb.from('action_plan').select('*').order('created_at',{ascending:false});
+  let h='<div class="section-title"><i class="fas fa-tasks"></i> Action Plans</div>';
+  if(!ap||!ap.length)h+='<div class="empty-state"><i class="fas fa-tasks"></i><p>Belum ada action plan</p></div>';
+  ap.forEach(a=>{
+    h+='<div class="list-item"><div class="li-title">'+a.action+'</div><div class="li-sub">PIC: '+un(a.pic_id)+' &middot; Due: '+fmtD(a.due_date)+'</div><div class="li-meta">'+sbadge(a.status)+'</div>';
+    if(a.status!=='DONE') h+='<div class="li-actions"><button class="btn btn-xs btn-p" onclick="markAPDone('+a.id_ap+')"><i class="fas fa-check"></i> Done</button></div>';
+    h+='</div>';
+  });
+  el.innerHTML=h;
+}
+async function openActionPlanForm(){toast('Buat Action Plan dari halaman Issue','info')}
+async function markAPDone(id){await sb.from('action_plan').update({status:'DONE'}).eq('id_ap',id);toast('AP ditandai selesai');renderActionPlan()}
+
+async function renderValidation(){
+  const el=document.getElementById('pageValidation');
+  el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+  const{data:val}=await sb.from('validation').select('*').order('created_at',{ascending:false});
+  let h='<div class="section-title"><i class="fas fa-check-double"></i> Validations</div>';
+  if(!val||!val.length)h+='<div class="empty-state"><i class="fas fa-check-double"></i><p>Belum ada validasi</p></div>';
+  val.forEach(v=>{
+    h+='<div class="list-item"><div class="li-title">'+(v.notes||'Validasi tanpa catatan')+'</div><div class="li-sub">'+fmtD(v.created_at)+'</div><div class="li-meta">'+sbadge(v.status)+'</div></div>';
+  });
+  el.innerHTML=h;
+}
+async function openValidationForm(){toast('Validasi diisi setelah Action Plan selesai','info')}
+
+// ==================== MASTER DATA ====================
+async function renderMasterData(){
+  const el=document.getElementById('pageMaster');
+  el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+  await loadCache();
+  let h='<div class="tabs">';
+  h+='<div class="tab-btn active" onclick="showMasterTab(\'counter\',this)">Counters ('+DB_C.counters.length+')</div>';
+  h+='<div class="tab-btn" onclick="showMasterTab(\'user\',this)">Users ('+DB_C.users.length+')</div>';
+  h+='<div class="tab-btn" onclick="showMasterTab(\'4p\',this)">Items 4P ('+DB_C.items4p.length+')</div>';
+  h+='</div>';
+  h+='<div id="masterContent"></div>';
+  el.innerHTML=h;
+  showMasterTab('counter');
+}
+
+function showMasterTab(type, btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const el=document.getElementById('masterContent');
+  let h='';
+  if(type==='counter'){
+    h=DB_C.counters.map(c=>'<div class="list-item"><div class="li-title">'+c.nama_counter+'</div><div class="li-meta">ID: '+c.id_counter+'</div></div>').join('');
+  } else if(type==='user'){
+    h=DB_C.users.map(u=>'<div class="list-item"><div class="li-title">'+u.nama_user+'</div><div class="li-meta">'+u.username+' &middot; '+sbadge(u.role)+'</div></div>').join('');
+  } else {
+    h=DB_C.items4p.map(m=>'<div class="list-item"><div class="li-title">'+m.item_check+'</div><div class="li-meta">'+m.category_4p+' / '+m.sub_category+'</div></div>').join('');
+  }
+  if(!h) h='<div class="empty-state"><p>Tidak ada data</p></div>';
+  el.innerHTML=h;
+}
+
+// ==================== BUSINESS REVIEW & REPORT (PLACEHOLDER) ====================
+async function renderBusinessReview(){
+  document.getElementById('pageBusinessReview').innerHTML='<div class="empty-state" style="margin-top:40px"><i class="fas fa-chart-line"></i><p>Halaman Business Review akan datang.</p></div>';
+}
+async function renderReport(){
+  document.getElementById('pageReport').innerHTML='<div class="empty-state" style="margin-top:40px"><i class="fas fa-file-alt"></i><p>Halaman Report akan datang.</p></div>';
+}
+
+// INIT
+(async()=>{
+  const u=localStorage.getItem('sois_url'),k=localStorage.getItem('sois_key');
+  if(u&&k){
+    try{
+      sb=window.supabase.createClient(u,k);
+      checkSession();
+      document.getElementById('setupScreen').classList.add('hidden');
+    }catch(e){
+      document.getElementById('setupScreen').classList.remove('hidden');
+    }
+  }
+})();
+</script>
+</body>
+</html>
