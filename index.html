@@ -1034,124 +1034,216 @@ window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 // ==================== MASTER DATA ====================
 async function renderMasterData(){
-const el=document.getElementById('pageMaster');
-el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
-await loadCache();
-let h='<div class="tabs" id="masterTabs"><button class="tab-btn active" onclick="switchMasterTab(\'counter\',this)">Counter</button><button class="tab-btn" onclick="switchMasterTab(\'user\',this)">User</button><button class="tab-btn" onclick="switchMasterTab(\'4p\',this)">4P Criteria</button></div>';
-h+='<div id="masterContent"></div>';
-el.innerHTML=h;
-switchMasterTab('counter');
+    const el=document.getElementById('pageMaster');
+    el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+    await loadCache();
+    
+    let h='<div class="tabs" id="masterTabs">';
+    h+='<button class="tab-btn active" onclick="switchMasterTab(\'counter\',this)">Counter</button>';
+    h+='<button class="tab-btn" onclick="switchMasterTab(\'user\',this)">User</button>';
+    h+='<button class="tab-btn" onclick="switchMasterTab(\'4p\',this)">4P Criteria</button>';
+    h+='</div><div id="masterContent"></div>';
+    
+    el.innerHTML=h;
+    switchMasterTab('counter');
 }
+
 async function switchMasterTab(tab,btn){
-if(btn){document.querySelectorAll('#masterTabs .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
-const c=document.getElementById('masterContent');
-if(!c)return;
-await loadCache();
-if(tab==='counter'){
-let h='';
-DB_C.counters.forEach(ct=>{
-h+='<div class="list-item"><div class="li-title">'+ct.nama_counter+'</div><div class="li-sub">'+ct.area+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="openCounterForm('+ct.id_counter+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="hapusData(\'master_counter\',\'id_counter\','+ct.id_counter+')"><i class="fas fa-trash"></i></button></div></div>';
-});
-h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="openCounterForm()"><i class="fas fa-plus"></i> Tambah Counter</button>';
-c.innerHTML=h;
-}else if(tab==='user'){
-let h='';
-DB_C.users.forEach(u=>{
-h+='<div class="list-item"><div class="li-title">'+u.nama_user+'</div><div class="li-sub">'+u.username+' &middot; '+u.role+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="openUserForm('+u.id_user+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="hapusData(\'master_user\',\'id_user\','+u.id_user+')"><i class="fas fa-trash"></i></button></div></div>';
-});
-h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="openUserForm()"><i class="fas fa-plus"></i> Tambah User</button>';
-c.innerHTML=h;
-}else if(tab==='4p'){
-let h='';
-DB_C.items4p.forEach(m=>{
-h+='<div class="list-item"><div class="li-title">'+m.item_check+'</div><div class="li-sub">'+m.category_4p+' / '+m.sub_category+' &middot; '+m.root_driver+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="open4PForm('+m.id_item+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="hapusData(\'master_4p\',\'id_item\','+m.id_item+')"><i class="fas fa-trash"></i></button></div></div>';
-});
-h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="open4PForm()"><i class="fas fa-plus"></i> Tambah 4P Criteria</button>';
-c.innerHTML=h;
+    if(btn){
+        document.querySelectorAll('#masterTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    const c=document.getElementById('masterContent');
+    if(!c)return;
+    
+    // Pastikan data terload
+    if(DB_C.counters.length === 0) await loadCache();
+
+    if(tab==='counter'){
+        let h='';
+        (DB_C.counters || []).forEach(ct=>{
+            h+='<div class="list-item"><div class="li-title">'+ct.nama_counter+'</div><div class="li-sub">'+ct.area+'</div>';
+            h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="openCounterForm('+ct.id_counter+')"><i class="fas fa-edit"></i></button>';
+            h+='<button class="btn btn-d btn-xs" onclick="hapusData(\'master_counter\',\'id_counter\','+ct.id_counter+')"><i class="fas fa-trash"></i></button></div></div>';
+        });
+        h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="openCounterForm()"><i class="fas fa-plus"></i> Tambah Counter</button>';
+        c.innerHTML=h;
+    }else if(tab==='user'){
+        let h='';
+        (DB_C.users || []).forEach(u=>{
+            h+='<div class="list-item"><div class="li-title">'+u.nama_user+'</div><div class="li-sub">'+u.username+' &middot; '+u.role+'</div>';
+            h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="openUserForm('+u.id_user+')"><i class="fas fa-edit"></i></button>';
+            h+='<button class="btn btn-d btn-xs" onclick="hapusData(\'master_user\',\'id_user\','+u.id_user+')"><i class="fas fa-trash"></i></button></div></div>';
+        });
+        h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="openUserForm()"><i class="fas fa-plus"></i> Tambah User</button>';
+        c.innerHTML=h;
+    }else if(tab==='4p'){
+        let h='';
+        (DB_C.items4p || []).forEach(m=>{
+            h+='<div class="list-item"><div class="li-title">'+m.item_check+'</div><div class="li-sub">'+m.category_4p+' / '+m.sub_category+' &middot; '+m.root_driver+'</div>';
+            h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="open4PForm('+m.id_item+')"><i class="fas fa-edit"></i></button>';
+            h+='<button class="btn btn-d btn-xs" onclick="hapusData(\'master_4p\',\'id_item\','+m.id_item+')"><i class="fas fa-trash"></i></button></div></div>';
+        });
+        h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="open4PForm()"><i class="fas fa-plus"></i> Tambah 4P Criteria</button>';
+        c.innerHTML=h;
+    }
 }
-}
+
 // ---------- COUNTER ----------
 function openCounterForm(eid){
-const ct=eid?DB_C.counters.find(c=>c.id_counter===eid):null;
-let h='<div class="modal-title">'+(ct?'Edit':'Tambah')+' Counter</div>';
-h+='<div class="fg"><label>Nama Counter</label><input type="text" id="mcName" value="'+(ct?ct.nama_counter:'')+'"></div>';
-h+='<div class="fg"><label>Area</label><input type="text" id="mcArea" value="'+(ct?ct.area:'')+'"></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpanCounter('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
-openModal(h);
+    const ct=eid?DB_C.counters.find(c=>c.id_counter===eid):null;
+    let h='<div class="modal-title">'+(ct?'Edit':'Tambah')+' Counter</div>';
+    h+='<div class="fg"><label>Nama Counter</label><input type="text" id="mcName" value="'+(ct?ct.nama_counter:'')+'"></div>';
+    h+='<div class="fg"><label>Area</label><input type="text" id="mcArea" value="'+(ct?ct.area:'')+'"></div>';
+    h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpanCounter('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
+    openModal(h);
 }
+
 async function simpanCounter(eid){
-const nama=document.getElementById('mcName').value,area=document.getElementById('mcArea').value;
-if(!nama){toast('Nama counter wajib diisi','error');return}
-if(eid){await sb.from('master_counter').update({nama_counter:nama,area:area}).eq('id_counter',eid)}
-else{await sb.from('master_counter').insert({nama_counter:nama,area:area})}
-DB_C.counters=[];closeModal();toast('Counter disimpan');renderMasterData();
+    const nama=document.getElementById('mcName').value,area=document.getElementById('mcArea').value;
+    if(!nama){toast('Nama counter wajib diisi','error');return}
+    if(eid){await sb.from('master_counter').update({nama_counter:nama,area:area}).eq('id_counter',eid)}
+    else{await sb.from('master_counter').insert({nama_counter:nama,area:area})}
+    DB_C.counters=[];closeModal();toast('Counter disimpan');renderMasterData();
 }
+
 // ---------- USER ----------
 function openUserForm(eid){
-const u=eid?DB_C.users.find(x=>x.id_user===eid):null;
-let h='<div class="modal-title">'+(u?'Edit':'Tambah')+' User</div>';
-h+='<div class="fg"><label>Nama User</label><input type="text" id="muName" value="'+(u?u.nama_user:'')+'"></div>';
-h+='<div class="fg"><label>Username</label><input type="text" id="muUser" value="'+(u?u.username:'')+'" '+(u?'disabled':'')+'></div>';
-h+='<div class="fg"><label>Password</label><input type="text" id="muPass" value="'+(u?u.password:'')+'" placeholder="Password"></div>';
-h+='<div class="fg"><label>Role</label><select id="muRole"><option>Owner</option><option>Sales Operations Manager</option><option>Area Manager</option><option>Leader</option><option>SPG</option></select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpanUser('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
-openModal(h);
-// Tunggu modal selesai render, baru set value select
-setTimeout(function(){
-if(u){var sel=document.getElementById('muRole');if(sel)sel.value=u.role}
-},50);
+    const u=eid?DB_C.users.find(x=>x.id_user===eid):null;
+    let h='<div class="modal-title">'+(u?'Edit':'Tambah')+' User</div>';
+    h+='<div class="fg"><label>Nama User</label><input type="text" id="muName" value="'+(u?u.nama_user:'')+'"></div>';
+    h+='<div class="fg"><label>Username</label><input type="text" id="muUser" value="'+(u?u.username:'')+'" '+(u?'disabled':'')+'></div>';
+    h+='<div class="fg"><label>Password</label><input type="text" id="muPass" value="" placeholder="Isi password baru"></div>';
+    
+    // Set selected role directly in HTML string to avoid setTimeout glitch
+    const roles = ['Owner','Sales Operations Manager','Area Manager','Leader','SPG'];
+    let optHtml = '';
+    roles.forEach(r => {
+        const selected = (u && u.role === r) ? 'selected' : '';
+        optHtml += '<option '+selected+'>'+r+'</option>';
+    });
+    
+    h+='<div class="fg"><label>Role</label><select id="muRole">'+optHtml+'</select></div>';
+    h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpanUser('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
+    openModal(h);
 }
+
 async function simpanUser(eid){
-const nama=document.getElementById('muName').value,username=document.getElementById('muUser').value,password=document.getElementById('muPass').value,role=document.getElementById('muRole').value;
-if(!nama||!username||!password){toast('Lengkapi semua field','error');return}
-if(eid){
-await sb.from('master_user').update({nama_user:nama,password:password,role:role}).eq('id_user',eid);
-}else{
-const{error}=await sb.from('master_user').insert({nama_user:nama,username:username,password:password,email:username+'@sois.local',role:role});
-if(error){toast('Username sudah ada atau terjadi kesalahan','error');return}
-try{await sb.auth.admin.signUp({email:username+'@sois.local',password:password})}catch(e){}
+    const nama=document.getElementById('muName').value;
+    const username=document.getElementById('muUser').value;
+    const password=document.getElementById('muPass').value;
+    const role=document.getElementById('muRole').value;
+    
+    if(!nama||!username){toast('Nama dan Username wajib diisi','error');return}
+    
+    // Jika mode Edit dan password kosong, jangan update password
+    const updateData = {nama_user:nama, role:role};
+    if(password) updateData.password = password;
+
+    if(eid){
+        await sb.from('master_user').update(updateData).eq('id_user',eid);
+        toast('User diperbarui');
+    }else{
+        if(!password){toast('Password wajib diisi untuk user baru','error');return}
+        
+        // 1. Simpan ke master_user dulu
+        const {error: dbError} = await sb.from('master_user').insert({
+            nama_user:nama,
+            username:username,
+            password:password, // Hashing sebaiknya dilakukan via Edge Function, tapi untuk demo kita simpan plain/terenkripsi sederhana
+            email:username+'@sois.local',
+            role:role
+        });
+        
+        if(dbError){
+            toast('Gagal menyimpan user: '+dbError.message,'error');
+            return;
+        }
+
+        // 2. Buat akun Auth (Sign Up biasa, bukan admin)
+        try {
+            // Kita gunakan signUp biasa. 
+            // Catatan: Di produksi, sebaiknya gunakan Edge Function untuk membuat user auth dari server side
+            // Karena keterbatasan anon key, kita coba signIn lalu signOut atau biarkan user mendaftar sendiri.
+            // Namun untuk sistem internal, kita coba trik berikut:
+            
+            // Karena kita tidak bisa create user auth dari client tanpa email confirmation atau admin key,
+            // Kita beri instruksi atau coba signUp.
+            
+            const { error: authError } = await sb.auth.signUp({
+                email: username+'@sois.local',
+                password: password,
+                options: { data: { role: role, nama_user: nama } }
+            });
+            
+            if(authError) {
+                // Jika error karena email sudah ada, abaikan saja karena master_user sudah tersimpan
+                console.log('Auth warning:', authError.message);
+            }
+            
+        } catch(e) {
+            console.error(e);
+        }
+        
+        toast('User ditambahkan. Minta user untuk login.');
+    }
+    
+    DB_C.users=[];
+    closeModal();
+    renderMasterData();
 }
-DB_C.users=[];closeModal();toast('User disimpan');renderMasterData();
-}
+
 // ---------- 4P ----------
 function open4PForm(eid){
-const m=eid?DB_C.items4p.find(x=>x.id_item===eid):null;
-let h='<div class="modal-title">'+(m?'Edit':'Tambah')+' 4P Criteria</div>';
-h+='<div class="fg"><label>Category</label><select id="m4Cat"><option>PEOPLE</option><option>PRODUCT</option><option>PLACE</option><option>PROMOTION</option></select></div>';
-h+='<div class="fg"><label>Sub Category</label><input type="text" id="m4Sub" value="'+(m?m.sub_category:'')+'"></div>';
-h+='<div class="fg"><label>Item Check</label><input type="text" id="m4Item" value="'+(m?m.item_check:'')+'"></div>';
-h+='<div class="fg"><label>Root Driver</label><select id="m4Driver"><option>QUALITY</option><option>SERVICE</option><option>CLEANLINESS</option></select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpan4P('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
-openModal(h);
-// Tunggu modal selesai render, baru set value select
-setTimeout(function(){
-if(m){
-var cat=document.getElementById('m4Cat');if(cat)cat.value=m.category_4p;
-var drv=document.getElementById('m4Driver');if(drv)drv.value=m.root_driver;
+    const m=eid?DB_C.items4p.find(x=>x.id_item===eid):null;
+    
+    // Set selected options directly in HTML
+    const cats = ['PEOPLE','PRODUCT','PLACE','PROMOTION'];
+    let catOpt = cats.map(c => `<option ${m && m.category_4p===c ? 'selected' : ''}>${c}</option>`).join('');
+    
+    const drivers = ['QUALITY','SERVICE','CLEANLINESS'];
+    let drvOpt = drivers.map(d => `<option ${m && m.root_driver===d ? 'selected' : ''}>${d}</option>`).join('');
+
+    let h='<div class="modal-title">'+(m?'Edit':'Tambah')+' 4P Criteria</div>';
+    h+='<div class="fg"><label>Category</label><select id="m4Cat">'+catOpt+'</select></div>';
+    h+='<div class="fg"><label>Sub Category</label><input type="text" id="m4Sub" value="'+(m?m.sub_category:'')+'"></div>';
+    h+='<div class="fg"><label>Item Check</label><input type="text" id="m4Item" value="'+(m?m.item_check:'')+'"></div>';
+    h+='<div class="fg"><label>Root Driver</label><select id="m4Driver">'+drvOpt+'</select></div>';
+    h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpan4P('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
+    openModal(h);
 }
-},50);
-}
+
 async function simpan4P(eid){
-const category_4p=document.getElementById('m4Cat').value,sub_category=document.getElementById('m4Sub').value,item_check=document.getElementById('m4Item').value,root_driver=document.getElementById('m4Driver').value;
-if(!sub_category||!item_check){toast('Lengkapi semua field','error');return}
-if(eid){
-await sb.from('master_4p').update({category_4p:category_4p,sub_category:sub_category,item_check:item_check,root_driver:root_driver}).eq('id_item',eid);
-}else{
-await sb.from('master_4p').insert({category_4p:category_4p,sub_category:sub_category,item_check:item_check,root_driver:root_driver});
+    const category_4p=document.getElementById('m4Cat').value;
+    const sub_category=document.getElementById('m4Sub').value;
+    const item_check=document.getElementById('m4Item').value;
+    const root_driver=document.getElementById('m4Driver').value;
+    
+    if(!sub_category||!item_check){toast('Lengkapi semua field','error');return}
+    
+    if(eid){
+        await sb.from('master_4p').update({category_4p,sub_category,item_check,root_driver}).eq('id_item',eid);
+    }else{
+        await sb.from('master_4p').insert({category_4p,sub_category,item_check,root_driver});
+    }
+    DB_C.items4p=[];closeModal();toast('4P Criteria disimpan');renderMasterData();
 }
-DB_C.items4p=[];closeModal();toast('4P Criteria disimpan');renderMasterData();
-}
+
 // ---------- HAPUS GENERIC ----------
 async function hapusData(table, col, id){
-openModal('<div class="modal-title">Hapus Data?</div><p style="color:var(--fg2);margin-bottom:18px">Data yang dihapus tidak bisa dikembalikan.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="konfirmasiHapus(\''+table+'\',\''+col+'\','+id+')">Hapus</button></div>');
+    openModal('<div class="modal-title">Hapus Data?</div><p style="color:var(--fg2);margin-bottom:18px">Data yang dihapus tidak bisa dikembalikan.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="konfirmasiHapus(\''+table+'\',\''+col+'\','+id+')">Hapus</button></div>');
 }
+
 async function konfirmasiHapus(table, col, id){
-const{error}=await sb.from(table).delete().eq(col,id);
-if(error){toast('Gagal menghapus: '+error.message,'error');closeModal();return}
-if(table==='master_counter')DB_C.counters=[];
-if(table==='master_user')DB_C.users=[];
-if(table==='master_4p')DB_C.items4p=[];
-closeModal();toast('Data dihapus');renderMasterData();
+    const{error}=await sb.from(table).delete().eq(col,id);
+    if(error){toast('Gagal menghapus: '+error.message,'error');closeModal();return}
+    
+    // Reset cache spesifik
+    if(table==='master_counter') DB_C.counters=[];
+    if(table==='master_user') DB_C.users=[];
+    if(table==='master_4p') DB_C.items4p=[];
+    
+    closeModal();toast('Data dihapus');renderMasterData();
 }
 // ==================== INIT ====================
 loadConfig();
