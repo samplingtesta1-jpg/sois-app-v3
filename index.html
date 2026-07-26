@@ -1246,6 +1246,27 @@ async function konfirmasiHapus(table, col, id){
     closeModal();toast('Data dihapus');renderMasterData();
 }
 // ==================== INIT ====================
+// ==================== INIT ====================
+function loadConfig(){
+    const u = localStorage.getItem('sois_url');
+    const k = localStorage.getItem('sois_key');
+    
+    if(u && k){
+        try{
+            sb = window.supabase.createClient(u, k);
+            document.getElementById('setupScreen').classList.add('hidden');
+            checkSession();
+        }catch(e){
+            console.error("Gagal memuat konfigurasi:", e);
+            document.getElementById('setupScreen').classList.remove('hidden');
+        }
+    } else {
+        // Jika belum ada config, tampilkan layar setup
+        document.getElementById('setupScreen').classList.remove('hidden');
+    }
+}
+
+loadConfig();
 loadConfig();
 </script>
 </body>
