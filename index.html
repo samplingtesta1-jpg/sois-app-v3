@@ -704,7 +704,7 @@ h+='<div class="card"><div class="card-header"><div class="card-title">'+cn(v.co
 h+='<div class="ds"><div class="dl">Tanggal</div><div class="dv">'+fmtDF(v.tanggal)+'</div></div>';
 h+='<div class="ds"><div class="dl">PIC</div><div class="dv">'+un(v.pic_id)+'</div></div>';
 h+='<div class="ds"><div class="dl">Waktu</div><div class="dv">'+v.check_in+' - '+v.check_out+'</div></div>';
-if(v.photo_url)h+='<div class="ds"><div class="dl">Foto Cover</div><div class="dv"><img src="'+v.photo_url+'" style="max-width:100%;border-radius:8px;margin-top:4px"></div></div>';
+if(v.photo_url)h+='<div class="ds"><div class="dl">Foto Cover</div><div class="dv"><img src="'+getIkUrl(v.photo_url)+'" style="max-width:100%;border-radius:8px;margin-top:4px"></div></div>';
 h+='</div>';
 
 // GROUPING LOGIC START
@@ -920,7 +920,7 @@ h+='<div class="ds"><div class="dl">Counter</div><div class="dv">'+cn(iss.counte
 h+='<div class="ds"><div class="dl">Created</div><div class="dv">'+fmtD(iss.created_at)+'</div></div>';
 // Show evidence photo if available
 if(iss.evidence_photo){
-h+='<div class="ds"><div class="dl">Evidence Photo</div><div class="dv"><img src="'+iss.evidence_photo+'" style="max-width:100%;border-radius:8px;margin-top:4px;cursor:pointer" onclick="window.open(this.src)"></div></div>';
+h+='<div class="ds"><div class="dl">Evidence Photo</div><div class="dv"><img src="'+getIkUrl(iss.evidence_photo)+'" style="max-width:100%;border-radius:8px;margin-top:4px;cursor:pointer" onclick="window.open(this.src)"></div></div>';
 }
 h+='</div>';
 const{data:linked}=await sb.from('action_plan').select('*').eq('issue_id',iid);
@@ -956,8 +956,8 @@ if (a.status === 'DONE' && a.evidence_after) {
     const beforeUrl = iss?.evidence_photo || '';
     if (beforeUrl) {
         baHtml = `<div class="ba-container">
-            <div class="ba-box"><label>BEFORE</label><img src="${beforeUrl}" onclick="window.open(this.src)"></div>
-            <div class="ba-box"><label>AFTER</label><img src="${a.evidence_after}" onclick="window.open(this.src)"></div>
+            <div class="ba-box"><label>BEFORE</label><img src="${getIkUrl(beforeUrl)}" onclick="window.open(this.src)"></div>
+            <div class="ba-box"><label>AFTER</label><img src="${getIkUrl(a.evidence_after)}" onclick="window.open(this.src)"></div>
         </div>`;
     }
 }
@@ -1151,8 +1151,8 @@ if(beforeUrl && afterUrl) {
     h+='<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">';
     h+='<div style="font-size:11px;font-weight:600;margin-bottom:6px">'+iss.problem+'</div>';
     h+='<div class="ba-container">';
-    h+='<div class="ba-box"><label>BEFORE</label><img src="'+beforeUrl+'" onclick="window.open(this.src)"></div>';
-    h+='<div class="ba-box"><label>AFTER</label><img src="'+afterUrl+'" onclick="window.open(this.src)"></div>';
+    h+='<div class="ba-box"><label>BEFORE</label><img src="'+getIkUrl(beforeUrl)+'" onclick="window.open(this.src)"></div>';
+    h+='<div class="ba-box"><label>AFTER</label><img src="'+getIkUrl(afterUrl)+'" onclick="window.open(this.src)"></div>';
     h+='</div></div>';
 }
 }
