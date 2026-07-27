@@ -245,6 +245,17 @@ input,select,textarea,button{font-family:inherit}
 <script>
 let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
 
+    // ==================== IMAGEKIT HELPER ====================
+const IK_ID = "ylxqitof6"; 
+const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
+
+function getIkUrl(supabaseUrl) {
+    if (!supabaseUrl || !supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
+    const pathAfterPublic = supabaseUrl.split('/public/')[1]; 
+    // w-800: max width 800px, q-60: quality 60%, f-auto: optimal format
+    return `${IK_BASE_URL}/${pathAfterPublic}?tr=w-800,q-60,f-auto`;
+}
+
 // ==================== UTILITIES & TOAST ====================
 function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
 function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
