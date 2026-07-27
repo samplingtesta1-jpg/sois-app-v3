@@ -245,7 +245,7 @@ input,select,textarea,button{font-family:inherit}
 <script>
 let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
 
-    // ==================== IMAGEKIT HELPER ====================
+// ==================== IMAGEKIT HELPER ====================
 const IK_ID = "ylxqitof6"; 
 const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
 
@@ -1236,6 +1236,42 @@ async function renderSmartInsight(container) {
             <strong>ACT (Dampak Perbaikan):</strong> Tingkat penyelesaian Action Plan mencapai <b>${completionRate}%</b>. Validasi visual Before-After telah diterapkan untuk memastikan standar kembali terpenuhi.
         </div>
     </div>`;
+
+    // VISUAL EVIDENCE SECTION (NEW)
+    h += `<div class="section-title"><i class="fas fa-images"></i> Visual Evidence (Before-After)</div>`;
+    const doneWithPhotos = actions.filter(a => a.status === 'DONE' && a.evidence_after);
+    
+    if(doneWithPhotos.length === 0) {
+        h += '<div class="card" style="text-align:center; color:var(--muted); padding:20px;">Belum ada bukti perbaikan tervalidasi pada periode ini.</div>';
+    } else {
+        const recentActions = doneWithPhotos.slice(0, 6); // Limit to 6 photos for performance
+        
+        for(const a of recentActions) {
+            const linkedIssue = issues.find(i => i.id_issue === a.issue_id);
+            const beforeUrl = linkedIssue?.evidence_photo || '';
+            
+            if(beforeUrl && a.evidence_after) {
+                h += `<div class="card">
+                    <div style="font-size:11px; font-weight:600; margin-bottom:8px; color:var(--fg2)">
+                        ${a.problem.substring(0, 50)}${a.problem.length > 50 ? '...' : ''}
+                    </div>
+                    <div class="ba-container">
+                        <div class="ba-box">
+                            <label>BEFORE</label>
+                            <img src="${getIkUrl(beforeUrl)}" onclick="window.open(this.src)">
+                        </div>
+                        <div class="ba-box">
+                            <label>AFTER</label>
+                            <img src="${getIkUrl(a.evidence_after)}" onclick="window.open(this.src)">
+                        </div>
+                    </div>
+                    <div style="margin-top:6px; font-size:10px; color:var(--muted)">
+                        PIC: ${un(a.pic_id)} | Selesai: ${fmtD(a.updated_at || a.created_at)}
+                    </div>
+                </div>`;
+            }
+        }
+    }
 
     // Detailed Cause-Effect Mapping with Names
     h += `<div class="section-title"><i class="fas fa-project-diagram"></i> Detail Cause-Effect & PIC</div>`;
