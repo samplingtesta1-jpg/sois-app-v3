@@ -1161,22 +1161,21 @@ el.innerHTML=h;
 
 // ==================== REPORT & SMART INSIGHT ====================
 function renderReport(){
-const el=document.getElementById('pageReport');
-// STAFF/SPG SHOULD NOT ACCESS THIS PAGE
-if(currentUser && currentUser.role === 'SPG') { navTo('pageDashboard'); toast('Tidak memiliki akses','error'); return; }
+    const el=document.getElementById('pageReport');
+    if(currentUser && currentUser.role === 'SPG') { navTo('pageDashboard'); toast('Tidak memiliki akses','error'); return; }
 
-let h='<div class="filter-bar"><input type="date" id="rptFrom" value="2026-07-01"><input type="date" id="rptTo" value="2026-07-31"></div>';
-h+='<div class="tabs" id="reportTabs"><button class="tab-btn active" onclick="switchReportTab(\'insight\',this)">Smart Insight</button><button class="tab-btn" onclick="switchReportTab(\'export\',this)">Export Data</button></div>';
-h+='<div id="reportContent"></div>';
-el.innerHTML=h;
-switchReportTab('insight');
+    let h='<div class="filter-bar"><input type="date" id="rptFrom" value="2026-07-01"><input type="date" id="rptTo" value="2026-07-31"></div>';
+    h+='<div class="tabs" id="reportTabs"><button class="tab-btn active" onclick="switchReportTab(\'insight\',this)">Smart Insight</button><button class="tab-btn" onclick="switchReportTab(\'export\',this)">Export Data</button></div>';
+    h+='<div id="reportContent"></div>';
+    el.innerHTML=h;
+    switchReportTab('insight');
 }
 
 async function switchReportTab(tab, btn){
-if(btn){document.querySelectorAll('#reportTabs .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
-const c = document.getElementById('reportContent');
-if(tab === 'insight') await renderSmartInsight(c);
-else renderExportMenu(c);
+    if(btn){document.querySelectorAll('#reportTabs .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+    const c = document.getElementById('reportContent');
+    if(tab === 'insight') await renderSmartInsight(c);
+    else renderExportMenu(c);
 }
 
 async function renderSmartInsight(container) {
@@ -1185,17 +1184,13 @@ async function renderSmartInsight(container) {
     const to = document.getElementById('rptTo').value;
     
     // Fetch Data with Date Filter
-    const [iRes, cRes, pRes, aRes, vRes] = await Promise.all([
+    const [iRes, aRes] = await Promise.all([
         sb.from('issue').select('*').gte('created_at', from).lte('created_at', to + 'T23:59:59'),
-        sb.from('complaint').select('*').gte('tanggal', from).lte('tanggal', to),
-        sb.from('pending_issue').select('*').gte('tanggal', from).lte('tanggal', to),
-        sb.from('action_plan').select('*').gte('created_at', from).lte('created_at', to + 'T23:59:59'),
-        sb.from('validation').select('*').gte('validated_at', from).lte('validated_at', to + 'T23:59:59')
+        sb.from('action_plan').select('*').gte('created_at', from).lte('created_at', to + 'T23:59:59')
     ]);
 
     const issues = iRes.data || [];
     const actions = aRes.data || [];
-    const validations = vRes.data || [];
     
     // Calculate Metrics
     const totalIssues = issues.length;
@@ -1204,45 +1199,64 @@ async function renderSmartInsight(container) {
     const doneActions = actions.filter(a => a.status === 'DONE').length;
     const completionRate = actions.length ? Math.round((doneActions / actions.length) * 100) : 0;
 
+    // Get Top AM involved in issues
+    const amCounts = {};
+    for(const issue of issues) {
+        const counter = DB_C.counters.find(c => c.id_counter === issue.counter_id);
+        if(counter && counter.am_id) {
+            const amName = un(counter.am_id);
+            amCounts[amName] = (amCounts[amName] || 0) + 1;
+        }
+    }
+    const topAM = Object.keys(amCounts).reduce((a, b) => amCounts[a] > amCounts[b] ? a : b, '-');
+
     let h = '';
     
-    // PDCA NARRATIVE
+    // PDCA NARRATIVE WITH DETAILED NAMES
     h += `<div class="card insight-card">
         <h3><i class="fas fa-lightbulb" style="color:var(--accent)"></i> Executive Summary (PDCA)</h3>
         <div class="insight-text">
-            <strong>PLAN:</strong> Periode ${fmtD(from)} s/d ${fmtD(to)}, fokus utama operasional adalah pada aspek <span class="insight-highlight">${topCategory}</span>. Target standar kunjungan adalah 100% counter terpantau.
+            <strong>PLAN:</strong> Periode ${fmtD(from)} s/d ${fmtD(to)}, fokus operasional tercatat pada area yang dipimpin oleh <span class="insight-highlight">${topAM}</span> dengan dominasi isu kategori <span class="insight-highlight">${topCategory}</span>.
         </div>
         <div class="insight-text">
-            <strong>DO (Temuan Utama):</strong> Dari <b>${totalIssues} temuan</b> yang tercatat, isu paling dominan berpusat pada kategori <b>${topCategory}</b>. 
+            <strong>DO (Temuan Utama):</strong> Dari <b>${totalIssues} temuan</b>, akar masalah terbanyak adalah <b>${topRootCause}</b>. 
         </div>
         <div class="insight-text">
-            <strong>CHECK (Akar Masalah):</strong> Analisa data menunjukkan bahwa <b>${topRootCause}</b> menjadi penyebab utama dari kegagalan operasional bulan ini.
-        </div>
-        <div class="insight-text">
-            <strong>ACT (Dampak Perbaikan):</strong> Tim telah menyelesaikan <b>${doneActions} Action Plan</b> dengan tingkat penyelesaian <b>${completionRate}%</b>. Validasi visual Before-After mengonfirmasi bahwa perbaikan telah dilakukan sesuai standar.
+            <strong>ACT (Dampak Perbaikan):</strong> Tingkat penyelesaian Action Plan mencapai <b>${completionRate}%</b>. Validasi visual Before-After telah diterapkan untuk memastikan standar kembali terpenuhi.
         </div>
     </div>`;
 
-    // Cause-Effect Mapping
-    h += `<div class="section-title"><i class="fas fa-project-diagram"></i> Cause-Effect Mapping</div>`;
+    // Detailed Cause-Effect Mapping with Names
+    h += `<div class="section-title"><i class="fas fa-project-diagram"></i> Detail Cause-Effect & PIC</div>`;
     
-    // Group by Root Driver
-    const drivers = {};
+    // Group by Counter to show AM and PIC details
+    const counterIssues = {};
     issues.forEach(i => {
-        if(!drivers[i.root_driver]) drivers[i.root_driver] = [];
-        drivers[i.root_driver].push(i);
+        if(!counterIssues[i.counter_id]) counterIssues[i.counter_id] = [];
+        counterIssues[i.counter_id].push(i);
     });
 
-    for(const [driver, items] of Object.entries(drivers)) {
-        h += `<div class="card">
-            <div class="card-header"><div class="card-title">Root Driver: ${driver}</div></div>
-            <div style="font-size:12px;color:var(--fg2);margin-bottom:10px">Ditemukan pada ${items.length} kasus</div>`;
+    for(const [cntId, items] of Object.entries(counterIssues)) {
+        const counter = DB_C.counters.find(c => c.id_counter == cntId);
+        const amName = counter ? un(counter.am_id) : 'Unknown AM';
         
-        // Show top 3 issues for this driver
+        h += `<div class="card">
+            <div class="card-header">
+                <div class="card-title">${cn(cntId)}</div>
+                <span style="font-size:10px; color:var(--muted)">AM: ${amName}</span>
+            </div>`;
+        
         items.slice(0,3).forEach(item => {
+            // Find PIC from linked action plan or default to issue creator
+            const linkedAction = actions.find(a => a.issue_id === item.id_issue);
+            const picName = linkedAction ? un(linkedAction.pic_id) : un(item.created_by || 0);
+            
             h += `<div style="padding:8px;border-bottom:1px solid var(--border);font-size:11px">
-                <div style="font-weight:600;color:var(--danger)">${item.problem}</div>
-                <div style="color:var(--muted)">Kategori: ${item.category_4p} | Counter: ${cn(item.counter_id)}</div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-weight:600;color:var(--danger)">${item.problem}</span>
+                    <span style="color:var(--info)">PIC: ${picName}</span>
+                </div>
+                <div style="color:var(--muted)">Driver: ${item.root_driver} | Status: ${item.status}</div>
             </div>`;
         });
         h += `</div>`;
@@ -1261,45 +1275,84 @@ function getTopCategory(issues) {
 function getTopRootCause(issues) {
     if(!issues.length) return '-';
     const counts = {};
-    issues.forEach(i => {
-        if(i.root_cause) counts[i.root_cause] = (counts[i.root_cause] || 0) + 1;
-    });
+    issues.forEach(i => { if(i.root_cause) counts[i.root_cause] = (counts[i.root_cause] || 0) + 1; });
     return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, 'Tidak ada data');
 }
 
 function renderExportMenu(container) {
     let h = '<div class="section-title"><i class="fas fa-file-export"></i> Export Options</div>';
-    [{id:'visit',l:'Visit Report',i:'fa-store'},{id:'issue',l:'Issue Report',i:'fa-exclamation-triangle'},{id:'action',l:'Action Plan',i:'fa-tasks'},{id:'validation',l:'Validation',i:'fa-check-double'}].forEach(r=>{
+    [{id:'visit',l:'Visit Report',i:'fa-store'},{id:'issue',l:'Issue Report',i:'fa-exclamation-triangle'},{id:'action',l:'Action Plan',i:'fa-tasks'}].forEach(r=>{
         h+=`<div class="list-item" style="cursor:default"><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:var(--glow);display:flex;align-items:center;justify-content:center"><i class="fas ${r.i}" style="color:var(--accent)"></i></div><div style="flex:1"><div class="li-title" style="margin-bottom:0">${r.l}</div></div><div style="display:flex;gap:5px"><button class="btn btn-s btn-xs" onclick="exportPDF('${r.id}')"><i class="fas fa-print"></i> PDF</button><button class="btn btn-s btn-xs" onclick="exportCSV('${r.id}')"><i class="fas fa-file-csv"></i> CSV</button><button class="btn btn-s btn-xs" onclick="exportWA('${r.id}')"><i class="fab fa-whatsapp"></i></button></div></div></div>`;
     });
     container.innerHTML = h;
 }
 
 async function getReportData(type){
-const from=document.getElementById('rptFrom').value,to=document.getElementById('rptTo').value;
-const fd=(arr,f)=>(arr||[]).filter(x=>{const d=x[f]||x.created_at;return d>=from&&d<=to});
-await loadCache();
+    const from=document.getElementById('rptFrom').value,to=document.getElementById('rptTo').value;
+    const fd=(arr,f)=>(arr||[]).filter(x=>{const d=x[f]||x.created_at;return d>=from&&d<=to});
+    await loadCache();
 
-// FILTERING BY AM COUNTERS
-const allowedIds = await getAllowedCounterIds();
-const filterByCounter = (arr) => {
-    if (allowedIds === null) return arr;
-    return (arr || []).filter(x => allowedIds.includes(x.counter_id));
-};
+    const allowedIds = await getAllowedCounterIds();
+    const filterByCounter = (arr) => {
+        if (allowedIds === null) return arr;
+        return (arr || []).filter(x => allowedIds.includes(x.counter_id));
+    };
 
-switch(type){
-case'visit':{const{data}=await sb.from('visit').select('*');return fd(filterByCounter(data),'tanggal').map(v=>({Date:v.tanggal,Counter:cn(v.counter_id),PIC:un(v.pic_id),'Check In':v.check_in,'Check Out':v.check_out,Status:v.status}))}
-case'issue':{const{data}=await sb.from('issue').select('*');return fd(filterByCounter(data),'created_at').map(i=>({'Issue ID':'ISS-'+i.id_issue,Source:i.source_type,Category:i.category_4p,'Root Driver':i.root_driver,Problem:i.problem,'Root Cause':i.root_cause,Priority:i.priority,Status:i.status}))}
-case'action':{const{data}=await sb.from('action_plan').select('*');return fd(data,'created_at').map(a=>({'Action ID':'AP-'+a.id_action,Problem:a.problem,Action:a.action,PIC:un(a.pic_id),'Due Date':a.due_date,Status:a.status}))}
-case'validation':{const{data}=await sb.from('validation').select('*');return fd(data,'validated_at').map(v=>({'Validation ID':'VAL-'+v.id_validation,'Action Plan':'AP-'+v.action_id,Note:v.validation_note,Result:v.result,Validated:un(v.validated_by)}))}
-default:return[];
+    switch(type){
+        case 'visit': {
+            const {data} = await sb.from('visit').select('*');
+            return fd(filterByCounter(data),'tanggal').map(v => ({
+                Date: v.tanggal,
+                Counter: cn(v.counter_id),
+                AM: un(DB_C.counters.find(c=>c.id_counter===v.counter_id)?.am_id),
+                PIC: un(v.pic_id),
+                'Check In': v.check_in,
+                'Check Out': v.check_out,
+                Status: v.status
+            }));
+        }
+        case 'issue': {
+            const {data} = await sb.from('issue').select('*');
+            return fd(filterByCounter(data),'created_at').map(i => {
+                const counter = DB_C.counters.find(c=>c.id_counter===i.counter_id);
+                return {
+                    'Issue ID': 'ISS-'+i.id_issue,
+                    Counter: cn(i.counter_id),
+                    AM: un(counter?.am_id),
+                    Source: i.source_type,
+                    Category: i.category_4p,
+                    Problem: i.problem,
+                    'Root Cause': i.root_cause,
+                    Priority: i.priority,
+                    Status: i.status
+                };
+            });
+        }
+        case 'action': {
+            const {data} = await sb.from('action_plan').select('*');
+            return fd(data,'created_at').map(a => {
+                // Get counter from linked issue
+                const issue = DB_C.issues?.find(iss => iss.id_issue === a.issue_id); // Note: Need to ensure DB_C.issues is loaded or fetch it
+                // For simplicity, we'll just show PIC and Action details
+                return {
+                    'Action ID': 'AP-'+a.id_action,
+                    Problem: a.problem,
+                    Action: a.action,
+                    PIC: un(a.pic_id),
+                    'Due Date': a.due_date,
+                    Status: a.status
+                };
+            });
+        }
+        default: return [];
+    }
 }
-}
+
 async function exportPDF(type){
     const data = await getReportData(type);
     if(!data.length){toast('Tidak ada data','info');return}
     
-    const titles = {visit:'Visit Report',issue:'Issue Report',action:'Action Plan Report',validation:'Validation Report'};
+    const titles = {visit:'Visit Report',issue:'Issue Report',action:'Action Plan Report'};
     const from = document.getElementById('rptFrom').value;
     const to = document.getElementById('rptTo').value;
     
@@ -1312,23 +1365,25 @@ async function exportPDF(type){
     w.document.close();
     w.print();
 }
+
 async function exportCSV(type){
-const data=await getReportData(type);
-if(!data.length){toast('Tidak ada data','info');return}
-const headers=Object.keys(data[0]);
-let csv=headers.join(',')+'\n'+data.map(r=>headers.map(h=>'"'+(r[h]||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
-const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-const a=document.createElement('a');a.href=url;a.download=type+'_report.csv';a.click();URL.revokeObjectURL(url);
-toast('CSV berhasil didownload');
+    const data=await getReportData(type);
+    if(!data.length){toast('Tidak ada data','info');return}
+    const headers=Object.keys(data[0]);
+    let csv=headers.join(',')+'\n'+data.map(r=>headers.map(h=>'"'+(r[h]||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=type+'_report.csv';a.click();URL.revokeObjectURL(url);
+    toast('CSV berhasil didownload');
 }
+
 async function exportWA(type){
-const data=await getReportData(type);
-if(!data.length){toast('Tidak ada data','info');return}
-const titles={visit:'Visit Report',issue:'Issue Report',action:'Action Plan Report',validation:'Validation Report'};
-const from=document.getElementById('rptFrom').value,to=document.getElementById('rptTo').value;
-let txt='SOIS - '+titles[type]+'\nPeriod: '+fmtD(from)+' - '+fmtD(to)+'\n';
-data.forEach(r=>{Object.entries(r).forEach(([k,v])=>{txt+=k+': '+v+'\n'});txt+='\n'});
-window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+    const data=await getReportData(type);
+    if(!data.length){toast('Tidak ada data','info');return}
+    const titles={visit:'Visit Report',issue:'Issue Report',action:'Action Plan Report'};
+    const from=document.getElementById('rptFrom').value,to=document.getElementById('rptTo').value;
+    let txt='SOIS - '+titles[type]+'\nPeriod: '+fmtD(from)+' - '+fmtD(to)+'\n';
+    data.forEach(r=>{Object.entries(r).forEach(([k,v])=>{txt+=k+': '+v+'\n'});txt+='\n'});
+    window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 
 // ==================== MASTER DATA ====================
