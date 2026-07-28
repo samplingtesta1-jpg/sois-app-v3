@@ -10,72 +10,31 @@
 <style>
 /* DARK MIDNIGHT + ELECTRIC TEAL THEME */
 :root {
-    --bg: #0B0F1A;          /* Deep Midnight Background */
-    --bg2: #111827;         /* Slightly lighter dark for inputs */
-    --card: #151C2C;        /* Dark card surface */
-    --card2: #1E2740;       /* Secondary dark for buttons */
-    --border: #243049;      /* Subtle dark border */
-    --fg: #E8ECF4;          /* Light text */
-    --fg2: #8B95A8;         /* Muted light text */
-    --muted: #5A6478;       /* Dimmed text */
-    
-    /* Accent Colors */
-    --accent: #00D4AA;      /* Electric Teal / Mint */
-    --accent2: #00B894;     /* Deeper Teal */
-    --glow: rgba(0, 212, 170, 0.15); 
-    
-    /* Status Colors (Vivid on Dark) */
-    --danger: #FF6B6B;      /* Bright Red */
-    --warning: #FFBE0B;     /* Vivid Yellow */
-    --info: #4CC9F0;        /* Electric Blue */
-    --pass: #06D6A0;        /* Mint Green */
-    --fail: #FF6B6B;        /* Red */
-    --open: #FFBE0B;        /* Yellow */
-    --prog: #4CC9F0;        /* Blue */
-    --done: #06D6A0;        /* Mint */
-    --overdue: #FF6B6B;     /* Red */
-    
-    --nav-h: 64px;
-    --hdr-h: 56px;
-    --rad: 14px;
-    --rads: 10px;
+    --bg: #0B0F1A; --bg2: #111827; --card: #151C2C; --card2: #1E2740;
+    --border: #243049; --fg: #E8ECF4; --fg2: #8B95A8; --muted: #5A6478;
+    --accent: #00D4AA; --accent2: #00B894; --glow: rgba(0, 212, 170, 0.15);
+    --danger: #FF6B6B; --warning: #FFBE0B; --info: #4CC9F0; --pass: #06D6A0;
+    --nav-h: 64px; --hdr-h: 56px; --rad: 14px; --rads: 10px;
 }
-
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 input,select,textarea,button{font-family:inherit}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
-#setupScreen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-#setupScreen.hidden{display:none}
-.setup-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:28px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
-.setup-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#0B0F1A;margin:0 auto 16px;box-shadow:0 0 30px var(--glow)}
-.setup-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:4px;color:var(--fg)}
-.setup-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
-
+#setupScreen, #loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.hidden{display:none!important}
+.setup-box, .login-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:28px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+.setup-logo, .login-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#0B0F1A;margin:0 auto 16px;box-shadow:0 0 30px var(--glow)}
+.login-logo{width:80px;height:80px;font-size:32px;border-radius:22px;margin-bottom:16px}
 .fg{margin-bottom:14px}
 .fg label{display:block;font-size:11px;font-weight:600;color:var(--fg2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:13px;outline:none;transition:border .2s,box-shadow .2s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
-.fg textarea{resize:vertical;min-height:70px}
-.fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B95A8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border:none;border-radius:var(--rads);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none}
 .btn-p{background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;width:100%}
-.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--glow)}
 .btn-s{background:var(--card2);color:var(--fg);border:1px solid var(--border)}.btn-s:hover{border-color:var(--accent);color:var(--accent)}
 .btn-d{background:var(--danger);color:#fff}
 .btn-sm{padding:7px 12px;font-size:11px}.btn-xs{padding:5px 9px;font-size:10px;border-radius:7px}.btn-full{width:100%}
-
-.login-error{color:var(--danger);font-size:11px;text-align:center;margin-bottom:10px;min-height:16px}
-
-#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-#loginScreen.hidden{display:none}
-.login-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0B0F1A;margin-bottom:16px;box-shadow:0 0 40px var(--glow);animation:lp 2s ease-in-out infinite}
-@keyframes lp{0%,100%{box-shadow:0 0 40px var(--glow)}50%{box-shadow:0 0 60px rgba(0, 212, 170, 0.4)}}
-.login-title{font-size:24px;font-weight:800;margin-bottom:4px;color:var(--fg)}
-.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;text-align:center}
-.login-box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
 
 #appShell{display:none}#appShell.active{display:flex;flex-direction:column;min-height:100vh}
 .app-header{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);z-index:100;background:rgba(11, 15, 26, 0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px}
@@ -88,7 +47,6 @@ input,select,textarea,button{font-family:inherit}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;min-width:0;flex:1;user-select:none;-webkit-user-select:none}
 .nav-item.active{color:var(--accent)}
 .nav-item i{font-size:17px}.nav-item span{font-size:9px;font-weight:600;letter-spacing:.3px}
-
 .nav-more-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;user-select:none;-webkit-user-select:none}
 .nav-more-btn.active{color:var(--accent)}.nav-more-btn i{font-size:17px}.nav-more-btn span{font-size:9px;font-weight:600}
 
@@ -109,8 +67,6 @@ input,select,textarea,button{font-family:inherit}
 
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px;position:relative;overflow:hidden;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
-.stat-card::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:50%;filter:blur(25px);opacity:.2}
-.stat-card.g::after{background:var(--pass)}.stat-card.r::after{background:var(--danger)}.stat-card.y::after{background:var(--warning)}.stat-card.b::after{background:var(--info)}
 .stat-num{font-size:26px;font-weight:900;line-height:1;margin-bottom:3px;color:var(--fg)}.stat-label{font-size:10px;color:var(--muted);font-weight:500}
 
 .badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.3px}
@@ -175,14 +131,12 @@ input,select,textarea,button{font-family:inherit}
 .loading-spinner{display:flex;align-items:center;justify-content:center;padding:40px}.loading-spinner i{font-size:24px;color:var(--accent);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* BEFORE-AFTER LAYOUT */
 .ba-container{display:flex;gap:10px;margin-top:10px}
 .ba-box{flex:1;text-align:center}
 .ba-box label{display:block;font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 .ba-box img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)}
 @media(max-width:768px){.ba-container{flex-direction:column}.ba-box img{height:180px}}
 
-/* INSIGHT CARD STYLE */
 .insight-card { background: linear-gradient(to bottom right, #1E2740, #151C2C); border-left: 5px solid var(--accent); }
 .insight-text { font-size: 13px; line-height: 1.6; color: var(--fg2); margin-bottom: 10px; }
 .insight-highlight { color: var(--accent); font-weight: 700; }
@@ -244,22 +198,14 @@ input,select,textarea,button{font-family:inherit}
 </div>
 <script>
 let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
-
-// ==================== IMAGEKIT HELPER ====================
 const IK_ID = "ylxqitof6"; 
 const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
-
 function getIkUrl(supabaseUrl) {
     if (!supabaseUrl || !supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
     const pathAfterPublic = supabaseUrl.split('/public/')[1]; 
-    // w-800: max width 800px, q-60: quality 60%, f-auto: optimal format
     return `${IK_BASE_URL}/${pathAfterPublic}?tr=w-800,q-60,f-auto`;
 }
-
-// ==================== UTILITIES & TOAST ====================
 function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
-
-// NEW: Click Notification Helper
 function notifyClick(actionName) {
     const c=document.getElementById('toastContainer');
     const e=document.createElement('div');
@@ -270,14 +216,12 @@ function notifyClick(actionName) {
     c.appendChild(e);
     setTimeout(()=>e.remove(), 1500);
 }
-
 function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
 function fmtDF(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
 function today(){return new Date().toISOString().split('T')[0]}
 function sbadge(s){const m={DRAFT:'b-draft',SUBMITTED:'b-sub',PASS:'b-pass',FAIL:'b-fail',OPEN:'b-open','ON PROGRESS':'b-prog',DONE:'b-done',OVERDUE:'b-over',HIGH:'b-high',MEDIUM:'b-med',LOW:'b-low'};return'<span class="badge '+(m[s]||'b-draft')+'">'+s+'</span>'}
 function canEdit(s){return s==='DRAFT'}
 
-// ==================== PHOTO COMPRESSION (TARGET 150-200KB, MAX 250KB) ====================
 async function compressImage(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -289,13 +233,10 @@ async function compressImage(file) {
                 const canvas = document.createElement('canvas');
                 let width = img.width, height = img.height;
                 const MAX_DIM = 1024;
-                
                 if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
                 else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
-                
                 canvas.width = width; canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                
                 const tryCompress = (q) => {
                     canvas.toBlob((blob) => {
                         if (!blob) return reject(new Error("Gagal proses gambar"));
@@ -315,19 +256,15 @@ async function compressImage(file) {
 async function handlePhotoUpload(fileInput, bucket, pathPrefix) {
     if (!fileInput.files || !fileInput.files[0]) return null;
     const file = fileInput.files[0];
-    
     toast('Mengompres foto...', 'info');
     try {
         const compressedBlob = await compressImage(file);
         toast(`Foto siap (${Math.round(compressedBlob.size/1024)}KB)`, 'success');
-        
-        const ext = 'jpg'; // Force JPEG
+        const ext = 'jpg';
         const path = pathPrefix + '/' + Date.now() + '.' + ext;
-        
         toast('Mengupload foto...', 'info');
         const { data: upData, error: upErr } = await sb.storage.from(bucket).upload(path, compressedBlob, { contentType: 'image/jpeg' });
         if (upErr) { toast('Upload gagal: ' + upErr.message, 'error'); return null; }
-        
         const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
         return urlData.publicUrl;
     } catch (e) {
@@ -336,7 +273,6 @@ async function handlePhotoUpload(fileInput, bucket, pathPrefix) {
     }
 }
 
-// ==================== AUTH & SESSION ====================
 function saveConfig(){
 const u=document.getElementById('cfgUrl').value.trim(),k=document.getElementById('cfgKey').value.trim();
 if(!u||!k){toast('Lengkapi URL dan Key','error');return}
@@ -391,39 +327,28 @@ closeMore();
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus()});
 
-// ==================== NAVIGATION & ACCESS CONTROL ====================
 function hasAccess(p){
 if(!currentUser)return false;const r=currentUser.role;
 if(r==='Owner')return['pageDashboard','pageBusinessReview','pageReport'].includes(p);
 if(r==='Sales Operations Manager')return true;
-// REVISI: Area Manager tidak bisa mengakses Validation
-if(r==='Area Manager')return['pageDashboard','pageSchedule','pageVisit','pageActionPlan'].includes(p);
+if(r==='Area Manager')return['pageDashboard','pageSchedule','pageVisit','pageIssue','pageActionPlan'].includes(p);
 if(r==='Leader')return['pageDashboard','pageVisit','pageIssue','pageActionPlan'].includes(p);
-// REVISI: SPG/Staff TIDAK boleh akses Report
 if(r==='SPG')return['pageDashboard','pageIssue','pageVisit'].includes(p);
 return false;
 }
 
-// Helper: Get allowed counter IDs based on role
 async function getAllowedCounterIds() {
     if (!currentUser) return [];
-    if (currentUser.role === 'Owner' || currentUser.role === 'Sales Operations Manager') return null; // null means ALL
-    
-    // Area Manager: counters where am_id = user.id
+    if (currentUser.role === 'Owner' || currentUser.role === 'Sales Operations Manager') return null;
     if (currentUser.role === 'Area Manager') {
         const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.id_user);
         return (data || []).map(c => c.id_counter);
     }
-    
-    // Leader/SPG: counters linked to their schedules or assigned area
-    // For simplicity in this revision, we assume they follow AM's area or specific assignments
-    // If supervisor_id exists in master_user, use that AM's counters
     if (currentUser.supervisor_id) {
         const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.supervisor_id);
         return (data || []).map(c => c.id_counter);
     }
-    
-    return []; // Default empty if no mapping found
+    return [];
 }
 
 function showApp(){
@@ -482,7 +407,6 @@ function userOpt(sel,roles){let q=sb.from('master_user').select('*');if(roles)q=
 function statusOpt(sel){return['OPEN','ON PROGRESS','DONE'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
 function priOpt(sel){return['HIGH','MEDIUM','LOW'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
 
-// FIX: Added issues array to cache
 let DB_C={counters:[],users:[],items4p:[], issues:[]};
 
 async function loadCache(){
@@ -491,12 +415,12 @@ async function loadCache(){
         sb.from('master_counter').select('*'),
         sb.from('master_user').select('*'),
         sb.from('master_4p').select('*'),
-        sb.from('issue').select('*') // Fetch issues for report mapping
+        sb.from('issue').select('*')
     ]);
     DB_C.counters=c.data||[];
     DB_C.users=u.data||[];
     DB_C.items4p=i.data||[];
-    DB_C.issues=iss.data||[]; // Simpan ke cache
+    DB_C.issues=iss.data||[];
 }
 
 function cn(id){return DB_C.counters.find(c=>c.id_counter===id)?.nama_counter||'-'}
@@ -508,8 +432,6 @@ async function renderDashboard(){
 const el=document.getElementById('pageDashboard');
 el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
 await loadCache();
-
-// FILTERING: Get allowed counters
 const allowedIds = await getAllowedCounterIds();
 let vQuery = sb.from('visit').select('*');
 let iQuery = sb.from('issue').select('*');
@@ -569,13 +491,10 @@ const el=document.getElementById('pageSchedule');
 el.innerHTML='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
 await loadCache();
 let{data}=await sb.from('jadwal').select('*').order('created_at',{ascending:false});
-
-// FILTERING BY AM COUNTERS
 const allowedIds = await getAllowedCounterIds();
 if (allowedIds !== null) {
     data = (data || []).filter(s => allowedIds.includes(s.counter_id));
 }
-
 const fv=document.getElementById('schedFilter')?.value;
 if(fv)data=(data||[]).filter(s=>{const fm=s.tanggal_mulai?.substring(0,7),tm=s.tanggal_selesai?.substring(0,7);return fm===fv||tm===fv||(fv>=fm&&fv<=tm)});
 let h='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()" value="'+(fv||'')+'"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div>';
@@ -597,13 +516,10 @@ h+='<div class="fg"><label>To Date</label><input type="date" id="sfTo" value="'+
 h+='<div class="fg"><label>PIC</label><select id="sfPic">';
 DB_C.users.filter(u=>['Sales Operations Manager','Area Manager','Leader','SPG'].includes(u.role)).forEach(u=>{h+='<option value="'+u.id_user+'"'+(s&&s.pic_id===u.id_user?' selected':'')+'>'+u.nama_user+' ('+u.role+')</option>'});
 h+='</select></div>';
-
-// FILTER COUNTER DROPDOWN FOR AM
 let counterList = DB_C.counters;
 if (currentUser.role === 'Area Manager') {
     counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
 }
-
 h+='<div class="fg"><label>Counter</label><select id="sfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'"'+(s&&s.counter_id===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')+'</select></div>';
 h+='<div class="fg"><label>Activity Plan</label><input type="text" id="sfActivity" value="'+(s?s.activity_plan:'')+'"></div>';
 h+='<div class="fg"><label>Notes</label><textarea id="sfNotes">'+(s?s.notes||'':'')+'</textarea></div>';
@@ -628,9 +544,7 @@ async function renderVisit(){
 const el=document.getElementById('pageVisit');
 el.innerHTML='<div class="section-title"><i class="fas fa-store"></i> Visits</div><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
 await loadCache();
-
 let vQuery = sb.from('visit').select('*').order('created_at',{ascending:false});
-// FILTERING BY AM COUNTERS
 const allowedIds = await getAllowedCounterIds();
 if (allowedIds !== null && allowedIds.length > 0) {
     vQuery = vQuery.in('counter_id', allowedIds);
@@ -638,7 +552,6 @@ if (allowedIds !== null && allowedIds.length > 0) {
     el.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Tidak ada akses visit.</p></div>';
     return;
 }
-
 const{data:visits}=await vQuery;
 let h='<div class="section-title"><i class="fas fa-store"></i> Visits</div>';
 if(!visits||!visits.length)h+='<div class="empty-state"><i class="fas fa-store"></i><p>Belum ada visit</p></div>';
@@ -655,15 +568,12 @@ async function openVisitForm(){
 await loadCache();
 const{data:subs}=await sb.from('jadwal').select('*').eq('status','SUBMITTED');
 if(!subs||!subs.length){toast('Tidak ada schedule yang disubmit','error');return}
-
-// FILTER SCHEDULES BY AM COUNTERS
 let filteredSubs = subs;
 const allowedIds = await getAllowedCounterIds();
 if (allowedIds !== null) {
     filteredSubs = subs.filter(s => allowedIds.includes(s.counter_id));
 }
 if(!filteredSubs.length){toast('Tidak ada schedule tersedia untuk area Anda','error');return}
-
 let h='<div class="modal-title">Buat Visit</div>';
 h+='<div class="fg"><label>Pilih Schedule</label><select id="vfSched" onchange="vfSchedChange()">';
 filteredSubs.forEach(s=>{h+='<option value="'+s.id_jadwal+'">'+cn(s.counter_id)+' ('+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+')</option>'});
@@ -678,11 +588,25 @@ if(!s)return;
 document.getElementById('vfDetails').innerHTML='<div class="fg"><label>Tanggal</label><input type="date" id="vfDate" value="'+today()+'"></div><div class="fg"><label>Counter</label><input type="text" value="'+cn(s.counter_id)+'" disabled></div><div class="fg"><label>PIC</label><input type="text" value="'+un(s.pic_id)+'" disabled></div><div class="fg"><label>Check In</label><input type="time" id="vfIn" value="'+new Date().toTimeString().substring(0,5)+'"></div><div class="fg"><label>Check Out</label><input type="time" id="vfOut"></div>';
 }
 async function startVisit(){
-const sid=parseInt(document.getElementById('vfSched').value);
-const{data:s}=await sb.from('jadwal').select('*').eq('id_jadwal',sid).single();
-toast('Memulai visit...', 'info');
-const{data:v}=await sb.from('visit').insert({jadwal_id:sid,counter_id:s.counter_id,pic_id:s.pic_id,tanggal:document.getElementById('vfDate').value,check_in:document.getElementById('vfIn').value,check_out:document.getElementById('vfOut').value,photo_url:'',status:'DRAFT',created_at:new Date().toISOString()}).select().single();
-closeModal();openVisitObservation(v.id_visit);
+    const sid=parseInt(document.getElementById('vfSched').value);
+    // FIXED: Add safety check for null schedule
+    const{data:s, error}=await sb.from('jadwal').select('*').eq('id_jadwal',sid).single();
+    
+    if(error || !s){
+        toast('Gagal mengambil data jadwal. Pastikan koneksi internet lancar.', 'error');
+        console.error("Schedule fetch error:", error);
+        return;
+    }
+
+    toast('Memulai visit...', 'info');
+    const{data:v}=await sb.from('visit').insert({jadwal_id:sid,counter_id:s.counter_id,pic_id:s.pic_id,tanggal:document.getElementById('vfDate').value,check_in:document.getElementById('vfIn').value,check_out:document.getElementById('vfOut').value,photo_url:'',status:'DRAFT',created_at:new Date().toISOString()}).select().single();
+    
+    if(v){
+        closeModal();
+        openVisitObservation(v.id_visit);
+    } else {
+        toast('Gagal membuat data visit.', 'error');
+    }
 }
 async function openVisitObservation(vid){
     await loadCache();
@@ -694,7 +618,6 @@ async function openVisitObservation(vid){
     if(obs&&obs.length){
         obs.forEach((o,i)=>{
             const m=fp(o.item_id);
-            // Tentukan warna tombol berdasarkan status
             const isFail = o.status === 'FAIL';
             
             h+=`<div class="card" style="margin-bottom:8px; border-left: 4px solid ${isFail ? 'var(--danger)' : 'var(--pass)'}">
@@ -710,13 +633,10 @@ async function openVisitObservation(vid){
                 </div>`;
                 
             if(isFail){
-                // Kolom Input Detail
                 h+=`<div class="fg" style="margin-bottom:6px"><label>Problem</label><input type="text" id="prob_${o.id_detail}" value="${o.problem||''}"></div>`;
                 h+=`<div class="fg" style="margin-bottom:6px"><label>Root Cause</label><input type="text" id="rc_${o.id_detail}" value="${o.root_cause||''}"></div>`;
                 h+=`<div class="fg" style="margin-bottom:6px"><label>Impact</label><input type="text" id="imp_${o.id_detail}" value="${o.impact||''}"></div>`;
                 h+=`<div class="fg" style="margin-bottom:6px"><label>Recommendation</label><input type="text" id="rec_${o.id_detail}" value="${o.recommendation||''}"></div>`;
-                
-                // Upload Foto Bukti Temuan (Resolusi Rendah/Kompresi)
                 h+=`<div class="fg" style="margin-bottom:0">
                         <label>Bukti Foto Temuan (Max 250KB)</label>
                         <input type="file" id="photo_${o.id_detail}" accept="image/*" capture="environment" onchange="previewPhoto(this, 'prev_${o.id_detail}')">
@@ -733,7 +653,6 @@ async function openVisitObservation(vid){
     openModal(h);
 }
 
-// Helper untuk preview foto sederhana
 function previewPhoto(input, prevId) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -750,25 +669,18 @@ openVisitObservation(vid);
 async function saveVisitObs(vid){
     toast('Menyimpan observasi...', 'info');
     const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
-    
-    // Loop untuk memproses setiap item observasi
     for(const o of obs){
         if(o.status === 'FAIL'){
-            // Ambil nilai dari input ID yang baru kita buat
             const problem = document.getElementById(`prob_${o.id_detail}`)?.value || '';
             const rootCause = document.getElementById(`rc_${o.id_detail}`)?.value || '';
             const impact = document.getElementById(`imp_${o.id_detail}`)?.value || '';
             const rec = document.getElementById(`rec_${o.id_detail}`)?.value || '';
             const photoInput = document.getElementById(`photo_${o.id_detail}`);
-            
-            let photoUrl = o.evidence_photo; // Keep old photo if exists
-            
-            // Proses Upload Foto Baru jika ada
+            let photoUrl = o.evidence_photo;
             if(photoInput && photoInput.files && photoInput.files[0]){
                 toast(`Mengompres foto untuk ${o.id_detail}...`, 'info');
                 const compressedBlob = await compressImage(photoInput.files[0]);
                 const path = `visit_evidence/${vid}_${o.id_detail}_${Date.now()}.jpg`;
-                
                 const { data: upData, error: upErr } = await sb.storage.from('validation').upload(path, compressedBlob, { contentType: 'image/jpeg' });
                 if(!upErr){
                     const { data: urlData } = sb.storage.from('validation').getPublicUrl(path);
@@ -777,85 +689,91 @@ async function saveVisitObs(vid){
                     toast(`Gagal upload foto ${o.id_detail}: ${upErr.message}`, 'error');
                 }
             }
-
-            // Update data ke database
             await sb.from('visit_detail').update({
-                problem: problem,
-                root_cause: rootCause,
-                impact: impact,
-                recommendation: rec,
-                evidence_photo: photoUrl
+                problem: problem, root_cause: rootCause, impact: impact, recommendation: rec, evidence_photo: photoUrl
             }).eq('id_detail', o.id_detail);
         } else {
-            // Jika PASS, kosongkan field detail
             await sb.from('visit_detail').update({
                 problem: '', root_cause: '', impact: '', recommendation: '', evidence_photo: null
             }).eq('id_detail', o.id_detail);
         }
     }
-    
     closeModal();
     toast('Observasi berhasil disimpan');
     renderVisit();
 }
-// GROUPING LOGIC START
-if(obs && obs.length > 0) {
-    // Siapkan container untuk 4 kategori
-    const categories = ['PEOPLE', 'PRODUCT', 'PLACE', 'PROMOTION'];
-    const grouped = {};
-    categories.forEach(c => grouped[c] = []);
+
+// ADDED MISSING FUNCTION: viewVisitDetail
+async function viewVisitDetail(vid){
+    await loadCache();
+    const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+    if(!v) return;
+    const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+    const ed=canEdit(v.status);
     
-    // Masukkan observasi ke grup yang sesuai
-    obs.forEach(o => {
-        const itemData = fp(o.item_id);
-        const cat = itemData.category_4p || 'OTHER';
-        if(grouped[cat]) grouped[cat].push({o, itemData});
-    });
+    let h='<button class="detail-back" onclick="renderVisit();closeModal()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+    h+='<div class="card"><div class="card-header"><div class="card-title">'+cn(v.counter_id)+'</div>'+sbadge(v.status)+'</div>';
+    h+='<div class="ds"><div class="dl">Tanggal</div><div class="dv">'+fmtDF(v.tanggal)+'</div></div>';
+    h+='<div class="ds"><div class="dl">PIC</div><div class="dv">'+un(v.pic_id)+'</div></div>';
+    h+='<div class="ds"><div class="dl">Waktu</div><div class="dv">'+v.check_in+' - '+v.check_out+'</div></div>';
+    h+='</div>';
 
-    h += '<div class="section-title"><i class="fas fa-clipboard-check"></i> Observations by Category</div>';
+    // GROUPING LOGIC START
+    if(obs && obs.length > 0) {
+        const categories = ['PEOPLE', 'PRODUCT', 'PLACE', 'PROMOTION'];
+        const grouped = {};
+        categories.forEach(c => grouped[c] = []);
+        
+        obs.forEach(o => {
+            const itemData = fp(o.item_id);
+            const cat = itemData.category_4p || 'OTHER';
+            if(grouped[cat]) grouped[cat].push({o, itemData});
+        });
 
-    // Render per kategori
-    categories.forEach(cat => {
-        const items = grouped[cat];
-        if(items.length > 0) {
-            h += `<div class="card" style="margin-bottom:12px; border-left: 4px solid var(--accent);">
-                <div class="card-header"><div class="card-title">${cat}</div></div>`;
-            
-            items.forEach(({o, itemData}) => {
-                h+=`<div style="padding:8px 0; border-bottom:1px solid var(--border)">
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                        <div style="font-size:12px;font-weight:600">${itemData.item_check}</div>
-                        ${sbadge(o.status)}
-                    </div>
-                    <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${itemData.sub_category || ''}</div>
-                `;
+        h += '<div class="section-title"><i class="fas fa-clipboard-check"></i> Observations by Category</div>';
+
+        categories.forEach(cat => {
+            const items = grouped[cat];
+            if(items.length > 0) {
+                h += `<div class="card" style="margin-bottom:12px; border-left: 4px solid var(--accent);">
+                    <div class="card-header"><div class="card-title">${cat}</div></div>`;
                 
-                if(o.status==='FAIL'){
-                    h+='<div style="margin-top:6px;padding:8px;background:var(--bg2);border-radius:6px;font-size:11px;">';
-                    h+='<div style="color:var(--danger);font-weight:600;margin-bottom:2px">Problem:</div><div style="margin-bottom:4px">'+o.problem+'</div>';
-                    if(o.root_cause) h+='<div style="color:var(--fg2);font-weight:600;margin-bottom:2px">Root Cause:</div><div style="margin-bottom:4px">'+o.root_cause+'</div>';
-                    if(o.impact) h+='<div style="color:var(--fg2);font-weight:600;margin-bottom:2px">Impact:</div><div style="margin-bottom:4px">'+o.impact+'</div>';
-                    if(o.recommendation) h+='<div style="color:var(--accent);font-weight:600;margin-bottom:2px">Recommendation:</div><div>'+o.recommendation+'</div>';
+                items.forEach(({o, itemData}) => {
+                    h+=`<div style="padding:8px 0; border-bottom:1px solid var(--border)">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div style="font-size:12px;font-weight:600">${itemData.item_check}</div>
+                            ${sbadge(o.status)}
+                        </div>
+                        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${itemData.sub_category || ''}</div>
+                    `;
+                    
+                    if(o.status==='FAIL'){
+                        h+='<div style="margin-top:6px;padding:8px;background:var(--bg2);border-radius:6px;font-size:11px;">';
+                        h+='<div style="color:var(--danger);font-weight:600;margin-bottom:2px">Problem:</div><div style="margin-bottom:4px">'+o.problem+'</div>';
+                        if(o.root_cause) h+='<div style="color:var(--fg2);font-weight:600;margin-bottom:2px">Root Cause:</div><div style="margin-bottom:4px">'+o.root_cause+'</div>';
+                        if(o.impact) h+='<div style="color:var(--fg2);font-weight:600;margin-bottom:2px">Impact:</div><div style="margin-bottom:4px">'+o.impact+'</div>';
+                        if(o.recommendation) h+='<div style="color:var(--accent);font-weight:600;margin-bottom:2px">Recommendation:</div><div>'+o.recommendation+'</div>';
+                        h+='</div>';
+                    }
                     h+='</div>';
-                }
-                h+='</div>';
-            });
-            h += '</div>'; // End Card Category
-        }
-    });
-} else {
-    h+='<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>Belum ada observation</p></div>';
-    if(ed)h+='<button class="btn btn-p btn-full" onclick="initObs('+vid+')"><i class="fas fa-clipboard-check"></i> Mulai Observation</button>';
-}
-// GROUPING LOGIC END
+                });
+                h += '</div>';
+            }
+        });
+    } else {
+        h+='<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>Belum ada observation</p></div>';
+        if(ed)h+='<button class="btn btn-p btn-full" onclick="initObs('+vid+')"><i class="fas fa-clipboard-check"></i> Mulai Observation</button>';
+    }
+    // GROUPING LOGIC END
 
-if(ed && obs && obs.length > 0){
-h+='<div style="display:flex;gap:7px;margin-top:10px"><button class="btn btn-s btn-full" onclick="openVisitObservation('+vid+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-p btn-full" onclick="submitVisit('+vid+')"><i class="fas fa-paper-plane"></i> Submit</button></div>';
-h+='<button class="btn btn-d btn-full" style="margin-top:7px" onclick="deleteVisit('+vid+')"><i class="fas fa-trash"></i> Hapus</button>';
+    if(ed && obs && obs.length > 0){
+    h+='<div style="display:flex;gap:7px;margin-top:10px"><button class="btn btn-s btn-full" onclick="openVisitObservation('+vid+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-p btn-full" onclick="submitVisit('+vid+')"><i class="fas fa-paper-plane"></i> Submit</button></div>';
+    h+='<button class="btn btn-d btn-full" style="margin-top:7px" onclick="deleteVisit('+vid+')"><i class="fas fa-trash"></i> Hapus</button>';
+    }
+
+    openModal(h);
 }
 
-openModal(h);
-}
 async function initObs(vid){
 await loadCache();
 const rows=DB_C.items4p.map(m=>({visit_id:vid,item_id:m.id_item,status:'PASS',problem:'',root_cause:'',impact:'',recommendation:''}));
@@ -878,7 +796,7 @@ closeModal();toast('Visit disubmit'+(fails.length?'.'+fails.length+' issue dibua
 async function deleteVisit(vid){openModal('<div class="modal-title">Hapus Visit?</div><p style="color:var(--fg2);margin-bottom:18px">Data visit dan detail akan dihapus.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelVisit('+vid+')">Hapus</button></div>')}
 async function confirmDelVisit(vid){await sb.from('visit_detail').delete().eq('visit_id',vid);await sb.from('visit').delete().eq('id_visit',vid);closeModal();toast('Visit dihapus');renderVisit()}
 
-// ==================== ISSUE ====================
+// ==================== ISSUE (FIXED) ====================
 async function renderIssue(){
 const el=document.getElementById('pageIssue');
 el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
@@ -904,8 +822,6 @@ async function filterIssueTab(cat,btn){
 if(btn){document.querySelectorAll('#issueTabs .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
 let q=sb.from('issue').select('*').order('created_at',{ascending:false});
 if(cat!=='all')q=q.eq('category_4p',cat);
-
-// FILTERING BY AM COUNTERS
 const allowedIds = await getAllowedCounterIds();
 if (allowedIds !== null && allowedIds.length > 0) {
     q = q.in('counter_id', allowedIds);
@@ -913,7 +829,6 @@ if (allowedIds !== null && allowedIds.length > 0) {
     document.getElementById('issueListC').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Tidak ada akses issue.</p></div>';
     return;
 }
-
 const{data}=await q;
 const c=document.getElementById('issueListC');if(!c)return;
 if(!data||!data.length){c.innerHTML='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada issue</p></div>';return}
@@ -923,13 +838,10 @@ c.innerHTML=h;
 function openIssueSourceMenu(){openModal('<div class="modal-title">Tambah Issue</div><div class="list-item" onclick="notifyClick(\'Buka Form Complaint\'); closeModal();openComplaintForm()"><div class="li-title"><i class="fas fa-comment-dots" style="color:var(--warning);margin-right:7px"></i>Customer Complaint</div><div class="li-sub">Input keluhan customer</div></div><div class="list-item" onclick="notifyClick(\'Buka Form Pending\'); closeModal();openPendingForm()"><div class="li-title"><i class="fas fa-clock" style="color:var(--info);margin-right:7px"></i>Pending Operational Issue</div><div class="li-sub">Input issue operasional</div></div>')}
 async function openComplaintForm(){
 await loadCache();
-
-// FILTER COUNTER DROPDOWN FOR AM
 let counterList = DB_C.counters;
 if (currentUser.role === 'Area Manager') {
     counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
 }
-
 let h='<div class="modal-title">Customer Complaint</div>';
 h+='<div class="fg"><label>Tanggal</label><input type="date" id="cfDate" value="'+today()+'"></div>';
 h+='<div class="fg"><label>Counter</label><select id="cfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
@@ -939,7 +851,6 @@ h+='<div class="fg"><label>Detail</label><textarea id="cfDetail"></textarea></di
 h+='<div class="fg"><label>Root Cause</label><input type="text" id="cfRC"></div>';
 h+='<div class="fg"><label>Impact</label><input type="text" id="cfImpact"></div>';
 h+='<div class="fg"><label>PIC</label><select id="cfPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
-// NEW: Photo Upload Field
 h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="cfPhoto" accept="image/*" capture="environment"></div>';
 h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Complaint\'); saveComplaint()"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
@@ -947,42 +858,26 @@ openModal(h);
 async function saveComplaint(){
 const d={tanggal:document.getElementById('cfDate').value,counter_id:parseInt(document.getElementById('cfCounter').value),customer_name:document.getElementById('cfName').value,category:document.getElementById('cfCat').value,detail:document.getElementById('cfDetail').value,root_cause:document.getElementById('cfRC').value,impact:document.getElementById('cfImpact').value,pic_id:parseInt(document.getElementById('cfPic').value),status:'OPEN',created_at:new Date().toISOString()};
 if(!d.customer_name||!d.detail){toast('Lengkapi data','error');return}
-
-// COMPRESS & UPLOAD PHOTO
 const photoUrl = await handlePhotoUpload(document.getElementById('cfPhoto'), 'validation', 'complaints');
 if (!photoUrl) { toast('Foto bukti wajib diupload', 'error'); return; }
 d.evidence_photo = photoUrl;
-
 toast('Menyimpan complaint...', 'info');
 const{data:comp}=await sb.from('complaint').insert(d).select().single();
 const cat4p={'Product Quality':'PRODUCT',Service:'PEOPLE',Place:'PLACE',Promotion:'PROMOTION',Others:'PRODUCT'};
-
-// FIX: Ensure evidence_photo is copied to issue table as well
 await sb.from('issue').insert({
-    source_type:'Customer Complaint',
-    source_id:comp.id_complaint,
-    counter_id:d.counter_id,
-    category_4p:cat4p[d.category]||'PRODUCT',
-    root_driver:'QUALITY',
-    problem:d.detail,
-    root_cause:d.root_cause,
-    impact:d.impact,
-    priority:'HIGH',
-    status:'OPEN',
-    created_at:new Date().toISOString(), 
-    evidence_photo: photoUrl // <--- PASTIKAN INI ADA
+    source_type:'Customer Complaint', source_id:comp.id_complaint, counter_id:d.counter_id,
+    category_4p:cat4p[d.category]||'PRODUCT', root_driver:'QUALITY', problem:d.detail,
+    root_cause:d.root_cause, impact:d.impact, priority:'HIGH', status:'OPEN',
+    created_at:new Date().toISOString(), evidence_photo: photoUrl
 });
 closeModal();toast('Complaint disimpan, issue dibuat otomatis');renderIssue();
 }
 async function openPendingForm(){
 await loadCache();
-
-// FILTER COUNTER DROPDOWN FOR AM
 let counterList = DB_C.counters;
 if (currentUser.role === 'Area Manager') {
     counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
 }
-
 let h='<div class="modal-title">Pending Operational Issue</div>';
 h+='<div class="fg"><label>Tanggal</label><input type="date" id="pfDate" value="'+today()+'"></div>';
 h+='<div class="fg"><label>Counter</label><select id="pfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
@@ -991,7 +886,6 @@ h+='<div class="fg"><label>Description</label><textarea id="pfDesc"></textarea><
 h+='<div class="fg"><label>Root Cause</label><input type="text" id="pfRC"></div>';
 h+='<div class="fg"><label>Priority</label><select id="pfPri">'+priOpt('HIGH')+'</select></div>';
 h+='<div class="fg"><label>PIC</label><select id="pfPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
-// NEW: Photo Upload Field
 h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="pfPhoto" accept="image/*" capture="environment"></div>';
 h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Pending Issue\'); savePending()"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
@@ -999,30 +893,17 @@ openModal(h);
 async function savePending(){
 const d={tanggal:document.getElementById('pfDate').value,counter_id:parseInt(document.getElementById('pfCounter').value),issue_category:document.getElementById('pfCat').value,description:document.getElementById('pfDesc').value,root_cause:document.getElementById('pfRC').value,priority:document.getElementById('pfPri').value,pic_id:parseInt(document.getElementById('pfPic').value),status:'OPEN',created_at:new Date().toISOString()};
 if(!d.description){toast('Lengkapi deskripsi','error');return}
-
-// COMPRESS & UPLOAD PHOTO
 const photoUrl = await handlePhotoUpload(document.getElementById('pfPhoto'), 'validation', 'pending_issues');
 if (!photoUrl) { toast('Foto bukti wajib diupload', 'error'); return; }
 d.evidence_photo = photoUrl;
-
 toast('Menyimpan pending issue...', 'info');
 const{data:pi}=await sb.from('pending_issue').insert(d).select().single();
 const cat4p={People:'PEOPLE',Product:'PRODUCT',Place:'PLACE',Promotion:'PROMOTION',Others:'PRODUCT'};
-
-// FIX: Ensure evidence_photo is copied to issue table as well
 await sb.from('issue').insert({
-    source_type:'Pending Issue',
-    source_id:pi.id_pending,
-    counter_id:d.counter_id,
-    category_4p:cat4p[d.issue_category]||'PRODUCT',
-    root_driver:'QUALITY',
-    problem:d.description,
-    root_cause:d.root_cause,
-    impact:'-',
-    priority:d.priority,
-    status:'OPEN',
-    created_at:new Date().toISOString(), 
-    evidence_photo: photoUrl // <--- PASTIKAN INI ADA
+    source_type:'Pending Issue', source_id:pi.id_pending, counter_id:d.counter_id,
+    category_4p:cat4p[d.issue_category]||'PRODUCT', root_driver:'QUALITY', problem:d.description,
+    root_cause:d.root_cause, impact:'-', priority:d.priority, status:'OPEN',
+    created_at:new Date().toISOString(), evidence_photo: photoUrl
 });
 closeModal();toast('Pending issue disimpan, issue dibuat otomatis');renderIssue();
 }
@@ -1039,7 +920,6 @@ h+='<div class="ds"><div class="dl">Root Cause</div><div class="dv">'+iss.root_c
 h+='<div class="ds"><div class="dl">Impact</div><div class="dv">'+iss.impact+'</div></div>';
 h+='<div class="ds"><div class="dl">Counter</div><div class="dv">'+cn(iss.counter_id)+'</div></div>';
 h+='<div class="ds"><div class="dl">Created</div><div class="dv">'+fmtD(iss.created_at)+'</div></div>';
-// Show evidence photo if available
 if(iss.evidence_photo){
 h+='<div class="ds"><div class="dl">Evidence Photo</div><div class="dv"><img src="'+getIkUrl(iss.evidence_photo)+'" style="max-width:100%;border-radius:8px;margin-top:4px;cursor:pointer" onclick="window.open(this.src)"></div></div>';
 }
@@ -1068,11 +948,8 @@ if(!data||!data.length){c.innerHTML='<div class="empty-state"><i class="fas fa-t
 let h='';
 for(const a of data){
 const ed=canEdit(a.status)||a.status==='OPEN'||a.status==='ON PROGRESS';
-
-// BEFORE-AFTER LOGIC
 let baHtml = '';
 if (a.status === 'DONE' && a.evidence_after) {
-    // Fetch original issue photo for BEFORE
     const { data: iss } = await sb.from('issue').select('evidence_photo').eq('id_issue', a.issue_id).single();
     const beforeUrl = iss?.evidence_photo || '';
     if (beforeUrl) {
@@ -1082,7 +959,6 @@ if (a.status === 'DONE' && a.evidence_after) {
         </div>`;
     }
 }
-
 h+='<div class="list-item"><div class="li-title">'+a.action+'</div><div class="li-sub">'+a.problem+'</div><div class="li-meta">'+sbadge(a.status)+'<span><i class="fas fa-user" style="margin-right:3px"></i>'+un(a.pic_id)+'</span><span>Due: '+fmtD(a.due_date)+'</span></div>';
 h+=baHtml;
 if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit AP\'); editAP('+a.id_action+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus AP\'); deleteAP('+a.id_action+')"><i class="fas fa-trash"></i></button></div>';
@@ -1114,7 +990,6 @@ h+='<div class="fg"><label>Action</label><textarea id="apAction">'+a.action+'</t
 h+='<div class="fg"><label>PIC</label><select id="apPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'"'+(a.pic_id===u.id_user?' selected':'')+'>'+u.nama_user+'</option>').join('')+'</select></div>';
 h+='<div class="fg"><label>Due Date</label><input type="date" id="apDue" value="'+a.due_date+'"></div>';
 h+='<div class="fg"><label>Status</label><select id="apStatus">'+statusOpt(a.status)+'</select></div>';
-// NEW: Evidence After Photo Upload when editing to DONE
 if(a.status === 'DONE' || document.getElementById('apStatus')?.value === 'DONE') {
     h+='<div class="fg"><label>Evidence After Photo</label><input type="file" id="apPhotoAfter" accept="image/*" capture="environment"></div>';
 }
@@ -1133,15 +1008,12 @@ const action=document.getElementById('apAction').value;
 if(!action){toast('Isi action','error');return}
 const statusVal = document.getElementById('apStatus').value;
 const d={action,pic_id:parseInt(document.getElementById('apPic').value),due_date:document.getElementById('apDue').value,status:statusVal};
-
-// Handle Evidence After Photo Upload
 const photoAfterInput = document.getElementById('apPhotoAfter');
 if (photoAfterInput && photoAfterInput.files && photoAfterInput.files[0]) {
     toast('Mengupload bukti perbaikan...', 'info');
     const photoUrl = await handlePhotoUpload(photoAfterInput, 'validation', 'action_after');
     if (photoUrl) d.evidence_after = photoUrl;
 }
-
 toast('Menyimpan action plan...', 'info');
 if(eid){await sb.from('action_plan').update(d).eq('id_action',eid)}
 else{const issueId=parseInt(document.getElementById('apIssue').value);const{data:iss}=await sb.from('issue').select('*').eq('id_issue',issueId).single();await sb.from('action_plan').insert({issue_id:issueId,problem:iss?.problem||'',...d,created_at:new Date().toISOString()})}
@@ -1173,7 +1045,6 @@ const avail=doneAPs.filter(a=>!valIds.has(a.id_action));
 if(!avail.length){toast('Semua action plan DONE sudah divalidasi','info');return}
 let h='<div class="modal-title">Tambah Validation</div>';
 h+='<div class="fg"><label>Action Plan</label><select id="valAP">'+avail.map(a=>'<option value="'+a.id_action+'">'+a.action.substring(0,60)+'</option>').join('')+'</select></div>';
-// REVISI: Input file dengan opsi kamera + COMPRESSED UPLOAD
 h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="valPhoto" accept="image/*" capture="environment"></div>';
 h+='<div class="fg"><label>Validation Note</label><textarea id="valNote"></textarea></div>';
 h+='<div class="fg"><label>Result</label><select id="valResult"><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div>';
@@ -1183,16 +1054,11 @@ openModal(h);
 async function saveValidation(){
 const note=document.getElementById('valNote').value;
 if(!note){toast('Isi catatan validasi','error');return}
-
-// COMPRESS & UPLOAD PHOTO
 const photoUrl = await handlePhotoUpload(document.getElementById('valPhoto'), 'validation', 'validation');
 if (!photoUrl) { toast('Foto bukti wajib diupload', 'error'); return; }
-
 toast('Menyimpan validasi...', 'info');
 const d={action_id:parseInt(document.getElementById('valAP').value),evidence_photo:photoUrl,validation_note:note,result:document.getElementById('valResult').value,validated_by:currentUser.id_user,validated_at:new Date().toISOString()};
 await sb.from('validation').insert(d);
-
-// Also update action_plan evidence_after if PASS
 if(d.result==='PASS'){
     await sb.from('action_plan').update({evidence_after: photoUrl}).eq('id_action', d.action_id);
     toast('Validation PASS disimpan');
@@ -1207,21 +1073,17 @@ closeModal();renderValidation();
 async function renderBusinessReview(){
 const el=document.getElementById('pageBusinessReview');
 el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
-
-// FILTERING BY AM COUNTERS
 const allowedIds = await getAllowedCounterIds();
 let iQuery = sb.from('issue').select('*');
 let cQuery = sb.from('complaint').select('*');
 let pQuery = sb.from('pending_issue').select('*');
 let aQuery = sb.from('action_plan').select('*');
 let vQuery = sb.from('validation').select('*');
-
 if (allowedIds !== null && allowedIds.length > 0) {
     iQuery = iQuery.in('counter_id', allowedIds);
     cQuery = cQuery.in('counter_id', allowedIds);
     pQuery = pQuery.in('counter_id', allowedIds);
 }
-
 const[is,comp,pend,ap,val]=await Promise.all([iQuery, cQuery, pQuery, aQuery, vQuery]);
 const id=is.data||[],cd=comp.data||[],pd=pend.data||[],ad=ap.data||[],vd=val.data||[];
 let h='<div class="stat-grid">';
@@ -1254,8 +1116,6 @@ const vpct=apDone?Math.round(apValPass/apDone*100):0;
 h+='<div class="card"><div class="card-header"><div class="card-title">Improvement Progress</div></div>';
 h+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Action Plan Completion</span><span style="font-weight:700;color:var(--accent)">'+pct+'%</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--accent),#D4A373)"></div></div></div>';
 h+='<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Validation Pass Rate</span><span style="font-weight:700;color:var(--info)">'+vpct+'%</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+vpct+'%;background:var(--info)"></div></div></div></div>';
-
-// BEFORE-AFTER SECTION IN BUSINESS REVIEW
 h+='<div class="card"><div class="card-header"><div class="card-title">Before - After Condition</div></div>';
 const validP=vd.filter(v=>v.result==='PASS');
 if(!validP.length)h+='<div style="color:var(--muted);font-size:12px">Belum ada validated improvement</div>';
@@ -1264,10 +1124,8 @@ const{data:ap2}=await sb.from('action_plan').select('*').eq('id_action',v.action
 if(!ap2)continue;
 const{data:iss}=await sb.from('issue').select('*').eq('id_issue',ap2.issue_id).single();
 if(!iss)continue;
-
 const beforeUrl = iss.evidence_photo || '';
 const afterUrl = v.evidence_photo || ap2.evidence_after || '';
-
 if(beforeUrl && afterUrl) {
     h+='<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">';
     h+='<div style="font-size:11px;font-weight:600;margin-bottom:6px">'+iss.problem+'</div>';
@@ -1278,7 +1136,6 @@ if(beforeUrl && afterUrl) {
 }
 }
 h+='</div>';
-
 h+='<div class="card"><div class="card-header"><div class="card-title">Recommendation</div></div>';
 const recs=[];
 if(id.filter(i=>i.root_driver==='QUALITY').length>2)recs.push('Perkuat proses Quality Control di seluruh counter.');
@@ -1295,7 +1152,6 @@ el.innerHTML=h;
 function renderReport(){
     const el=document.getElementById('pageReport');
     if(currentUser && currentUser.role === 'SPG') { navTo('pageDashboard'); toast('Tidak memiliki akses','error'); return; }
-
     let h='<div class="filter-bar"><input type="date" id="rptFrom" value="2026-07-01"><input type="date" id="rptTo" value="2026-07-31"></div>';
     h+='<div class="tabs" id="reportTabs"><button class="tab-btn active" onclick="notifyClick(\'Tab Insight\'); switchReportTab(\'insight\',this)">Smart Insight</button><button class="tab-btn" onclick="notifyClick(\'Tab Export\'); switchReportTab(\'export\',this)">Export Data</button></div>';
     h+='<div id="reportContent"></div>';
@@ -1314,24 +1170,17 @@ async function renderSmartInsight(container) {
     container.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
     const from = document.getElementById('rptFrom').value;
     const to = document.getElementById('rptTo').value;
-    
-    // Fetch Data with Date Filter
     const [iRes, aRes] = await Promise.all([
         sb.from('issue').select('*').gte('created_at', from).lte('created_at', to + 'T23:59:59'),
         sb.from('action_plan').select('*').gte('created_at', from).lte('created_at', to + 'T23:59:59')
     ]);
-
     const issues = iRes.data || [];
     const actions = aRes.data || [];
-    
-    // Calculate Metrics
     const totalIssues = issues.length;
     const topCategory = getTopCategory(issues);
     const topRootCause = getTopRootCause(issues);
     const doneActions = actions.filter(a => a.status === 'DONE').length;
     const completionRate = actions.length ? Math.round((doneActions / actions.length) * 100) : 0;
-
-    // Get Top AM involved in issues
     const amCounts = {};
     for(const issue of issues) {
         const counter = DB_C.counters.find(c => c.id_counter === issue.counter_id);
@@ -1341,10 +1190,7 @@ async function renderSmartInsight(container) {
         }
     }
     const topAM = Object.keys(amCounts).reduce((a, b) => amCounts[a] > amCounts[b] ? a : b, '-');
-
     let h = '';
-    
-    // PDCA NARRATIVE WITH DETAILED NAMES
     h += `<div class="card insight-card">
         <h3><i class="fas fa-lightbulb" style="color:var(--accent)"></i> Executive Summary (PDCA)</h3>
         <div class="insight-text">
@@ -1357,20 +1203,15 @@ async function renderSmartInsight(container) {
             <strong>ACT (Dampak Perbaikan):</strong> Tingkat penyelesaian Action Plan mencapai <b>${completionRate}%</b>. Validasi visual Before-After telah diterapkan untuk memastikan standar kembali terpenuhi.
         </div>
     </div>`;
-
-    // VISUAL EVIDENCE SECTION (NEW)
     h += `<div class="section-title"><i class="fas fa-images"></i> Visual Evidence (Before-After)</div>`;
     const doneWithPhotos = actions.filter(a => a.status === 'DONE' && a.evidence_after);
-    
     if(doneWithPhotos.length === 0) {
         h += '<div class="card" style="text-align:center; color:var(--muted); padding:20px;">Belum ada bukti perbaikan tervalidasi pada periode ini.</div>';
     } else {
-        const recentActions = doneWithPhotos.slice(0, 6); // Limit to 6 photos for performance
-        
+        const recentActions = doneWithPhotos.slice(0, 6);
         for(const a of recentActions) {
             const linkedIssue = issues.find(i => i.id_issue === a.issue_id);
             const beforeUrl = linkedIssue?.evidence_photo || '';
-            
             if(beforeUrl && a.evidence_after) {
                 h += `<div class="card">
                     <div style="font-size:11px; font-weight:600; margin-bottom:8px; color:var(--fg2)">
@@ -1393,32 +1234,23 @@ async function renderSmartInsight(container) {
             }
         }
     }
-
-    // Detailed Cause-Effect Mapping with Names
     h += `<div class="section-title"><i class="fas fa-project-diagram"></i> Detail Cause-Effect & PIC</div>`;
-    
-    // Group by Counter to show AM and PIC details
     const counterIssues = {};
     issues.forEach(i => {
         if(!counterIssues[i.counter_id]) counterIssues[i.counter_id] = [];
         counterIssues[i.counter_id].push(i);
     });
-
     for(const [cntId, items] of Object.entries(counterIssues)) {
         const counter = DB_C.counters.find(c => c.id_counter == cntId);
         const amName = counter ? un(counter.am_id) : 'Unknown AM';
-        
         h += `<div class="card">
             <div class="card-header">
                 <div class="card-title">${cn(cntId)}</div>
                 <span style="font-size:10px; color:var(--muted)">AM: ${amName}</span>
             </div>`;
-        
         items.slice(0,3).forEach(item => {
-            // Find PIC from linked action plan or default to issue creator
             const linkedAction = actions.find(a => a.issue_id === item.id_issue);
             const picName = linkedAction ? un(linkedAction.pic_id) : un(item.created_by || 0);
-            
             h += `<div style="padding:8px;border-bottom:1px solid var(--border);font-size:11px">
                 <div style="display:flex; justify-content:space-between;">
                     <span style="font-weight:600;color:var(--danger)">${item.problem}</span>
@@ -1429,7 +1261,6 @@ async function renderSmartInsight(container) {
         });
         h += `</div>`;
     }
-
     container.innerHTML = h;
 }
 
@@ -1459,24 +1290,17 @@ async function getReportData(type){
     const from=document.getElementById('rptFrom').value,to=document.getElementById('rptTo').value;
     const fd=(arr,f)=>(arr||[]).filter(x=>{const d=x[f]||x.created_at;return d>=from&&d<=to});
     await loadCache();
-
     const allowedIds = await getAllowedCounterIds();
     const filterByCounter = (arr) => {
         if (allowedIds === null) return arr;
         return (arr || []).filter(x => allowedIds.includes(x.counter_id));
     };
-
     switch(type){
         case 'visit': {
             const {data} = await sb.from('visit').select('*');
             return fd(filterByCounter(data),'tanggal').map(v => ({
-                Date: v.tanggal,
-                Counter: cn(v.counter_id),
-                AM: un(DB_C.counters.find(c=>c.id_counter===v.counter_id)?.am_id),
-                PIC: un(v.pic_id),
-                'Check In': v.check_in,
-                'Check Out': v.check_out,
-                Status: v.status
+                Date: v.tanggal, Counter: cn(v.counter_id), AM: un(DB_C.counters.find(c=>c.id_counter===v.counter_id)?.am_id),
+                PIC: un(v.pic_id), 'Check In': v.check_in, 'Check Out': v.check_out, Status: v.status
             }));
         }
         case 'issue': {
@@ -1484,34 +1308,22 @@ async function getReportData(type){
             return fd(filterByCounter(data),'created_at').map(i => {
                 const counter = DB_C.counters.find(c=>c.id_counter===i.counter_id);
                 return {
-                    'Issue ID': 'ISS-'+i.id_issue,
-                    Counter: cn(i.counter_id),
-                    AM: un(counter?.am_id),
-                    Source: i.source_type,
-                    Category: i.category_4p,
-                    Problem: i.problem,
-                    'Root Cause': i.root_cause,
-                    Priority: i.priority,
-                    Status: i.status
+                    'Issue ID': 'ISS-'+i.id_issue, Counter: cn(i.counter_id), AM: un(counter?.am_id),
+                    Source: i.source_type, Category: i.category_4p, Problem: i.problem,
+                    'Root Cause': i.root_cause, Priority: i.priority, Status: i.status
                 };
             });
         }
         case 'action': {
             const {data} = await sb.from('action_plan').select('*');
             return fd(data,'created_at').map(a => {
-                // FIX: Use DB_C.issues which is now loaded in cache
                 const linkedIssue = DB_C.issues.find(iss => iss.id_issue === a.issue_id);
                 const counterId = linkedIssue ? linkedIssue.counter_id : null;
                 const counter = DB_C.counters.find(c=>c.id_counter===counterId);
-                
                 return {
-                    'Action ID': 'AP-'+a.id_action,
-                    Counter: counter ? counter.nama_counter : '-',
-                    Problem: a.problem,
-                    Action: a.action,
-                    PIC: un(a.pic_id),
-                    'Due Date': a.due_date,
-                    Status: a.status
+                    'Action ID': 'AP-'+a.id_action, Counter: counter ? counter.nama_counter : '-',
+                    Problem: a.problem, Action: a.action, PIC: un(a.pic_id),
+                    'Due Date': a.due_date, Status: a.status
                 };
             });
         }
@@ -1522,11 +1334,9 @@ async function getReportData(type){
 async function exportPDF(type){
     const data = await getReportData(type);
     if(!data.length){toast('Tidak ada data','info');return}
-    
     const titles = {visit:'Visit Report',issue:'Issue Report',action:'Action Plan Report'};
     const from = document.getElementById('rptFrom').value;
     const to = document.getElementById('rptTo').value;
-    
     let html = '<html><head><title>'+titles[type]+'</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#333}h1{font-size:20px;margin-bottom:4px;color:#2c3e50}p{font-size:12px;color:#666;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px}th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}th{background:#f9f9f9;font-weight:700;color:#444}</style></head><body>';
     html += '<h1>SOIS - '+titles[type]+'</h1><p>Period: '+fmtD(from)+' - '+fmtD(to)+'</p>';
     html += '<table><thead><tr>'+Object.keys(data[0]).map(k=>'<th>'+k+'</th>').join('')+'</tr></thead><tbody>'+data.map(r=>'<tr>'+Object.values(r).map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
@@ -1596,13 +1406,11 @@ h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="notifyCl
 c.innerHTML=h;
 }
 }
-// ---------- COUNTER ----------
 function openCounterForm(eid){
 const ct=eid?DB_C.counters.find(c=>c.id_counter===eid):null;
 let h='<div class="modal-title">'+(ct?'Edit':'Tambah')+' Counter</div>';
 h+='<div class="fg"><label>Nama Counter</label><input type="text" id="mcName" value="'+(ct?ct.nama_counter:'')+'"></div>';
 h+='<div class="fg"><label>Area</label><input type="text" id="mcArea" value="'+(ct?ct.area:'')+'"></div>';
-// NEW: AM Assignment Field
 h+='<div class="fg"><label>Area Manager</label><select id="mcAm"><option value="">Belum ada AM</option>';
 DB_C.users.filter(u=>u.role==='Area Manager').forEach(u=>{
     h+='<option value="'+u.id_user+'"'+(ct&&ct.am_id===u.id_user?' selected':'')+'>'+u.nama_user+'</option>';
@@ -1617,13 +1425,11 @@ const amId = document.getElementById('mcAm').value;
 if(!nama){toast('Nama counter wajib diisi','error');return}
 const payload = {nama_counter:nama, area:area};
 if(amId) payload.am_id = parseInt(amId); else payload.am_id = null;
-
 toast('Menyimpan counter...', 'info');
 if(eid){await sb.from('master_counter').update(payload).eq('id_counter',eid)}
 else{await sb.from('master_counter').insert(payload)}
 DB_C.counters=[];closeModal();toast('Counter disimpan');renderMasterData();
 }
-// ---------- USER ----------
 function openUserForm(eid){
 const u=eid?DB_C.users.find(x=>x.id_user===eid):null;
 let h='<div class="modal-title">'+(u?'Edit':'Tambah')+' User</div>';
@@ -1631,7 +1437,6 @@ h+='<div class="fg"><label>Nama User</label><input type="text" id="muName" value
 h+='<div class="fg"><label>Username</label><input type="text" id="muUser" value="'+(u?u.username:'')+'" '+(u?'disabled':'')+'></div>';
 h+='<div class="fg"><label>Password</label><input type="text" id="muPass" value="'+(u?u.password:'')+'" placeholder="Password"></div>';
 h+='<div class="fg"><label>Role</label><select id="muRole"><option>Owner</option><option>Sales Operations Manager</option><option>Area Manager</option><option>Leader</option><option>SPG</option></select></div>';
-// NEW: Supervisor ID for Staff/Leader
 h+='<div class="fg"><label>Supervisor (AM)</label><select id="muSup"><option value="">Tidak ada</option>';
 DB_C.users.filter(x=>x.role==='Area Manager').forEach(x=>{
     h+='<option value="'+x.id_user+'"'+(u&&u.supervisor_id===x.id_user?' selected':'')+'>'+x.nama_user+'</option>';
@@ -1649,7 +1454,6 @@ const supId = document.getElementById('muSup').value;
 if(!nama||!username||!password){toast('Lengkapi semua field','error');return}
 const payload = {nama_user:nama, password:password, role:role};
 if(supId) payload.supervisor_id = parseInt(supId); else payload.supervisor_id = null;
-
 toast('Menyimpan user...', 'info');
 if(eid){
 await sb.from('master_user').update(payload).eq('id_user',eid);
@@ -1662,7 +1466,6 @@ try{await sb.auth.admin.signUp({email:username+'@sois.local',password:password})
 }
 DB_C.users=[];closeModal();toast('User disimpan');renderMasterData();
 }
-// ---------- 4P ----------
 function open4PForm(eid){
 const m=eid?DB_C.items4p.find(x=>x.id_item===eid):null;
 let h='<div class="modal-title">'+(m?'Edit':'Tambah')+' 4P Criteria</div>';
@@ -1690,7 +1493,6 @@ await sb.from('master_4p').insert({category_4p:category_4p,sub_category:sub_cate
 }
 DB_C.items4p=[];closeModal();toast('4P Criteria disimpan');renderMasterData();
 }
-// ---------- HAPUS GENERIC ----------
 async function hapusData(table, col, id){
 openModal('<div class="modal-title">Hapus Data?</div><p style="color:var(--fg2);margin-bottom:18px">Data yang dihapus tidak bisa dikembalikan.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="konfirmasiHapus(\''+table+'\',\''+col+'\','+id+')">Hapus</button></div>');
 }
@@ -1703,7 +1505,6 @@ if(table==='master_user')DB_C.users=[];
 if(table==='master_4p')DB_C.items4p=[];
 closeModal();toast('Data dihapus');renderMasterData();
 }
-// ==================== INIT ====================
 loadConfig();
 </script>
 </body>
