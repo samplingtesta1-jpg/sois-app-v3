@@ -666,47 +666,119 @@ const{data:v}=await sb.from('visit').insert({jadwal_id:sid,counter_id:s.counter_
 closeModal();openVisitObservation(v.id_visit);
 }
 async function openVisitObservation(vid){
-await loadCache();
-const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
-const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
-let h='<div class="modal-title">Observation - '+cn(v.counter_id)+'</div><div id="obsList">';
-if(obs&&obs.length){
-obs.forEach((o,i)=>{
-const m=fp(o.item_id);
-h+='<div class="card" style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:7px"><div><div style="font-size:12px;font-weight:600">'+m.item_check+'</div><div style="font-size:10px;color:var(--muted)">'+m.category_4p+' / '+m.sub_category+'</div></div><div style="display:flex;gap:3px"><button class="btn btn-xs '+(o.status==='PASS'?'btn-p':'btn-s')+'" onclick="setObsSt('+vid+','+o.id_detail+',\'PASS\')">PASS</button><button class="btn btn-xs '+(o.status==='FAIL'?'btn-d':'btn-s')+'" onclick="setObsSt('+vid+','+o.id_detail+',\'FAIL\')">FAIL</button></div></div>';
-if(o.status==='FAIL'){
-h+='<div class="fg" style="margin-bottom:6px"><label>Problem</label><input type="text" value="'+(o.problem||'')+'" onchange="setObsF('+o.id_detail+',\'problem\',this.value)"></div>';
-h+='<div class="fg" style="margin-bottom:6px"><label>Root Cause</label><input type="text" value="'+(o.root_cause||'')+'" onchange="setObsF('+o.id_detail+',\'root_cause\',this.value)"></div>';
-h+='<div class="fg" style="margin-bottom:6px"><label>Impact</label><input type="text" value="'+(o.impact||'')+'" onchange="setObsF('+o.id_detail+',\'impact\',this.value)"></div>';
-h+='<div class="fg" style="margin-bottom:0"><label>Recommendation</label><input type="text" value="'+(o.recommendation||'')+'" onchange="setObsF('+o.id_detail+',\'recommendation\',this.value)"></div>';
+    await loadCache();
+    const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+    const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+    
+    let h='<div class="modal-title">Observation - '+cn(v.counter_id)+'</div><div id="obsList">';
+    
+    if(obs&&obs.length){
+        obs.forEach((o,i)=>{
+            const m=fp(o.item_id);
+            // Tentukan warna tombol berdasarkan status
+            const isFail = o.status === 'FAIL';
+            
+            h+=`<div class="card" style="margin-bottom:8px; border-left: 4px solid ${isFail ? 'var(--danger)' : 'var(--pass)'}">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:7px">
+                    <div>
+                        <div style="font-size:12px;font-weight:600">${m.item_check}</div>
+                        <div style="font-size:10px;color:var(--muted)">${m.category_4p} / ${m.sub_category}</div>
+                    </div>
+                    <div style="display:flex;gap:3px">
+                        <button class="btn btn-xs ${!isFail?'btn-p':'btn-s'}" onclick="setObsSt(${vid},${o.id_detail},'PASS')">PASS</button>
+                        <button class="btn btn-xs ${isFail?'btn-d':'btn-s'}" onclick="setObsSt(${vid},${o.id_detail},'FAIL')">FAIL</button>
+                    </div>
+                </div>`;
+                
+            if(isFail){
+                // Kolom Input Detail
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Problem</label><input type="text" id="prob_${o.id_detail}" value="${o.problem||''}"></div>`;
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Root Cause</label><input type="text" id="rc_${o.id_detail}" value="${o.root_cause||''}"></div>`;
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Impact</label><input type="text" id="imp_${o.id_detail}" value="${o.impact||''}"></div>`;
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Recommendation</label><input type="text" id="rec_${o.id_detail}" value="${o.recommendation||''}"></div>`;
+                
+                // Upload Foto Bukti Temuan (Resolusi Rendah/Kompresi)
+                h+=`<div class="fg" style="margin-bottom:0">
+                        <label>Bukti Foto Temuan (Max 250KB)</label>
+                        <input type="file" id="photo_${o.id_detail}" accept="image/*" capture="environment" onchange="previewPhoto(this, 'prev_${o.id_detail}')">
+                        <div id="prev_${o.id_detail}" style="margin-top:5px">
+                            ${o.evidence_photo ? `<img src="${getIkUrl(o.evidence_photo)}" style="height:60px;border-radius:4px;object-fit:cover">` : ''}
+                        </div>
+                    </div>`;
+            }
+            h+='</div>';
+        });
+    }
+    h+='</div>';
+    h+='<div style="display:flex;gap:7px;margin-top:14px"><button class="btn btn-s btn-full" onclick="renderVisit();closeModal()">Cancel</button><button class="btn btn-p btn-full" onclick="saveVisitObs('+vid+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+    openModal(h);
 }
-h+='</div>';
-});
-}
-h+='</div>';
-h+='<div style="display:flex;gap:7px;margin-top:14px"><button class="btn btn-s btn-full" onclick="renderVisit();closeModal()">Cancel</button><button class="btn btn-p btn-full" onclick="saveVisitObs('+vid+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
-openModal(h);
+
+// Helper untuk preview foto sederhana
+function previewPhoto(input, prevId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(prevId).innerHTML = `<img src="${e.target.result}" style="height:60px;border-radius:4px;object-fit:cover">`;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 async function setObsSt(vid,did,st){
 await sb.from('visit_detail').update({status:st,problem:st==='PASS'?'':undefined,root_cause:st==='PASS'?'':undefined,impact:st==='PASS'?'':undefined,recommendation:st==='PASS'?'':undefined}).eq('id_detail',did);
 openVisitObservation(vid);
 }
-async function setObsF(did,field,val){await sb.from('visit_detail').update({[field]:val}).eq('id_detail',did)}
-async function saveVisitObs(vid){closeModal();toast('Visit disimpan sebagai draft');renderVisit()}
-async function viewVisitDetail(vid){
-await loadCache();
-const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
-const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
-const ed=canEdit(v.status);
+async function saveVisitObs(vid){
+    toast('Menyimpan observasi...', 'info');
+    const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+    
+    // Loop untuk memproses setiap item observasi
+    for(const o of obs){
+        if(o.status === 'FAIL'){
+            // Ambil nilai dari input ID yang baru kita buat
+            const problem = document.getElementById(`prob_${o.id_detail}`)?.value || '';
+            const rootCause = document.getElementById(`rc_${o.id_detail}`)?.value || '';
+            const impact = document.getElementById(`imp_${o.id_detail}`)?.value || '';
+            const rec = document.getElementById(`rec_${o.id_detail}`)?.value || '';
+            const photoInput = document.getElementById(`photo_${o.id_detail}`);
+            
+            let photoUrl = o.evidence_photo; // Keep old photo if exists
+            
+            // Proses Upload Foto Baru jika ada
+            if(photoInput && photoInput.files && photoInput.files[0]){
+                toast(`Mengompres foto untuk ${o.id_detail}...`, 'info');
+                const compressedBlob = await compressImage(photoInput.files[0]);
+                const path = `visit_evidence/${vid}_${o.id_detail}_${Date.now()}.jpg`;
+                
+                const { data: upData, error: upErr } = await sb.storage.from('validation').upload(path, compressedBlob, { contentType: 'image/jpeg' });
+                if(!upErr){
+                    const { data: urlData } = sb.storage.from('validation').getPublicUrl(path);
+                    photoUrl = urlData.publicUrl;
+                } else {
+                    toast(`Gagal upload foto ${o.id_detail}: ${upErr.message}`, 'error');
+                }
+            }
 
-let h='<button class="detail-back" onclick="renderVisit();closeModal()"><i class="fas fa-arrow-left"></i> Kembali</button>';
-h+='<div class="card"><div class="card-header"><div class="card-title">'+cn(v.counter_id)+'</div>'+sbadge(v.status)+'</div>';
-h+='<div class="ds"><div class="dl">Tanggal</div><div class="dv">'+fmtDF(v.tanggal)+'</div></div>';
-h+='<div class="ds"><div class="dl">PIC</div><div class="dv">'+un(v.pic_id)+'</div></div>';
-h+='<div class="ds"><div class="dl">Waktu</div><div class="dv">'+v.check_in+' - '+v.check_out+'</div></div>';
-if(v.photo_url)h+='<div class="ds"><div class="dl">Foto Cover</div><div class="dv"><img src="'+getIkUrl(v.photo_url)+'" style="max-width:100%;border-radius:8px;margin-top:4px"></div></div>';
-h+='</div>';
-
+            // Update data ke database
+            await sb.from('visit_detail').update({
+                problem: problem,
+                root_cause: rootCause,
+                impact: impact,
+                recommendation: rec,
+                evidence_photo: photoUrl
+            }).eq('id_detail', o.id_detail);
+        } else {
+            // Jika PASS, kosongkan field detail
+            await sb.from('visit_detail').update({
+                problem: '', root_cause: '', impact: '', recommendation: '', evidence_photo: null
+            }).eq('id_detail', o.id_detail);
+        }
+    }
+    
+    closeModal();
+    toast('Observasi berhasil disimpan');
+    renderVisit();
+}
 // GROUPING LOGIC START
 if(obs && obs.length > 0) {
     // Siapkan container untuk 4 kategori
