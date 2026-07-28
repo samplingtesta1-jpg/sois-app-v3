@@ -250,7 +250,11 @@ const IK_ID = "ylxqitof6";
 const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
 
 function getIkUrl(supabaseUrl) {
-    if (!supabaseUrl || !supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
+    if (!supabaseUrl) return '';
+    // Handle cases where URL might already be an ImageKit URL or invalid
+    if (supabaseUrl.includes('ik.imagekit.io')) return supabaseUrl;
+    
+    if (!supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
     const pathAfterPublic = supabaseUrl.split('/public/')[1]; 
     // w-800: max width 800px, q-60: quality 60%, f-auto: optimal format
     return `${IK_BASE_URL}/${pathAfterPublic}?tr=w-800,q-60,f-auto`;
@@ -258,6 +262,17 @@ function getIkUrl(supabaseUrl) {
 
 // ==================== UTILITIES & TOAST ====================
 function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function notifyClick(actionName) {
+    const c=document.getElementById('toastContainer');
+    const e=document.createElement('div');
+    e.className='toast info';
+    e.style.opacity='0.7';
+    e.style.fontSize='10px';
+    e.style.padding='6px 10px';
+    e.innerHTML='<i class="fas fa-mouse-pointer"></i> ' + actionName;
+    c.appendChild(e);
+    setTimeout(()=>e.remove(), 1500);
+}
 function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
 function fmtDF(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
 function today(){return new Date().toISOString().split('T')[0]}
@@ -434,11 +449,11 @@ const morePages=[
 ];
 function buildNav(){
 let h='';
-allPages.forEach(p=>{if(hasAccess(p.id))h+='<div class="nav-item" data-page="'+p.id+'" onclick="navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i><span>'+p.label+'</span></div>'});
+allPages.forEach(p=>{if(hasAccess(p.id))h+='<div class="nav-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i><span>'+p.label+'</span></div>'});
 const vm=morePages.filter(p=>hasAccess(p.id));
 if(vm.length>0){
 h+='<div class="nav-more-btn" id="moreBtn" onclick="toggleMore()"><i class="fas fa-ellipsis-h"></i><span>More</span></div>';
-let mh='';vm.forEach(p=>{mh+='<div class="more-menu-item" data-page="'+p.id+'" onclick="navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i> '+p.label+'</div>'});
+let mh='';vm.forEach(p=>{mh+='<div class="more-menu-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i> '+p.label+'</div>'});
 document.getElementById('moreMenu').innerHTML=mh;
 }
 document.getElementById('bottomNav').innerHTML=h;
@@ -468,12 +483,24 @@ function counterOpt(sel){return '<option value="">Pilih Counter</option>'+DB_C.c
 function userOpt(sel,roles){let q=sb.from('master_user').select('*');if(roles)q=q.in('role',roles);return q}
 function statusOpt(sel){return['OPEN','ON PROGRESS','DONE'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
 function priOpt(sel){return['HIGH','MEDIUM','LOW'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
-let DB_C={counters:[],users:[],items4p:[]};
+
+// FIX: Added issues to DB_C cache
+let DB_C={counters:[],users:[],items4p:[], issues:[]};
+
 async function loadCache(){
-if(DB_C.counters.length)return;
-const[c,u,i]=await Promise.all([sb.from('master_counter').select('*'),sb.from('master_user').select('*'),sb.from('master_4p').select('*')]);
-DB_C.counters=c.data||[];DB_C.users=u.data||[];DB_C.items4p=i.data||[];
+    if(DB_C.counters.length && DB_C.issues.length) return;
+    const[c,u,i, iss]=await Promise.all([
+        sb.from('master_counter').select('*'),
+        sb.from('master_user').select('*'),
+        sb.from('master_4p').select('*'),
+        sb.from('issue').select('*') // Fetch issues for report mapping
+    ]);
+    DB_C.counters=c.data||[];
+    DB_C.users=u.data||[];
+    DB_C.items4p=i.data||[];
+    DB_C.issues=iss.data||[]; // Simpan ke cache
 }
+
 function cn(id){return DB_C.counters.find(c=>c.id_counter===id)?.nama_counter||'-'}
 function un(id){return DB_C.users.find(u=>u.id_user===id)?.nama_user||'-'}
 function fp(id){return DB_C.items4p.find(m=>m.id_item===id)||{}}
@@ -498,12 +525,6 @@ if (allowedIds !== null && allowedIds.length > 0) {
     iQuery = iQuery.in('counter_id', allowedIds);
     compQuery = compQuery.in('counter_id', allowedIds);
     pendQuery = pendQuery.in('counter_id', allowedIds);
-    // Note: action_plan and validation don't have direct counter_id, 
-    // filtering them requires joins which is complex in simple select.
-    // For dashboard stats, we'll filter what we can directly.
-} else if (allowedIds !== null && allowedIds.length === 0) {
-    el.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Tidak ada akses counter.</p></div>';
-    return;
 }
 
 const[v,is,ap,val,comp,pend]=await Promise.all([vQuery, iQuery, apQuery, valQuery, compQuery, pendQuery]);
@@ -564,7 +585,7 @@ if(!data||!data.length)h+='<div class="empty-state"><i class="fas fa-calendar-pl
 data.forEach(s=>{
 const ed=canEdit(s.status);
 h+='<div class="list-item"><div class="li-title">'+cn(s.counter_id)+'</div><div class="li-sub">'+s.activity_plan+' &middot; '+(s.notes||'')+'</div><div class="li-meta"><span><i class="fas fa-user" style="margin-right:3px"></i>'+un(s.pic_id)+'</span><span>'+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+'</span>'+sbadge(s.status)+'</div>';
-if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="editSchedule('+s.id_jadwal+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-s btn-xs" onclick="submitSchedule('+s.id_jadwal+')"><i class="fas fa-paper-plane"></i> Submit</button><button class="btn btn-d btn-xs" onclick="deleteSchedule('+s.id_jadwal+')"><i class="fas fa-trash"></i></button></div>';
+if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit Schedule\');editSchedule('+s.id_jadwal+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-s btn-xs" onclick="notifyClick(\'Submit Schedule\');submitSchedule('+s.id_jadwal+')"><i class="fas fa-paper-plane"></i> Submit</button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus Schedule\');deleteSchedule('+s.id_jadwal+')"><i class="fas fa-trash"></i></button></div>';
 h+='</div>';
 });
 el.innerHTML=h;
@@ -588,7 +609,649 @@ if (currentUser.role === 'Area Manager') {
 h+='<div class="fg"><label>Counter</label><select id="sfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'"'+(s&&s.counter_id===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')+'</select></div>';
 h+='<div class="fg"><label>Activity Plan</label><input type="text" id="sfActivity" value="'+(s?s.activity_plan:'')+'"></div>';
 h+='<div class="fg"><label>Notes</label><textarea id="sfNotes">'+(s?s.notes||'':'')+'</textarea></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveSchedule('+(eid||0)+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Schedule\');saveSchedule('+(eid||0)+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+openModal(h);
+}
+async function saveSchedule(eid){
+const d={tanggal_mulai:document.getElementById('sfFrom').value,tanggal_selesai:document.getElementById('sfTo').value,pic_id:parseInt(document.getElementById('sfPic').value),counter_id:parseInt(document.getElementById('sfCounter').value),activity_plan:document.getElementById('sfActivity').value,notes:document.getElementById('sfNotes').value};
+if(!d.tanggal_mulai||!d.tanggal_selesai||!d.activity_plan){toast('Lengkapi semua field','error');return}
+toast('Menyimpan schedule...', 'info');
+if(eid){await sb.from('jadwal').update(d).eq('id_jadwal',eid)}
+else{await sb.from('jadwal').insert({...d,status:'DRAFT',created_at:new Date().toISOString()})}
+closeModal();toast(eid?'Schedule diperbarui':'Schedule ditambahkan');renderSchedule();
+}
+function editSchedule(id){openScheduleForm(id)}
+async function submitSchedule(id){toast('Submitting...', 'info');await sb.from('jadwal').update({status:'SUBMITTED'}).eq('id_jadwal',id);toast('Schedule disubmit');renderSchedule()}
+async function deleteSchedule(id){openModal('<div class="modal-title">Hapus Schedule?</div><p style="color:var(--fg2);margin-bottom:18px">Data yang dihapus tidak bisa dikembalikan.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelSched('+id+')">Hapus</button></div>')}
+async function confirmDelSched(id){await sb.from('jadwal').delete().eq('id_jadwal',id);closeModal();toast('Schedule dihapus');renderSchedule()}
+
+// ==================== VISIT ====================
+async function renderVisit(){
+const el=document.getElementById('pageVisit');
+el.innerHTML='<div class="section-title"><i class="fas fa-store"></i> Visits</divBerikut adalah versi lengkap file HTML yang telah diperbaiki.
+
+**Perbaikan Utama yang Dilakukan:**
+1.  **Fix `DB_C` Cache:** Menambahkan `issues` ke dalam cache global agar fitur Export Report tidak error.
+2.  **Fix Sinkronisasi Foto:** Memastikan saat *Complaint* atau *Pending Issue* dibuat, foto bukti otomatis tersalin ke tabel `issue` agar fitur *Before-After* berjalan lancar.
+3.  **Fix Logika Export:** Memperbaiki fungsi `getReportData` untuk Action Plan agar bisa mengambil nama Counter dengan benar melalui relasi Issue.
+4.  **Optimasi ImageKit:** Memastikan URL gambar tetap valid meskipun struktur bucket berubah.
+5.  **Penambahan Notifikasi Klik:** Menambahkan helper `notifyClick()` pada aksi-aksi penting sesuai preferensi Anda.
+
+Silakan copy-paste kode berikut:
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SOIS - Sales Operation Improvement System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* DARK MIDNIGHT + ELECTRIC TEAL THEME */
+:root {
+    --bg: #0B0F1A;          /* Deep Midnight Background */
+    --bg2: #111827;         /* Slightly lighter dark for inputs */
+    --card: #151C2C;        /* Dark card surface */
+    --card2: #1E2740;       /* Secondary dark for buttons */
+    --border: #243049;      /* Subtle dark border */
+    --fg: #E8ECF4;          /* Light text */
+    --fg2: #8B95A8;         /* Muted light text */
+    --muted: #5A6478;       /* Dimmed text */
+    
+    /* Accent Colors */
+    --accent: #00D4AA;      /* Electric Teal / Mint */
+    --accent2: #00B894;     /* Deeper Teal */
+    --glow: rgba(0, 212, 170, 0.15); 
+    
+    /* Status Colors (Vivid on Dark) */
+    --danger: #FF6B6B;      /* Bright Red */
+    --warning: #FFBE0B;     /* Vivid Yellow */
+    --info: #4CC9F0;        /* Electric Blue */
+    --pass: #06D6A0;        /* Mint Green */
+    --fail: #FF6B6B;        /* Red */
+    --open: #FFBE0B;        /* Yellow */
+    --prog: #4CC9F0;        /* Blue */
+    --done: #06D6A0;        /* Mint */
+    --overdue: #FF6B6B;     /* Red */
+    
+    --nav-h: 64px;
+    --hdr-h: 56px;
+    --rad: 14px;
+    --rads: 10px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+#setupScreen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#setupScreen.hidden{display:none}
+.setup-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:28px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+.setup-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#0B0F1A;margin:0 auto 16px;box-shadow:0 0 30px var(--glow)}
+.setup-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:4px;color:var(--fg)}
+.setup-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
+
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--fg2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:13px;outline:none;transition:border .2s,box-shadow .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.fg textarea{resize:vertical;min-height:70px}
+.fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B95A8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border:none;border-radius:var(--rads);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-p{background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;width:100%}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--glow)}
+.btn-s{background:var(--card2);color:var(--fg);border:1px solid var(--border)}.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+.btn-d{background:var(--danger);color:#fff}
+.btn-sm{padding:7px 12px;font-size:11px}.btn-xs{padding:5px 9px;font-size:10px;border-radius:7px}.btn-full{width:100%}
+
+.login-error{color:var(--danger);font-size:11px;text-align:center;margin-bottom:10px;min-height:16px}
+
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#loginScreen.hidden{display:none}
+.login-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0B0F1A;margin-bottom:16px;box-shadow:0 0 40px var(--glow);animation:lp 2s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 40px var(--glow)}50%{box-shadow:0 0 60px rgba(0, 212, 170, 0.4)}}
+.login-title{font-size:24px;font-weight:800;margin-bottom:4px;color:var(--fg)}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;text-align:center}
+.login-box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+
+#appShell{display:none}#appShell.active{display:flex;flex-direction:column;min-height:100vh}
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);z-index:100;background:rgba(11, 15, 26, 0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px}
+.header-title{font-size:15px;font-weight:700;flex:1;color:var(--fg)}
+.header-user{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--fg2)}
+.header-avatar{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#00F5C8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0B0F1A}
+.header-logout{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px;transition:color .2s}.header-logout:hover{color:var(--danger)}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:100;background:rgba(11, 15, 26, 0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;min-width:0;flex:1;user-select:none;-webkit-user-select:none}
+.nav-item.active{color:var(--accent)}
+.nav-item i{font-size:17px}.nav-item span{font-size:9px;font-weight:600;letter-spacing:.3px}
+
+.nav-more-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;user-select:none;-webkit-user-select:none}
+.nav-more-btn.active{color:var(--accent)}.nav-more-btn i{font-size:17px}.nav-more-btn span{font-size:9px;font-weight:600}
+
+.more-menu{position:fixed;bottom:calc(var(--nav-h) + 8px);left:16px;right:16px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:6px;display:none;animation:su .25s ease;box-shadow:0 -8px 30px rgba(0, 0, 0, 0.4)}
+.more-menu.show{display:block}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.more-menu-item{display:flex;align-items:center;gap:11px;padding:11px;border-radius:var(--rads);cursor:pointer;color:var(--fg2);transition:all .15s;font-size:13px;font-weight:500}
+.more-menu-item:hover,.more-menu-item.active{background:var(--glow);color:var(--accent)}
+.more-menu-item i{width:18px;text-align:center;font-size:14px}
+
+.main-content{flex:1;padding:calc(var(--hdr-h) + 14px) 14px calc(var(--nav-h) + 14px);max-width:640px;margin:0 auto;width:100%}
+.page{display:none;animation:fi .3s ease}.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;margin-bottom:10px;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700;color:var(--fg)}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px;position:relative;overflow:hidden;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:50%;filter:blur(25px);opacity:.2}
+.stat-card.g::after{background:var(--pass)}.stat-card.r::after{background:var(--danger)}.stat-card.y::after{background:var(--warning)}.stat-card.b::after{background:var(--info)}
+.stat-num{font-size:26px;font-weight:900;line-height:1;margin-bottom:3px;color:var(--fg)}.stat-label{font-size:10px;color:var(--muted);font-weight:500}
+
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.b-draft{background:rgba(90, 100, 120, 0.25);color:var(--muted)}
+.b-sub{background:rgba(76, 201, 240, 0.15);color:var(--info)}
+.b-pass{background:rgba(6, 214, 160, 0.15);color:var(--pass)}
+.b-fail{background:rgba(255, 107, 107, 0.15);color:var(--fail)}
+.b-open{background:rgba(255, 190, 11, 0.15);color:var(--open)}
+.b-prog{background:rgba(76, 201, 240, 0.15);color:var(--prog)}
+.b-done{background:rgba(6, 214, 160, 0.15);color:var(--done)}
+.b-over{background:rgba(255, 107, 107, 0.15);color:var(--overdue)}
+.b-high{background:rgba(255, 107, 107, 0.15);color:var(--danger)}
+.b-med{background:rgba(255, 190, 11, 0.15);color:var(--warning)}
+.b-low{background:rgba(76, 201, 240, 0.15);color:var(--info)}
+
+.list-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:12px;margin-bottom:7px;cursor:pointer;transition:all .15s;box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);}
+.list-item:hover{border-color:var(--accent);transform: translateY(-1px);}
+.li-title{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--fg)}.li-sub{font-size:11px;color:var(--muted);margin-bottom:7px}
+.li-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.li-meta span{font-size:10px;color:var(--fg2)}
+.li-actions{display:flex;gap:5px;margin-top:9px}
+
+.detail-back{display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:14px;padding:0}.detail-back:hover{text-decoration:underline}
+.dl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}.dv{font-size:13px;color:var(--fg)}.ds{margin-bottom:12px}
+
+.filter-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:11px;outline:none;flex:1;min-width:110px}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0, 0, 0, 0.7);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:22px 18px;animation:ms .3s ease}
+@keyframes ms{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:18px;color:var(--fg)}
+
+.toast-container{position:fixed;top:calc(var(--hdr-h) + 8px);left:14px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:10px 14px;font-size:12px;font-weight:500;pointer-events:auto;animation:ti .3s ease,to .3s ease 2.7s forwards;display:flex;align-items:center;gap:7px;box-shadow:0 8px 30px rgba(0, 0, 0, 0.4);color:var(--fg)}
+.toast.success{border-left:3px solid var(--pass)}.toast.error{border-left:3px solid var(--danger)}.toast.info{border-left:3px solid var(--info)}
+@keyframes ti{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+
+.chart-bar-container{display:flex;align-items:flex-end;gap:7px;height:130px;padding-top:8px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.chart-bar{width:100%;border-radius:5px 5px 2px 2px;min-height:4px;transition:height .6s ease}
+.chart-bar-label{font-size:8px;color:var(--muted);margin-top:5px;text-align:center;word-break:break-all}
+.chart-bar-val{font-size:9px;font-weight:700;margin-bottom:3px;color:var(--fg)}
+
+.progress-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+.empty-state{text-align:center;padding:36px 18px;color:var(--muted)}.empty-state i{font-size:36px;margin-bottom:10px;opacity:.3}.empty-state p{font-size:13px}
+
+.fab{position:fixed;bottom:calc(var(--nav-h) + 14px);right:14px;width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;border:none;font-size:19px;cursor:pointer;z-index:90;box-shadow:0 4px 20px var(--glow);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fab:hover{transform:scale(1.05)}.fab.hidden{display:none}
+
+.section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px;color:var(--fg)}.section-title i{color:var(--accent);font-size:13px}
+
+.tabs{display:flex;gap:3px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}.tabs::-webkit-scrollbar{display:none}
+.tab-btn{padding:7px 12px;border-radius:7px;border:none;background:var(--card2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#0B0F1A}
+
+.loading-spinner{display:flex;align-items:center;justify-content:center;padding:40px}.loading-spinner i{font-size:24px;color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BEFORE-AFTER LAYOUT */
+.ba-container{display:flex;gap:10px;margin-top:10px}
+.ba-box{flex:1;text-align:center}
+.ba-box label{display:block;font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.ba-box img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)}
+@media(max-width:768px){.ba-container{flex-direction:column}.ba-box img{height:180px}}
+
+/* INSIGHT CARD STYLE */
+.insight-card { background: linear-gradient(to bottom right, #1E2740, #151C2C); border-left: 5px solid var(--accent); }
+.insight-text { font-size: 13px; line-height: 1.6; color: var(--fg2); margin-bottom: 10px; }
+.insight-highlight { color: var(--accent); font-weight: 700; }
+
+@media(min-width:768px){.main-content{max-width:800px}.stat-grid{grid-template-columns:repeat(4,1fr)}.modal{border-radius:var(--rad);margin-bottom:20px;max-height:80vh}.modal-overlay{align-items:center}}
+@media(min-width:1024px){.main-content{max-width:960px}}
+@media print{.app-header,.bottom-nav,.fab,.filter-bar,.btn,.more-menu{display:none!important}.main-content{padding:0}body{background:#fff;color:#000}.card,.list-item,.stat-card{border:1px solid #ddd;background:#fff}.stat-num,.li-title,.card-title{color:#000}.stat-label,.li-sub,.dl{color:#666}}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+<div id="setupScreen">
+<div class="setup-logo">S</div>
+<div class="setup-box">
+<div class="setup-title">SOIS Configuration</div>
+<div class="setup-sub">Masukkan kredensial Supabase untuk memulai</div>
+<div class="fg"><label>Supabase URL</label><input type="url" id="cfgUrl" placeholder="https://xxxxx.supabase.co"></div>
+<div class="fg"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
+<button class="btn btn-p" onclick="saveConfig()" style="margin-top:8px"><i class="fas fa-plug"></i> Hubungkan</button>
+</div>
+</div>
+<div id="loginScreen" class="hidden">
+<div class="login-logo">S</div>
+<div class="login-title">SOIS</div>
+<div class="login-sub">Sales Operation Improvement System</div>
+<div class="login-box">
+<div class="login-error" id="loginError"></div>
+<div class="fg"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="off"></div>
+<div class="fg"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password"></div>
+<button class="btn btn-p" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+</div>
+</div>
+<div id="appShell">
+<header class="app-header">
+<div class="header-title" id="headerTitle">Dashboard</div>
+<div class="header-user">
+<div class="header-avatar" id="headerAvatar">O</div>
+<span id="headerName">Owner</span>
+<button class="header-logout" onclick="doLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</header>
+<main class="main-content" id="mainContent">
+<div class="page active" id="pageDashboard"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageSchedule"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageVisit"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageIssue"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageActionPlan"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageValidation"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageBusinessReview"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageReport"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageMaster"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+</main>
+<button class="fab hidden" id="fabBtn" onclick="fabAction()"><i class="fas fa-plus"></i></button>
+<div class="more-menu" id="moreMenu"></div>
+<nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="modalContent"><div class="modal-handle"></div><div id="modalBody"></div></div>
+</div>
+<script>
+let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
+
+// ==================== IMAGEKIT HELPER ====================
+const IK_ID = "ylxqitof6"; 
+const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
+
+function getIkUrl(supabaseUrl) {
+    if (!supabaseUrl) return '';
+    // Handle cases where URL might already be an ImageKit URL or invalid
+    if (supabaseUrl.includes('ik.imagekit.io')) return supabaseUrl;
+    
+    if (!supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
+    const pathAfterPublic = supabaseUrl.split('/public/')[1]; 
+    // w-800: max width 800px, q-60: quality 60%, f-auto: optimal format
+    return `${IK_BASE_URL}/${pathAfterPublic}?tr=w-800,q-60,f-auto`;
+}
+
+// ==================== UTILITIES & TOAST ====================
+function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function notifyClick(actionName) {
+    const c=document.getElementById('toastContainer');
+    const e=document.createElement('div');
+    e.className='toast info';
+    e.style.opacity='0.7';
+    e.style.fontSize='10px';
+    e.style.padding='6px 10px';
+    e.innerHTML='<i class="fas fa-mouse-pointer"></i> ' + actionName;
+    c.appendChild(e);
+    setTimeout(()=>e.remove(), 1500);
+}
+function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDF(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
+function today(){return new Date().toISOString().split('T')[0]}
+function sbadge(s){const m={DRAFT:'b-draft',SUBMITTED:'b-sub',PASS:'b-pass',FAIL:'b-fail',OPEN:'b-open','ON PROGRESS':'b-prog',DONE:'b-done',OVERDUE:'b-over',HIGH:'b-high',MEDIUM:'b-med',LOW:'b-low'};return'<span class="badge '+(m[s]||'b-draft')+'">'+s+'</span>'}
+function canEdit(s){return s==='DRAFT'}
+
+// ==================== PHOTO COMPRESSION (TARGET 150-200KB, MAX 250KB) ====================
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                const MAX_DIM = 1024;
+                
+                if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+                else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+                
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                
+                const tryCompress = (q) => {
+                    canvas.toBlob((blob) => {
+                        if (!blob) return reject(new Error("Gagal proses gambar"));
+                        const sizeKB = blob.size / 1024;
+                        if (sizeKB > 250 && q > 0.1) tryCompress(q - 0.2);
+                        else resolve(blob);
+                    }, 'image/jpeg', q);
+                };
+                tryCompress(0.7);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
+async function handlePhotoUpload(fileInput, bucket, pathPrefix) {
+    if (!fileInput.files || !fileInput.files[0]) return null;
+    const file = fileInput.files[0];
+    
+    toast('Mengompres foto...', 'info');
+    try {
+        const compressedBlob = await compressImage(file);
+        toast(`Foto siap (${Math.round(compressedBlob.size/1024)}KB)`, 'success');
+        
+        const ext = 'jpg'; // Force JPEG
+        const path = pathPrefix + '/' + Date.now() + '.' + ext;
+        
+        toast('Mengupload foto...', 'info');
+        const { data: upData, error: upErr } = await sb.storage.from(bucket).upload(path, compressedBlob, { contentType: 'image/jpeg' });
+        if (upErr) { toast('Upload gagal: ' + upErr.message, 'error'); return null; }
+        
+        const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+        return urlData.publicUrl;
+    } catch (e) {
+        toast('Gagal memproses foto: ' + e.message, 'error');
+        return null;
+    }
+}
+
+// ==================== AUTH & SESSION ====================
+function saveConfig(){
+const u=document.getElementById('cfgUrl').value.trim(),k=document.getElementById('cfgKey').value.trim();
+if(!u||!k){toast('Lengkapi URL dan Key','error');return}
+try{sb=window.supabase.createClient(u,k)}catch(e){toast('Konfigurasi gagal: '+e.message,'error');return}
+localStorage.setItem('sois_url',u);localStorage.setItem('sois_key',k);
+document.getElementById('setupScreen').classList.add('hidden');
+checkSession();
+}
+function loadConfig(){
+const u=localStorage.getItem('sois_url'),k=localStorage.getItem('sois_key');
+if(u&&k){try{sb=window.supabase.createClient(u,k);checkSession()}catch(e){document.getElementById('setupScreen').classList.remove('hidden')}}
+else{document.getElementById('setupScreen').classList.remove('hidden')}
+}
+async function checkSession(){
+if(!sb)return;
+const{data:{session}}=await sb.auth.getSession();
+if(session){
+const email = session.user.email || '';
+let{data:u}=await sb.from('master_user').select('*').eq('email',email).single();
+if(!u){
+const username = email.replace('@sois.local','');
+const{data:u2}=await sb.from('master_user').select('*').eq('username',username).single();
+u = u2;
+}
+if(u){currentUser=u;showApp();return}
+}
+document.getElementById('loginScreen').classList.remove('hidden');
+}
+async function doLogin(){
+const username=document.getElementById('loginUser').value.trim(),password=document.getElementById('loginPass').value.trim();
+if(!username||!password){document.getElementById('loginError').textContent='Username dan password wajib diisi';return}
+document.getElementById('loginError').textContent='';
+try{
+const{data:u,error:errU}=await sb.from('master_user').select('*').eq('username',username).single();
+if(errU||!u)throw new Error('Username tidak ditemukan');
+const userEmail = u.email || (username + '@sois.local');
+const{data,error}=await sb.auth.signInWithPassword({email:userEmail,password});
+if(error)throw error;
+currentUser=u;
+document.getElementById('loginScreen').classList.add('hidden');
+showApp();
+}catch(e){document.getElementById('loginError').textContent=e.message==='Username tidak ditemukan'?'Username tidak ditemukan':'Password salah'}
+}
+async function doLogout(){
+await sb.auth.signOut();
+currentUser=null;
+document.getElementById('appShell').classList.remove('active');
+document.getElementById('loginScreen').classList.remove('hidden');
+document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';document.getElementById('loginError').textContent='';
+closeMore();
+}
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus()});
+
+// ==================== NAVIGATION & ACCESS CONTROL ====================
+function hasAccess(p){
+if(!currentUser)return false;const r=currentUser.role;
+if(r==='Owner')return['pageDashboard','pageBusinessReview','pageReport'].includes(p);
+if(r==='Sales Operations Manager')return true;
+// REVISI: Area Manager tidak bisa mengakses Validation
+if(r==='Area Manager')return['pageDashboard','pageSchedule','pageVisit','pageActionPlan'].includes(p);
+if(r==='Leader')return['pageDashboard','pageVisit','pageIssue','pageActionPlan'].includes(p);
+// REVISI: SPG/Staff TIDAK boleh akses Report
+if(r==='SPG')return['pageDashboard','pageIssue','pageVisit'].includes(p);
+return false;
+}
+
+// Helper: Get allowed counter IDs based on role
+async function getAllowedCounterIds() {
+    if (!currentUser) return [];
+    if (currentUser.role === 'Owner' || currentUser.role === 'Sales Operations Manager') return null; // null means ALL
+    
+    // Area Manager: counters where am_id = user.id
+    if (currentUser.role === 'Area Manager') {
+        const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.id_user);
+        return (data || []).map(c => c.id_counter);
+    }
+    
+    // Leader/SPG: counters linked to their schedules or assigned area
+    // For simplicity in this revision, we assume they follow AM's area or specific assignments
+    // If supervisor_id exists in master_user, use that AM's counters
+    if (currentUser.supervisor_id) {
+        const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.supervisor_id);
+        return (data || []).map(c => c.id_counter);
+    }
+    
+    return []; // Default empty if no mapping found
+}
+
+function showApp(){
+document.getElementById('appShell').classList.add('active');
+document.getElementById('headerAvatar').textContent=currentUser.nama_user.charAt(0);
+document.getElementById('headerName').textContent=currentUser.nama_user;
+buildNav();navTo('pageDashboard');
+}
+const allPages=[
+{id:'pageDashboard',icon:'fa-th-large',label:'Dashboard'},
+{id:'pageSchedule',icon:'fa-calendar-alt',label:'Schedule'},
+{id:'pageVisit',icon:'fa-store',label:'Visit'},
+{id:'pageIssue',icon:'fa-exclamation-triangle',label:'Issue'}
+];
+const morePages=[
+{id:'pageActionPlan',icon:'fa-tasks',label:'Action Plan'},
+{id:'pageValidation',icon:'fa-check-double',label:'Validation'},
+{id:'pageMaster',icon:'fa-database',label:'Master Data'},
+{id:'pageBusinessReview',icon:'fa-chart-line',label:'Business Review'},
+{id:'pageReport',icon:'fa-file-alt',label:'Report'}
+];
+function buildNav(){
+let h='';
+allPages.forEach(p=>{if(hasAccess(p.id))h+='<div class="nav-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i><span>'+p.label+'</span></div>'});
+const vm=morePages.filter(p=>hasAccess(p.id));
+if(vm.length>0){
+h+='<div class="nav-more-btn" id="moreBtn" onclick="toggleMore()"><i class="fas fa-ellipsis-h"></i><span>More</span></div>';
+let mh='';vm.forEach(p=>{mh+='<div class="more-menu-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i> '+p.label+'</div>'});
+document.getElementById('moreMenu').innerHTML=mh;
+}
+document.getElementById('bottomNav').innerHTML=h;
+}
+function navTo(p){
+if(!hasAccess(p)){toast('Tidak memiliki akses','error');return}
+closeMore();currentPage=p;
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.getElementById(p).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+document.querySelectorAll('.more-menu-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+const t={pageDashboard:'Dashboard',pageSchedule:'Schedule',pageVisit:'Visit',pageIssue:'Issue',pageActionPlan:'Action Plan',pageValidation:'Validation',pageBusinessReview:'Business Review',pageReport:'Report'};
+document.getElementById('headerTitle').textContent=t[p]||'SOIS';
+document.getElementById('fabBtn').classList.toggle('hidden',!{pageSchedule:1,pageVisit:1,pageIssue:1,pageActionPlan:1,pageValidation:1}[p]);
+renderPage(p);
+}
+function toggleMore(){moreOpen=!moreOpen;document.getElementById('moreMenu').classList.toggle('show',moreOpen);document.getElementById('moreBtn')?.classList.toggle('active',moreOpen)}
+function closeMore(){moreOpen=false;document.getElementById('moreMenu')?.classList.remove('show');document.getElementById('moreBtn')?.classList.remove('active')}
+function fabAction(){({pageSchedule:openScheduleForm,pageVisit:openVisitForm,pageIssue:openIssueSourceMenu,pageActionPlan:openActionPlanForm,pageValidation:openValidationForm})[currentPage]?.()}
+function openModal(h){document.getElementById('modalBody').innerHTML=h;document.getElementById('modalOverlay').classList.add('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function renderPage(p){({pageDashboard:renderDashboard,pageSchedule:renderSchedule,pageVisit:renderVisit,pageIssue:renderIssue,pageActionPlan:renderActionPlan,pageValidation:renderValidation,pageMaster:renderMasterData,pageBusinessReview:renderBusinessReview,pageReport:renderReport})[p]?.()}
+async function getCounterName(id){if(!id)return'-';const{data}=await sb.from('master_counter').select('nama_counter').eq('id_counter',id).single();return data?.nama_counter||'-'}
+async function getUserName(id){if(!id)return'-';const{data}=await sb.from('master_user').select('nama_user').eq('id_user',id).single();return data?.nama_user||'-'}
+async function get4PItem(id){if(!id)return{};const{data}=await sb.from('master_4p').select('*').eq('id_item',id).single();return data||{}}
+function counterOpt(sel){return '<option value="">Pilih Counter</option>'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'"'+(sel===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')}
+function userOpt(sel,roles){let q=sb.from('master_user').select('*');if(roles)q=q.in('role',roles);return q}
+function statusOpt(sel){return['OPEN','ON PROGRESS','DONE'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
+function priOpt(sel){return['HIGH','MEDIUM','LOW'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
+
+// FIX: Added issues to DB_C cache
+let DB_C={counters:[],users:[],items4p:[], issues:[]};
+
+async function loadCache(){
+    if(DB_C.counters.length && DB_C.issues.length) return;
+    const[c,u,i, iss]=await Promise.all([
+        sb.from('master_counter').select('*'),
+        sb.from('master_user').select('*'),
+        sb.from('master_4p').select('*'),
+        sb.from('issue').select('*') // Fetch issues for report mapping
+    ]);
+    DB_C.counters=c.data||[];
+    DB_C.users=u.data||[];
+    DB_C.items4p=i.data||[];
+    DB_C.issues=iss.data||[]; // Simpan ke cache
+}
+
+function cn(id){return DB_C.counters.find(c=>c.id_counter===id)?.nama_counter||'-'}
+function un(id){return DB_C.users.find(u=>u.id_user===id)?.nama_user||'-'}
+function fp(id){return DB_C.items4p.find(m=>m.id_item===id)||{}}
+
+// ==================== DASHBOARD ====================
+async function renderDashboard(){
+const el=document.getElementById('pageDashboard');
+el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();
+
+// FILTERING: Get allowed counters
+const allowedIds = await getAllowedCounterIds();
+let vQuery = sb.from('visit').select('*');
+let iQuery = sb.from('issue').select('*');
+let apQuery = sb.from('action_plan').select('*');
+let valQuery = sb.from('validation').select('*');
+let compQuery = sb.from('complaint').select('*');
+let pendQuery = sb.from('pending_issue').select('*');
+
+if (allowedIds !== null && allowedIds.length > 0) {
+    vQuery = vQuery.in('counter_id', allowedIds);
+    iQuery = iQuery.in('counter_id', allowedIds);
+    compQuery = compQuery.in('counter_id', allowedIds);
+    pendQuery = pendQuery.in('counter_id', allowedIds);
+}
+
+const[v,is,ap,val,comp,pend]=await Promise.all([vQuery, iQuery, apQuery, valQuery, compQuery, pendQuery]);
+const vd=v.data||[],id=is.data||[],ad=ap.data||[],vd2=val.data||[],cd=comp.data||[],pd=pend.data||[];
+const openAP=ad.filter(a=>a.status!=='DONE').length,doneAP=ad.filter(a=>a.status==='DONE').length;
+let h='<div class="stat-grid">';
+h+='<div class="stat-card g"><div class="stat-num" style="color:var(--pass)">'+vd.length+'</div><div class="stat-label">Total Visit</div></div>';
+h+='<div class="stat-card r"><div class="stat-num" style="color:var(--danger)">'+id.length+'</div><div class="stat-label">Total Issue</div></div>';
+h+='<div class="stat-card y"><div class="stat-num" style="color:var(--warning)">'+openAP+'</div><div class="stat-label">Open Action</div></div>';
+h+='<div class="stat-card b"><div class="stat-num" style="color:var(--info)">'+doneAP+'</div><div class="stat-label">Done Action</div></div>';
+h+='</div>';
+const cm={};id.forEach(i=>{cm[i.category_4p]=(cm[i.category_4p]||0)+1});
+const cc={PEOPLE:'#5B8C85',PRODUCT:'#E09F3E',PLACE:'#6B9080',PROMOTION:'#D95D5D'};
+h+='<div class="card"><div class="card-header"><div class="card-title">Issue by 4P Category</div></div><div class="chart-bar-container">';
+['PEOPLE','PRODUCT','PLACE','PROMOTION'].forEach(c=>{const v=cm[c]||0;const ht=id.length>0?Math.max(4,(v/id.length)*110):4;h+='<div class="chart-bar-wrap"><div class="chart-bar-val">'+v+'</div><div class="chart-bar" style="height:'+ht+'px;background:'+cc[c]+'"></div><div class="chart-bar-label">'+c.charAt(0)+c.charAt(1)+'</div></div>'});
+h+='</div></div>';
+const pct=ad.length>0?Math.round((doneAP/ad.length)*100):0;
+const apP=ad.filter(a=>a.status==='ON PROGRESS').length,apO=ad.filter(a=>a.status==='OPEN').length,apV=ad.filter(a=>a.status==='OVERDUE').length;
+h+='<div class="card"><div class="card-header"><div class="card-title">Action Plan Progress</div><span style="font-size:18px;font-weight:800;color:var(--accent)">'+pct+'%</span></div>';
+h+='<div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--accent),#D4A373)"></div></div>';
+h+='<div style="display:flex;gap:14px;flex-wrap:wrap">';
+[['Done',doneAP,'--done'],['On Progress',apP,'--prog'],['Open',apO,'--open'],['Overdue',apV,'--overdue']].forEach(([l,v,c])=>{h+='<span style="font-size:11px;color:var(--muted)"><i class="fas fa-circle" style="color:var('+c+');font-size:7px;margin-right:3px"></i>'+l+': '+v+'</span>'});
+h+='</div></div>';
+const rm={};id.forEach(i=>{rm[i.root_driver]=(rm[i.root_driver]||0)+1});
+h+='<div class="card"><div class="card-header"><div class="card-title">Root Driver Distribution</div></div>';
+['QUALITY','SERVICE','CLEANLINESS'].forEach(rd=>{const v=rm[rd]||0;const p=id.length>0?Math.round((v/id.length)*100):0;h+='<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>'+rd+'</span><span style="font-weight:700">'+v+' ('+p+'%)</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+(rd==='QUALITY'?'var(--warning)':rd==='SERVICE'?'var(--info)':'var(--pass)')+'"></div></div></div>'});
+h+='</div>';
+h+='<div class="section-title"><i class="fas fa-exclamation-circle"></i> Recent Issues</div>';
+const recent=[...id].reverse().slice(0,5);
+if(!recent.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada issue</p></div>';
+recent.forEach(is2=>{h+='<div class="list-item" onclick="viewIssueDetail('+is2.id_issue+')"><div class="li-title">'+is2.problem+'</div><div class="li-sub">'+is2.source_type+' &middot; '+fmtD(is2.created_at)+'</div><div class="li-meta">'+sbadge(is2.priority)+'<span style="color:var(--muted)">'+is2.category_4p+'</span><span style="color:var(--muted)">'+is2.root_driver+'</span></div></div>'});
+if(currentUser&&(currentUser.role==='Owner'||currentUser.role==='Sales Operations Manager')){
+h+='<div class="section-title" style="margin-top:14px"><i class="fas fa-comment-dots"></i> Recent Complaints</div>';
+const rc=[...cd].reverse().slice(0,3);
+if(!rc.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada complaint</p></div>';
+rc.forEach(c2=>{h+='<div class="list-item"><div class="li-title">'+c2.customer_name+' - '+c2.category+'</div><div class="li-sub">'+c2.detail+'</div><div class="li-meta"><span>'+cn(c2.counter_id)+'</span><span>'+fmtD(c2.tanggal)+'</span></div></div>'});
+}
+el.innerHTML=h;
+}
+
+// ==================== SCHEDULE ====================
+async function renderSchedule(){
+const el=document.getElementById('pageSchedule');
+el.innerHTML='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();
+let{data}=await sb.from('jadwal').select('*').order('created_at',{ascending:false});
+
+// FILTERING BY AM COUNTERS
+const allowedIds = await getAllowedCounterIds();
+if (allowedIds !== null) {
+    data = (data || []).filter(s => allowedIds.includes(s.counter_id));
+}
+
+const fv=document.getElementById('schedFilter')?.value;
+if(fv)data=(data||[]).filter(s=>{const fm=s.tanggal_mulai?.substring(0,7),tm=s.tanggal_selesai?.substring(0,7);return fm===fv||tm===fv||(fv>=fm&&fv<=tm)});
+let h='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()" value="'+(fv||'')+'"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div>';
+if(!data||!data.length)h+='<div class="empty-state"><i class="fas fa-calendar-plus"></i><p>Belum ada schedule</p></div>';
+data.forEach(s=>{
+const ed=canEdit(s.status);
+h+='<div class="list-item"><div class="li-title">'+cn(s.counter_id)+'</div><div class="li-sub">'+s.activity_plan+' &middot; '+(s.notes||'')+'</div><div class="li-meta"><span><i class="fas fa-user" style="margin-right:3px"></i>'+un(s.pic_id)+'</span><span>'+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+'</span>'+sbadge(s.status)+'</div>';
+if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit Schedule\');editSchedule('+s.id_jadwal+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-s btn-xs" onclick="notifyClick(\'Submit Schedule\');submitSchedule('+s.id_jadwal+')"><i class="fas fa-paper-plane"></i> Submit</button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus Schedule\');deleteSchedule('+s.id_jadwal+')"><i class="fas fa-trash"></i></button></div>';
+h+='</div>';
+});
+el.innerHTML=h;
+}
+async function openScheduleForm(eid){
+await loadCache();
+const s=eid?(await sb.from('jadwal').select('*').eq('id_jadwal',eid).single()).data:null;
+let h='<div class="modal-title">'+(s?'Edit':'Tambah')+' Schedule</div>';
+h+='<div class="fg"><label>From Date</label><input type="date" id="sfFrom" value="'+(s?s.tanggal_mulai:today())+'"></div>';
+h+='<div class="fg"><label>To Date</label><input type="date" id="sfTo" value="'+(s?s.tanggal_selesai:today())+'"></div>';
+h+='<div class="fg"><label>PIC</label><select id="sfPic">';
+DB_C.users.filter(u=>['Sales Operations Manager','Area Manager','Leader','SPG'].includes(u.role)).forEach(u=>{h+='<option value="'+u.id_user+'"'+(s&&s.pic_id===u.id_user?' selected':'')+'>'+u.nama_user+' ('+u.role+')</option>'});
+h+='</select></div>';
+
+// FILTER COUNTER DROPDOWN FOR AM
+let counterList = DB_C.counters;
+if (currentUser.role === 'Area Manager') {
+    counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
+}
+
+h+='<div class="fg"><label>Counter</label><select id="sfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'"'+(s&&s.counter_id===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')+'</select></div>';
+h+='<div class="fg"><label>Activity Plan</label><input type="text" id="sfActivity" value="'+(s?s.activity_plan:'')+'"></div>';
+h+='<div class="fg"><label>Notes</label><textarea id="sfNotes">'+(s?s.notes||'':'')+'</textarea></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Schedule\');saveSchedule('+(eid||0)+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
 openModal(h);
 }
 async function saveSchedule(eid){
@@ -649,7 +1312,7 @@ let h='<div class="modal-title">Buat Visit</div>';
 h+='<div class="fg"><label>Pilih Schedule</label><select id="vfSched" onchange="vfSchedChange()">';
 filteredSubs.forEach(s=>{h+='<option value="'+s.id_jadwal+'">'+cn(s.counter_id)+' ('+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+')</option>'});
 h+='</select></div><div id="vfDetails"></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="startVisit()"><i class="fas fa-play"></i> Mulai Visit</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Mulai Visit\');startVisit()"><i class="fas fa-play"></i> Mulai Visit</button></div>';
 openModal(h);vfSchedChange();
 }
 async function vfSchedChange(){
@@ -685,8 +1348,8 @@ async function openVisitObservation(vid){
                         <div style="font-size:10px;color:var(--muted)">${m.category_4p} / ${m.sub_category}</div>
                     </div>
                     <div style="display:flex;gap:3px">
-                        <button class="btn btn-xs ${!isFail?'btn-p':'btn-s'}" onclick="setObsSt(${vid},${o.id_detail},'PASS')">PASS</button>
-                        <button class="btn btn-xs ${isFail?'btn-d':'btn-s'}" onclick="setObsSt(${vid},${o.id_detail},'FAIL')">FAIL</button>
+                        <button class="btn btn-xs ${!isFail?'btn-p':'btn-s'}" onclick="notifyClick(\'Set PASS\');setObsSt(${vid},${o.id_detail},'PASS')">PASS</button>
+                        <button class="btn btn-xs ${isFail?'btn-d':'btn-s'}" onclick="notifyClick(\'Set FAIL\');setObsSt(${vid},${o.id_detail},'FAIL')">FAIL</button>
                     </div>
                 </div>`;
                 
@@ -710,7 +1373,7 @@ async function openVisitObservation(vid){
         });
     }
     h+='</div>';
-    h+='<div style="display:flex;gap:7px;margin-top:14px"><button class="btn btn-s btn-full" onclick="renderVisit();closeModal()">Cancel</button><button class="btn btn-p btn-full" onclick="saveVisitObs('+vid+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+    h+='<div style="display:flex;gap:7px;margin-top:14px"><button class="btn btn-s btn-full" onclick="renderVisit();closeModal()">Cancel</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Observasi\');saveVisitObs('+vid+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
     openModal(h);
 }
 
@@ -852,7 +1515,7 @@ const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
 const fails=(obs||[]).filter(o=>o.status==='FAIL');
 for(const o of fails){
 const m=fp(o.item_id);
-await sb.from('issue').insert({source_type:'Visit Observation',source_id:vid,counter_id:v.counter_id,category_4p:m.category_4p,root_driver:m.root_driver,problem:o.problem,root_cause:o.root_cause,impact:o.impact,priority:'HIGH',status:'OPEN',created_at:new Date().toISOString()});
+await sb.from('issue').insert({source_type:'Visit Observation',source_id:vid,counter_id:v.counter_id,category_4p:m.category_4p,root_driver:m.root_driver,problem:o.problem,root_cause:o.root_cause,impact:o.impact,priority:'HIGH',status:'OPEN',created_at:new Date().toISOString(), evidence_photo: o.evidence_photo});
 }
 closeModal();toast('Visit disubmit'+(fails.length?'.'+fails.length+' issue dibuat otomatis':''));renderVisit();
 }
@@ -866,7 +1529,7 @@ el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></
 await loadCache();
 const isSPG=currentUser&&currentUser.role==='SPG';
 if(isSPG){
-let h='<div style="display:flex;gap:7px;margin-bottom:14px"><button class="btn btn-s btn-full" onclick="openComplaintForm()"><i class="fas fa-comment-dots"></i> Complaint</button><button class="btn btn-s btn-full" onclick="openPendingForm()"><i class="fas fa-clock"></i> Pending Issue</button></div>';
+let h='<div style="display:flex;gap:7px;margin-bottom:14px"><button class="btn btn-s btn-full" onclick="notifyClick(\'Buka Form Complaint\');openComplaintForm()"><i class="fas fa-comment-dots"></i> Complaint</button><button class="btn btn-s btn-full" onclick="notifyClick(\'Buka Form Pending\');openPendingForm()"><i class="fas fa-clock"></i> Pending Issue</button></div>';
 h+='<div class="section-title"><i class="fas fa-comment-dots"></i> My Complaints</div>';
 const{data:mc}=await sb.from('complaint').select('*').eq('pic_id',currentUser.id_user).order('created_at',{ascending:false});
 if(!mc||!mc.length)h+='<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Belum ada complaint</p></div>';
@@ -901,7 +1564,7 @@ if(!data||!data.length){c.innerHTML='<div class="empty-state"><i class="fas fa-c
 let h='';data.forEach(i=>{h+='<div class="list-item" onclick="viewIssueDetail('+i.id_issue+')"><div class="li-title">'+i.problem+'</div><div class="li-sub">'+i.source_type+' &middot; '+i.root_driver+'</div><div class="li-meta">'+sbadge(i.priority)+'<span>'+i.category_4p+'</span><span>'+fmtD(i.created_at)+'</span></div></div>'});
 c.innerHTML=h;
 }
-function openIssueSourceMenu(){openModal('<div class="modal-title">Tambah Issue</div><div class="list-item" onclick="closeModal();openComplaintForm()"><div class="li-title"><i class="fas fa-comment-dots" style="color:var(--warning);margin-right:7px"></i>Customer Complaint</div><div class="li-sub">Input keluhan customer</div></div><div class="list-item" onclick="closeModal();openPendingForm()"><div class="li-title"><i class="fas fa-clock" style="color:var(--info);margin-right:7px"></i>Pending Operational Issue</div><div class="li-sub">Input issue operasional</div></div>')}
+function openIssueSourceMenu(){openModal('<div class="modal-title">Tambah Issue</div><div class="list-item" onclick="closeModal();notifyClick(\'Buka Form Complaint\');openComplaintForm()"><div class="li-title"><i class="fas fa-comment-dots" style="color:var(--warning);margin-right:7px"></i>Customer Complaint</div><div class="li-sub">Input keluhan customer</div></div><div class="list-item" onclick="closeModal();notifyClick(\'Buka Form Pending\');openPendingForm()"><div class="li-title"><i class="fas fa-clock" style="color:var(--info);margin-right:7px"></i>Pending Operational Issue</div><div class="li-sub">Input issue operasional</div></div>')}
 async function openComplaintForm(){
 await loadCache();
 
@@ -922,7 +1585,7 @@ h+='<div class="fg"><label>Impact</label><input type="text" id="cfImpact"></div>
 h+='<div class="fg"><label>PIC</label><select id="cfPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
 // NEW: Photo Upload Field
 h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="cfPhoto" accept="image/*" capture="environment"></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveComplaint()"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Complaint\');saveComplaint()"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 }
 async function saveComplaint(){
@@ -937,6 +1600,7 @@ d.evidence_photo = photoUrl;
 toast('Menyimpan complaint...', 'info');
 const{data:comp}=await sb.from('complaint').insert(d).select().single();
 const cat4p={'Product Quality':'PRODUCT',Service:'PEOPLE',Place:'PLACE',Promotion:'PROMOTION',Others:'PRODUCT'};
+// FIX: Ensure evidence_photo is copied to issue table
 await sb.from('issue').insert({source_type:'Customer Complaint',source_id:comp.id_complaint,counter_id:d.counter_id,category_4p:cat4p[d.category]||'PRODUCT',root_driver:'QUALITY',problem:d.detail,root_cause:d.root_cause,impact:d.impact,priority:'HIGH',status:'OPEN',created_at:new Date().toISOString(), evidence_photo: photoUrl});
 closeModal();toast('Complaint disimpan, issue dibuat otomatis');renderIssue();
 }
@@ -959,7 +1623,7 @@ h+='<div class="fg"><label>Priority</label><select id="pfPri">'+priOpt('HIGH')+'
 h+='<div class="fg"><label>PIC</label><select id="pfPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
 // NEW: Photo Upload Field
 h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="pfPhoto" accept="image/*" capture="environment"></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="savePending()"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Pending Issue\');savePending()"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 }
 async function savePending(){
@@ -974,6 +1638,7 @@ d.evidence_photo = photoUrl;
 toast('Menyimpan pending issue...', 'info');
 const{data:pi}=await sb.from('pending_issue').insert(d).select().single();
 const cat4p={People:'PEOPLE',Product:'PRODUCT',Place:'PLACE',Promotion:'PROMOTION',Others:'PRODUCT'};
+// FIX: Ensure evidence_photo is copied to issue table
 await sb.from('issue').insert({source_type:'Pending Issue',source_id:pi.id_pending,counter_id:d.counter_id,category_4p:cat4p[d.issue_category]||'PRODUCT',root_driver:'QUALITY',problem:d.description,root_cause:d.root_cause,impact:'-',priority:d.priority,status:'OPEN',created_at:new Date().toISOString(), evidence_photo: photoUrl});
 closeModal();toast('Pending issue disimpan, issue dibuat otomatis');renderIssue();
 }
@@ -1036,7 +1701,7 @@ if (a.status === 'DONE' && a.evidence_after) {
 
 h+='<div class="list-item"><div class="li-title">'+a.action+'</div><div class="li-sub">'+a.problem+'</div><div class="li-meta">'+sbadge(a.status)+'<span><i class="fas fa-user" style="margin-right:3px"></i>'+un(a.pic_id)+'</span><span>Due: '+fmtD(a.due_date)+'</span></div>';
 h+=baHtml;
-if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="editAP('+a.id_action+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-d btn-xs" onclick="deleteAP('+a.id_action+')"><i class="fas fa-trash"></i></button></div>';
+if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit Action Plan\');editAP('+a.id_action+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus Action Plan\');deleteAP('+a.id_action+')"><i class="fas fa-trash"></i></button></div>';
 h+='</div>';
 };
 c.innerHTML=h;
@@ -1056,7 +1721,7 @@ h+='<div class="fg"><label>Action</label><textarea id="apAction"></textarea></di
 h+='<div class="fg"><label>PIC</label><select id="apPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
 h+='<div class="fg"><label>Due Date</label><input type="date" id="apDue" value="'+today()+'"></div>';
 h+='<div class="fg"><label>Status</label><select id="apStatus">'+statusOpt('OPEN')+'</select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveAP(0)"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Action Plan\');saveAP(0)"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);apIssueCh();
 }else{
 let h='<div class="modal-title">Edit Action Plan</div>';
@@ -1069,7 +1734,7 @@ h+='<div class="fg"><label>Status</label><select id="apStatus">'+statusOpt(a.sta
 if(a.status === 'DONE' || document.getElementById('apStatus')?.value === 'DONE') {
     h+='<div class="fg"><label>Evidence After Photo</label><input type="file" id="apPhotoAfter" accept="image/*" capture="environment"></div>';
 }
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveAP('+eid+')"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Update Action Plan\');saveAP('+eid+')"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 }
 }
@@ -1128,7 +1793,1713 @@ h+='<div class="fg"><label>Action Plan</label><select id="valAP">'+avail.map(a=>
 h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="valPhoto" accept="image/*" capture="environment"></div>';
 h+='<div class="fg"><label>Validation Note</label><textarea id="valNote"></textarea></div>';
 h+='<div class="fg"><label>Result</label><select id="valResult"><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="saveValidation()"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Validasi\');saveValidation()"><i class="fas fa-save"></i> Simpan</button></div>';
+openModal(h);
+}
+async function saveValidation(){
+const note=document.getElementById('valNote').value;
+if(!note){toast('Isi catatan validasi','error');return}
+
+// COMPRESS & UPLOAD PHOTO
+const photoUrl = await handlePhotoUpload(document.getElementById('valPhoto'), 'validation', 'validation');
+if (!photoUrl) { toast('Foto bukti wajib diupload', 'error'); return; }
+
+toast('Menyimpan validasi...', 'info');
+const d={action_id:parseInt(document.getElementById('valAP').value),evidence_photo:photoUrl,validation_note:note,result:document.getElementById('valResult').value,validated_by:currentUser.id_user,validated_at:new Date().toISOString()};
+await sb.from('validation').insert(d);
+
+// Also update action_plan evidence_after if PASS
+if(d.result==='PASS'){
+    await sb.from('action_plan').update({evidence_after: photoUrl}).eq('id_action', d.action_id);
+    toastBerikut adalah versi lengkap file HTML yang telah diperbaiki.
+
+**Perbaikan Utama yang Dilakukan:**
+1.  **Fix `DB_C` Cache:** Menambahkan `issues` ke dalam cache global agar fitur Export Report tidak error.
+2.  **Fix Sinkronisasi Foto:** Memastikan saat *Complaint* atau *Pending Issue* dibuat, foto bukti otomatis tersalin ke tabel `issue` agar fitur *Before-After* berjalan lancar.
+3.  **Fix Logika Export:** Memperbaiki fungsi `getReportData` untuk Action Plan agar bisa mengambil nama Counter dengan benar melalui relasi Issue.
+4.  **Optimasi ImageKit:** Memastikan URL gambar tetap valid meskipun struktur bucket berubah.
+5.  **Penambahan Notifikasi Klik:** Menambahkan helper `notifyClick()` pada aksi-aksi penting sesuai preferensi Anda.
+
+Silakan copy-paste kode berikut:
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SOIS - Sales Operation Improvement System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* DARK MIDNIGHT + ELECTRIC TEAL THEME */
+:root {
+    --bg: #0B0F1A;          /* Deep Midnight Background */
+    --bg2: #111827;         /* Slightly lighter dark for inputs */
+    --card: #151C2C;        /* Dark card surface */
+    --card2: #1E2740;       /* Secondary dark for buttons */
+    --border: #243049;      /* Subtle dark border */
+    --fg: #E8ECF4;          /* Light text */
+    --fg2: #8B95A8;         /* Muted light text */
+    --muted: #5A6478;       /* Dimmed text */
+    
+    /* Accent Colors */
+    --accent: #00D4AA;      /* Electric Teal / Mint */
+    --accent2: #00B894;     /* Deeper Teal */
+    --glow: rgba(0, 212, 170, 0.15); 
+    
+    /* Status Colors (Vivid on Dark) */
+    --danger: #FF6B6B;      /* Bright Red */
+    --warning: #FFBE0B;     /* Vivid Yellow */
+    --info: #4CC9F0;        /* Electric Blue */
+    --pass: #06D6A0;        /* Mint Green */
+    --fail: #FF6B6B;        /* Red */
+    --open: #FFBE0B;        /* Yellow */
+    --prog: #4CC9F0;        /* Blue */
+    --done: #06D6A0;        /* Mint */
+    --overdue: #FF6B6B;     /* Red */
+    
+    --nav-h: 64px;
+    --hdr-h: 56px;
+    --rad: 14px;
+    --rads: 10px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+#setupScreen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#setupScreen.hidden{display:none}
+.setup-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:28px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+.setup-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#0B0F1A;margin:0 auto 16px;box-shadow:0 0 30px var(--glow)}
+.setup-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:4px;color:var(--fg)}
+.setup-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
+
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--fg2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:13px;outline:none;transition:border .2s,box-shadow .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.fg textarea{resize:vertical;min-height:70px}
+.fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B95A8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border:none;border-radius:var(--rads);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-p{background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;width:100%}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--glow)}
+.btn-s{background:var(--card2);color:var(--fg);border:1px solid var(--border)}.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+.btn-d{background:var(--danger);color:#fff}
+.btn-sm{padding:7px 12px;font-size:11px}.btn-xs{padding:5px 9px;font-size:10px;border-radius:7px}.btn-full{width:100%}
+
+.login-error{color:var(--danger);font-size:11px;text-align:center;margin-bottom:10px;min-height:16px}
+
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#loginScreen.hidden{display:none}
+.login-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0B0F1A;margin-bottom:16px;box-shadow:0 0 40px var(--glow);animation:lp 2s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 40px var(--glow)}50%{box-shadow:0 0 60px rgba(0, 212, 170, 0.4)}}
+.login-title{font-size:24px;font-weight:800;margin-bottom:4px;color:var(--fg)}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;text-align:center}
+.login-box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+
+#appShell{display:none}#appShell.active{display:flex;flex-direction:column;min-height:100vh}
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);z-index:100;background:rgba(11, 15, 26, 0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px}
+.header-title{font-size:15px;font-weight:700;flex:1;color:var(--fg)}
+.header-user{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--fg2)}
+.header-avatar{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#00F5C8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0B0F1A}
+.header-logout{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px;transition:color .2s}.header-logout:hover{color:var(--danger)}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:100;background:rgba(11, 15, 26, 0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;min-width:0;flex:1;user-select:none;-webkit-user-select:none}
+.nav-item.active{color:var(--accent)}
+.nav-item i{font-size:17px}.nav-item span{font-size:9px;font-weight:600;letter-spacing:.3px}
+
+.nav-more-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;user-select:none;-webkit-user-select:none}
+.nav-more-btn.active{color:var(--accent)}.nav-more-btn i{font-size:17px}.nav-more-btn span{font-size:9px;font-weight:600}
+
+.more-menu{position:fixed;bottom:calc(var(--nav-h) + 8px);left:16px;right:16px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:6px;display:none;animation:su .25s ease;box-shadow:0 -8px 30px rgba(0, 0, 0, 0.4)}
+.more-menu.show{display:block}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.more-menu-item{display:flex;align-items:center;gap:11px;padding:11px;border-radius:var(--rads);cursor:pointer;color:var(--fg2);transition:all .15s;font-size:13px;font-weight:500}
+.more-menu-item:hover,.more-menu-item.active{background:var(--glow);color:var(--accent)}
+.more-menu-item i{width:18px;text-align:center;font-size:14px}
+
+.main-content{flex:1;padding:calc(var(--hdr-h) + 14px) 14px calc(var(--nav-h) + 14px);max-width:640px;margin:0 auto;width:100%}
+.page{display:none;animation:fi .3s ease}.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;margin-bottom:10px;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700;color:var(--fg)}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px;position:relative;overflow:hidden;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:50%;filter:blur(25px);opacity:.2}
+.stat-card.g::after{background:var(--pass)}.stat-card.r::after{background:var(--danger)}.stat-card.y::after{background:var(--warning)}.stat-card.b::after{background:var(--info)}
+.stat-num{font-size:26px;font-weight:900;line-height:1;margin-bottom:3px;color:var(--fg)}.stat-label{font-size:10px;color:var(--muted);font-weight:500}
+
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.b-draft{background:rgba(90, 100, 120, 0.25);color:var(--muted)}
+.b-sub{background:rgba(76, 201, 240, 0.15);color:var(--info)}
+.b-pass{background:rgba(6, 214, 160, 0.15);color:var(--pass)}
+.b-fail{background:rgba(255, 107, 107, 0.15);color:var(--fail)}
+.b-open{background:rgba(255, 190, 11, 0.15);color:var(--open)}
+.b-prog{background:rgba(76, 201, 240, 0.15);color:var(--prog)}
+.b-done{background:rgba(6, 214, 160, 0.15);color:var(--done)}
+.b-over{background:rgba(255, 107, 107, 0.15);color:var(--overdue)}
+.b-high{background:rgba(255, 107, 107, 0.15);color:var(--danger)}
+.b-med{background:rgba(255, 190, 11, 0.15);color:var(--warning)}
+.b-low{background:rgba(76, 201, 240, 0.15);color:var(--info)}
+
+.list-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:12px;margin-bottom:7px;cursor:pointer;transition:all .15s;box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);}
+.list-item:hover{border-color:var(--accent);transform: translateY(-1px);}
+.li-title{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--fg)}.li-sub{font-size:11px;color:var(--muted);margin-bottom:7px}
+.li-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.li-meta span{font-size:10px;color:var(--fg2)}
+.li-actions{display:flex;gap:5px;margin-top:9px}
+
+.detail-back{display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:14px;padding:0}.detail-back:hover{text-decoration:underline}
+.dl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}.dv{font-size:13px;color:var(--fg)}.ds{margin-bottom:12px}
+
+.filter-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:11px;outline:none;flex:1;min-width:110px}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0, 0, 0, 0.7);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:22px 18px;animation:ms .3s ease}
+@keyframes ms{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:18px;color:var(--fg)}
+
+.toast-container{position:fixed;top:calc(var(--hdr-h) + 8px);left:14px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:10px 14px;font-size:12px;font-weight:500;pointer-events:auto;animation:ti .3s ease,to .3s ease 2.7s forwards;display:flex;align-items:center;gap:7px;box-shadow:0 8px 30px rgba(0, 0, 0, 0.4);color:var(--fg)}
+.toast.success{border-left:3px solid var(--pass)}.toast.error{border-left:3px solid var(--danger)}.toast.info{border-left:3px solid var(--info)}
+@keyframes ti{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+
+.chart-bar-container{display:flex;align-items:flex-end;gap:7px;height:130px;padding-top:8px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.chart-bar{width:100%;border-radius:5px 5px 2px 2px;min-height:4px;transition:height .6s ease}
+.chart-bar-label{font-size:8px;color:var(--muted);margin-top:5px;text-align:center;word-break:break-all}
+.chart-bar-val{font-size:9px;font-weight:700;margin-bottom:3px;color:var(--fg)}
+
+.progress-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+.empty-state{text-align:center;padding:36px 18px;color:var(--muted)}.empty-state i{font-size:36px;margin-bottom:10px;opacity:.3}.empty-state p{font-size:13px}
+
+.fab{position:fixed;bottom:calc(var(--nav-h) + 14px);right:14px;width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;border:none;font-size:19px;cursor:pointer;z-index:90;box-shadow:0 4px 20px var(--glow);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fab:hover{transform:scale(1.05)}.fab.hidden{display:none}
+
+.section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px;color:var(--fg)}.section-title i{color:var(--accent);font-size:13px}
+
+.tabs{display:flex;gap:3px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}.tabs::-webkit-scrollbar{display:none}
+.tab-btn{padding:7px 12px;border-radius:7px;border:none;background:var(--card2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#0B0F1A}
+
+.loading-spinner{display:flex;align-items:center;justify-content:center;padding:40px}.loading-spinner i{font-size:24px;color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BEFORE-AFTER LAYOUT */
+.ba-container{display:flex;gap:10px;margin-top:10px}
+.ba-box{flex:1;text-align:center}
+.ba-box label{display:block;font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.ba-box img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)}
+@media(max-width:768px){.ba-container{flex-direction:column}.ba-box img{height:180px}}
+
+/* INSIGHT CARD STYLE */
+.insight-card { background: linear-gradient(to bottom right, #1E2740, #151C2C); border-left: 5px solid var(--accent); }
+.insight-text { font-size: 13px; line-height: 1.6; color: var(--fg2); margin-bottom: 10px; }
+.insight-highlight { color: var(--accent); font-weight: 700; }
+
+@media(min-width:768px){.main-content{max-width:800px}.stat-grid{grid-template-columns:repeat(4,1fr)}.modal{border-radius:var(--rad);margin-bottom:20px;max-height:80vh}.modal-overlay{align-items:center}}
+@media(min-width:1024px){.main-content{max-width:960px}}
+@media print{.app-header,.bottom-nav,.fab,.filter-bar,.btn,.more-menu{display:none!important}.main-content{padding:0}body{background:#fff;color:#000}.card,.list-item,.stat-card{border:1px solid #ddd;background:#fff}.stat-num,.li-title,.card-title{color:#000}.stat-label,.li-sub,.dl{color:#666}}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+<div id="setupScreen">
+<div class="setup-logo">S</div>
+<div class="setup-box">
+<div class="setup-title">SOIS Configuration</div>
+<div class="setup-sub">Masukkan kredensial Supabase untuk memulai</div>
+<div class="fg"><label>Supabase URL</label><input type="url" id="cfgUrl" placeholder="https://xxxxx.supabase.co"></div>
+<div class="fg"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
+<button class="btn btn-p" onclick="saveConfig()" style="margin-top:8px"><i class="fas fa-plug"></i> Hubungkan</button>
+</div>
+</div>
+<div id="loginScreen" class="hidden">
+<div class="login-logo">S</div>
+<div class="login-title">SOIS</div>
+<div class="login-sub">Sales Operation Improvement System</div>
+<div class="login-box">
+<div class="login-error" id="loginError"></div>
+<div class="fg"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="off"></div>
+<div class="fg"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password"></div>
+<button class="btn btn-p" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+</div>
+</div>
+<div id="appShell">
+<header class="app-header">
+<div class="header-title" id="headerTitle">Dashboard</div>
+<div class="header-user">
+<div class="header-avatar" id="headerAvatar">O</div>
+<span id="headerName">Owner</span>
+<button class="header-logout" onclick="doLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</header>
+<main class="main-content" id="mainContent">
+<div class="page active" id="pageDashboard"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageSchedule"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageVisit"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageIssue"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageActionPlan"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageValidation"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageBusinessReview"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageReport"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageMaster"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+</main>
+<button class="fab hidden" id="fabBtn" onclick="fabAction()"><i class="fas fa-plus"></i></button>
+<div class="more-menu" id="moreMenu"></div>
+<nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="modalContent"><div class="modal-handle"></div><div id="modalBody"></div></div>
+</div>
+<script>
+let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
+
+// ==================== IMAGEKIT HELPER ====================
+const IK_ID = "ylxqitof6"; 
+const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
+
+function getIkUrl(supabaseUrl) {
+    if (!supabaseUrl) return '';
+    // Handle cases where URL might already be an ImageKit URL or invalid
+    if (supabaseUrl.includes('ik.imagekit.io')) return supabaseUrl;
+    
+    if (!supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
+    const pathAfterPublic = supabaseUrl.split('/public/')[1]; 
+    // w-800: max width 800px, q-60: quality 60%, f-auto: optimal format
+    return `${IK_BASE_URL}/${pathAfterPublic}?tr=w-800,q-60,f-auto`;
+}
+
+// ==================== UTILITIES & TOAST ====================
+function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function notifyClick(actionName) {
+    const c=document.getElementById('toastContainer');
+    const e=document.createElement('div');
+    e.className='toast info';
+    e.style.opacity='0.7';
+    e.style.fontSize='10px';
+    e.style.padding='6px 10px';
+    e.innerHTML='<i class="fas fa-mouse-pointer"></i> ' + actionName;
+    c.appendChild(e);
+    setTimeout(()=>e.remove(), 1500);
+}
+function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDF(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
+function today(){return new Date().toISOString().split('T')[0]}
+function sbadge(s){const m={DRAFT:'b-draft',SUBMITTED:'b-sub',PASS:'b-pass',FAIL:'b-fail',OPEN:'b-open','ON PROGRESS':'b-prog',DONE:'b-done',OVERDUE:'b-over',HIGH:'b-high',MEDIUM:'b-med',LOW:'b-low'};return'<span class="badge '+(m[s]||'b-draft')+'">'+s+'</span>'}
+function canEdit(s){return s==='DRAFT'}
+
+// ==================== PHOTO COMPRESSION (TARGET 150-200KB, MAX 250KB) ====================
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                const MAX_DIM = 1024;
+                
+                if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+                else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+                
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                
+                const tryCompress = (q) => {
+                    canvas.toBlob((blob) => {
+                        if (!blob) return reject(new Error("Gagal proses gambar"));
+                        const sizeKB = blob.size / 1024;
+                        if (sizeKB > 250 && q > 0.1) tryCompress(q - 0.2);
+                        else resolve(blob);
+                    }, 'image/jpeg', q);
+                };
+                tryCompress(0.7);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
+async function handlePhotoUpload(fileInput, bucket, pathPrefix) {
+    if (!fileInput.files || !fileInput.files[0]) return null;
+    const file = fileInput.files[0];
+    
+    toast('Mengompres foto...', 'info');
+    try {
+        const compressedBlob = await compressImage(file);
+        toast(`Foto siap (${Math.round(compressedBlob.size/1024)}KB)`, 'success');
+        
+        const ext = 'jpg'; // Force JPEG
+        const path = pathPrefix + '/' + Date.now() + '.' + ext;
+        
+        toast('Mengupload foto...', 'info');
+        const { data: upData, error: upErr } = await sb.storage.from(bucket).upload(path, compressedBlob, { contentType: 'image/jpeg' });
+        if (upErr) { toast('Upload gagal: ' + upErr.message, 'error'); return null; }
+        
+        const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+        return urlData.publicUrl;
+    } catch (e) {
+        toast('Gagal memproses foto: ' + e.message, 'error');
+        return null;
+    }
+}
+
+// ==================== AUTH & SESSION ====================
+function saveConfig(){
+const u=document.getElementById('cfgUrl').value.trim(),k=document.getElementById('cfgKey').value.trim();
+if(!u||!k){toast('Lengkapi URL dan Key','error');return}
+try{sb=window.supabase.createClient(u,k)}catch(e){toast('Konfigurasi gagal: '+e.message,'error');return}
+localStorage.setItem('sois_url',u);localStorage.setItem('sois_key',k);
+document.getElementById('setupScreen').classList.add('hidden');
+checkSession();
+}
+function loadConfig(){
+const u=localStorage.getItem('sois_url'),k=localStorage.getItem('sois_key');
+if(u&&k){try{sb=window.supabase.createClient(u,k);checkSession()}catch(e){document.getElementById('setupScreen').classList.remove('hidden')}}
+else{document.getElementById('setupScreen').classList.remove('hidden')}
+}
+async function checkSession(){
+if(!sb)return;
+const{data:{session}}=await sb.auth.getSession();
+if(session){
+const email = session.user.email || '';
+let{data:u}=await sb.from('master_user').select('*').eq('email',email).single();
+if(!u){
+const username = email.replace('@sois.local','');
+const{data:u2}=await sb.from('master_user').select('*').eq('username',username).single();
+u = u2;
+}
+if(u){currentUser=u;showApp();return}
+}
+document.getElementById('loginScreen').classList.remove('hidden');
+}
+async function doLogin(){
+const username=document.getElementById('loginUser').value.trim(),password=document.getElementById('loginPass').value.trim();
+if(!username||!password){document.getElementById('loginError').textContent='Username dan password wajib diisi';return}
+document.getElementById('loginError').textContent='';
+try{
+const{data:u,error:errU}=await sb.from('master_user').select('*').eq('username',username).single();
+if(errU||!u)throw new Error('Username tidak ditemukan');
+const userEmail = u.email || (username + '@sois.local');
+const{data,error}=await sb.auth.signInWithPassword({email:userEmail,password});
+if(error)throw error;
+currentUser=u;
+document.getElementById('loginScreen').classList.add('hidden');
+showApp();
+}catch(e){document.getElementById('loginError').textContent=e.message==='Username tidak ditemukan'?'Username tidak ditemukan':'Password salah'}
+}
+async function doLogout(){
+await sb.auth.signOut();
+currentUser=null;
+document.getElementById('appShell').classList.remove('active');
+document.getElementById('loginScreen').classList.remove('hidden');
+document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';document.getElementById('loginError').textContent='';
+closeMore();
+}
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus()});
+
+// ==================== NAVIGATION & ACCESS CONTROL ====================
+function hasAccess(p){
+if(!currentUser)return false;const r=currentUser.role;
+if(r==='Owner')return['pageDashboard','pageBusinessReview','pageReport'].includes(p);
+if(r==='Sales Operations Manager')return true;
+// REVISI: Area Manager tidak bisa mengakses Validation
+if(r==='Area Manager')return['pageDashboard','pageSchedule','pageVisit','pageActionPlan'].includes(p);
+if(r==='Leader')return['pageDashboard','pageVisit','pageIssue','pageActionPlan'].includes(p);
+// REVISI: SPG/Staff TIDAK boleh akses Report
+if(r==='SPG')return['pageDashboard','pageIssue','pageVisit'].includes(p);
+return false;
+}
+
+// Helper: Get allowed counter IDs based on role
+async function getAllowedCounterIds() {
+    if (!currentUser) return [];
+    if (currentUser.role === 'Owner' || currentUser.role === 'Sales Operations Manager') return null; // null means ALL
+    
+    // Area Manager: counters where am_id = user.id
+    if (currentUser.role === 'Area Manager') {
+        const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.id_user);
+        return (data || []).map(c => c.id_counter);
+    }
+    
+    // Leader/SPG: counters linked to their schedules or assigned area
+    // For simplicity in this revision, we assume they follow AM's area or specific assignments
+    // If supervisor_id exists in master_user, use that AM's counters
+    if (currentUser.supervisor_id) {
+        const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.supervisor_id);
+        return (data || []).map(c => c.id_counter);
+    }
+    
+    return []; // Default empty if no mapping found
+}
+
+function showApp(){
+document.getElementById('appShell').classList.add('active');
+document.getElementById('headerAvatar').textContent=currentUser.nama_user.charAt(0);
+document.getElementById('headerName').textContent=currentUser.nama_user;
+buildNav();navTo('pageDashboard');
+}
+const allPages=[
+{id:'pageDashboard',icon:'fa-th-large',label:'Dashboard'},
+{id:'pageSchedule',icon:'fa-calendar-alt',label:'Schedule'},
+{id:'pageVisit',icon:'fa-store',label:'Visit'},
+{id:'pageIssue',icon:'fa-exclamation-triangle',label:'Issue'}
+];
+const morePages=[
+{id:'pageActionPlan',icon:'fa-tasks',label:'Action Plan'},
+{id:'pageValidation',icon:'fa-check-double',label:'Validation'},
+{id:'pageMaster',icon:'fa-database',label:'Master Data'},
+{id:'pageBusinessReview',icon:'fa-chart-line',label:'Business Review'},
+{id:'pageReport',icon:'fa-file-alt',label:'Report'}
+];
+function buildNav(){
+let h='';
+allPages.forEach(p=>{if(hasAccess(p.id))h+='<div class="nav-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i><span>'+p.label+'</span></div>'});
+const vm=morePages.filter(p=>hasAccess(p.id));
+if(vm.length>0){
+h+='<div class="nav-more-btn" id="moreBtn" onclick="toggleMore()"><i class="fas fa-ellipsis-h"></i><span>More</span></div>';
+let mh='';vm.forEach(p=>{mh+='<div class="more-menu-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i> '+p.label+'</div>'});
+document.getElementById('moreMenu').innerHTML=mh;
+}
+document.getElementById('bottomNav').innerHTML=h;
+}
+function navTo(p){
+if(!hasAccess(p)){toast('Tidak memiliki akses','error');return}
+closeMore();currentPage=p;
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.getElementById(p).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+document.querySelectorAll('.more-menu-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+const t={pageDashboard:'Dashboard',pageSchedule:'Schedule',pageVisit:'Visit',pageIssue:'Issue',pageActionPlan:'Action Plan',pageValidation:'Validation',pageBusinessReview:'Business Review',pageReport:'Report'};
+document.getElementById('headerTitle').textContent=t[p]||'SOIS';
+document.getElementById('fabBtn').classList.toggle('hidden',!{pageSchedule:1,pageVisit:1,pageIssue:1,pageActionPlan:1,pageValidation:1}[p]);
+renderPage(p);
+}
+function toggleMore(){moreOpen=!moreOpen;document.getElementById('moreMenu').classList.toggle('show',moreOpen);document.getElementById('moreBtn')?.classList.toggle('active',moreOpen)}
+function closeMore(){moreOpen=false;document.getElementById('moreMenu')?.classList.remove('show');document.getElementById('moreBtn')?.classList.remove('active')}
+function fabAction(){({pageSchedule:openScheduleForm,pageVisit:openVisitForm,pageIssue:openIssueSourceMenu,pageActionPlan:openActionPlanForm,pageValidation:openValidationForm})[currentPage]?.()}
+function openModal(h){document.getElementById('modalBody').innerHTML=h;document.getElementById('modalOverlay').classList.add('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function renderPage(p){({pageDashboard:renderDashboard,pageSchedule:renderSchedule,pageVisit:renderVisit,pageIssue:renderIssue,pageActionPlan:renderActionPlan,pageValidation:renderValidation,pageMaster:renderMasterData,pageBusinessReview:renderBusinessReview,pageReport:renderReport})[p]?.()}
+async function getCounterName(id){if(!id)return'-';const{data}=await sb.from('master_counter').select('nama_counter').eq('id_counter',id).single();return data?.nama_counter||'-'}
+async function getUserName(id){if(!id)return'-';const{data}=await sb.from('master_user').select('nama_user').eq('id_user',id).single();return data?.nama_user||'-'}
+async function get4PItem(id){if(!id)return{};const{data}=await sb.from('master_4p').select('*').eq('id_item',id).single();return data||{}}
+function counterOpt(sel){return '<option value="">Pilih Counter</option>'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'"'+(sel===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')}
+function userOpt(sel,roles){let q=sb.from('master_user').select('*');if(roles)q=q.in('role',roles);return q}
+function statusOpt(sel){return['OPEN','ON PROGRESS','DONE'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
+function priOpt(sel){return['HIGH','MEDIUM','LOW'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
+
+// FIX: Added issues to DB_C cache
+let DB_C={counters:[],users:[],items4p:[], issues:[]};
+
+async function loadCache(){
+    if(DB_C.counters.length && DB_C.issues.length) return;
+    const[c,u,i, iss]=await Promise.all([
+        sb.from('master_counter').select('*'),
+        sb.from('master_user').select('*'),
+        sb.from('master_4p').select('*'),
+        sb.from('issue').select('*') // Fetch issues for report mapping
+    ]);
+    DB_C.counters=c.data||[];
+    DB_C.users=u.data||[];
+    DB_C.items4p=i.data||[];
+    DB_C.issues=iss.data||[]; // Simpan ke cache
+}
+
+function cn(id){return DB_C.counters.find(c=>c.id_counter===id)?.nama_counter||'-'}
+function un(id){return DB_C.users.find(u=>u.id_user===id)?.nama_user||'-'}
+function fp(id){return DB_C.items4p.find(m=>m.id_item===id)||{}}
+
+// ==================== DASHBOARD ====================
+async function renderDashboard(){
+const el=document.getElementById('pageDashboard');
+el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();Berikut adalah versi lengkap file HTML yang telah diperbaiki.
+
+**Perbaikan Utama yang Dilakukan:**
+1.  **Fix `DB_C` Cache:** Menambahkan `issues` ke dalam cache global agar fitur Export Report tidak error.
+2.  **Fix Sinkronisasi Foto:** Memastikan saat *Complaint* atau *Pending Issue* dibuat, foto bukti otomatis tersalin ke tabel `issue` agar fitur *Before-After* berjalan lancar.
+3.  **Fix Logika Export:** Memperbaiki fungsi `getReportData` untuk Action Plan agar bisa mengambil nama Counter dengan benar melalui relasi Issue.
+4.  **Optimasi ImageKit:** Memastikan URL gambar tetap valid meskipun struktur bucket berubah.
+5.  **Penambahan Notifikasi Klik:** Menambahkan helper `notifyClick()` pada aksi-aksi penting sesuai preferensi Anda.
+
+Silakan copy-paste kode berikut:
+
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SOIS - Sales Operation Improvement System</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* DARK MIDNIGHT + ELECTRIC TEAL THEME */
+:root {
+    --bg: #0B0F1A;          /* Deep Midnight Background */
+    --bg2: #111827;         /* Slightly lighter dark for inputs */
+    --card: #151C2C;        /* Dark card surface */
+    --card2: #1E2740;       /* Secondary dark for buttons */
+    --border: #243049;      /* Subtle dark border */
+    --fg: #E8ECF4;          /* Light text */
+    --fg2: #8B95A8;         /* Muted light text */
+    --muted: #5A6478;       /* Dimmed text */
+    
+    /* Accent Colors */
+    --accent: #00D4AA;      /* Electric Teal / Mint */
+    --accent2: #00B894;     /* Deeper Teal */
+    --glow: rgba(0, 212, 170, 0.15); 
+    
+    /* Status Colors (Vivid on Dark) */
+    --danger: #FF6B6B;      /* Bright Red */
+    --warning: #FFBE0B;     /* Vivid Yellow */
+    --info: #4CC9F0;        /* Electric Blue */
+    --pass: #06D6A0;        /* Mint Green */
+    --fail: #FF6B6B;        /* Red */
+    --open: #FFBE0B;        /* Yellow */
+    --prog: #4CC9F0;        /* Blue */
+    --done: #06D6A0;        /* Mint */
+    --overdue: #FF6B6B;     /* Red */
+    
+    --nav-h: 64px;
+    --hdr-h: 56px;
+    --rad: 14px;
+    --rads: 10px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+#setupScreen{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#setupScreen.hidden{display:none}
+.setup-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:28px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+.setup-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#0B0F1A;margin:0 auto 16px;box-shadow:0 0 30px var(--glow)}
+.setup-title{font-size:18px;font-weight:800;text-align:center;margin-bottom:4px;color:var(--fg)}
+.setup-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px}
+
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--fg2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:13px;outline:none;transition:border .2s,box-shadow .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow)}
+.fg textarea{resize:vertical;min-height:70px}
+.fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B95A8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border:none;border-radius:var(--rads);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-p{background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;width:100%}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--glow)}
+.btn-s{background:var(--card2);color:var(--fg);border:1px solid var(--border)}.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+.btn-d{background:var(--danger);color:#fff}
+.btn-sm{padding:7px 12px;font-size:11px}.btn-xs{padding:5px 9px;font-size:10px;border-radius:7px}.btn-full{width:100%}
+
+.login-error{color:var(--danger);font-size:11px;text-align:center;margin-bottom:10px;min-height:16px}
+
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#loginScreen.hidden{display:none}
+.login-logo{width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#00F5C8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0B0F1A;margin-bottom:16px;box-shadow:0 0 40px var(--glow);animation:lp 2s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 40px var(--glow)}50%{box-shadow:0 0 60px rgba(0, 212, 170, 0.4)}}
+.login-title{font-size:24px;font-weight:800;margin-bottom:4px;color:var(--fg)}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;text-align:center}
+.login-box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);}
+
+#appShell{display:none}#appShell.active{display:flex;flex-direction:column;min-height:100vh}
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);z-index:100;background:rgba(11, 15, 26, 0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px}
+.header-title{font-size:15px;font-weight:700;flex:1;color:var(--fg)}
+.header-user{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--fg2)}
+.header-avatar{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#00F5C8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0B0F1A}
+.header-logout{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:4px;transition:color .2s}.header-logout:hover{color:var(--danger)}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);z-index:100;background:rgba(11, 15, 26, 0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;min-width:0;flex:1;user-select:none;-webkit-user-select:none}
+.nav-item.active{color:var(--accent)}
+.nav-item i{font-size:17px}.nav-item span{font-size:9px;font-weight:600;letter-spacing:.3px}
+
+.nav-more-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;cursor:pointer;color:var(--muted);transition:color .2s;user-select:none;-webkit-user-select:none}
+.nav-more-btn.active{color:var(--accent)}.nav-more-btn i{font-size:17px}.nav-more-btn span{font-size:9px;font-weight:600}
+
+.more-menu{position:fixed;bottom:calc(var(--nav-h) + 8px);left:16px;right:16px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:6px;display:none;animation:su .25s ease;box-shadow:0 -8px 30px rgba(0, 0, 0, 0.4)}
+.more-menu.show{display:block}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.more-menu-item{display:flex;align-items:center;gap:11px;padding:11px;border-radius:var(--rads);cursor:pointer;color:var(--fg2);transition:all .15s;font-size:13px;font-weight:500}
+.more-menu-item:hover,.more-menu-item.active{background:var(--glow);color:var(--accent)}
+.more-menu-item i{width:18px;text-align:center;font-size:14px}
+
+.main-content{flex:1;padding:calc(var(--hdr-h) + 14px) 14px calc(var(--nav-h) + 14px);max-width:640px;margin:0 auto;width:100%}
+.page{display:none;animation:fi .3s ease}.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:14px;margin-bottom:10px;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700;color:var(--fg)}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:12px;position:relative;overflow:hidden;box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:50px;height:50px;border-radius:50%;filter:blur(25px);opacity:.2}
+.stat-card.g::after{background:var(--pass)}.stat-card.r::after{background:var(--danger)}.stat-card.y::after{background:var(--warning)}.stat-card.b::after{background:var(--info)}
+.stat-num{font-size:26px;font-weight:900;line-height:1;margin-bottom:3px;color:var(--fg)}.stat-label{font-size:10px;color:var(--muted);font-weight:500}
+
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.3px}
+.b-draft{background:rgba(90, 100, 120, 0.25);color:var(--muted)}
+.b-sub{background:rgba(76, 201, 240, 0.15);color:var(--info)}
+.b-pass{background:rgba(6, 214, 160, 0.15);color:var(--pass)}
+.b-fail{background:rgba(255, 107, 107, 0.15);color:var(--fail)}
+.b-open{background:rgba(255, 190, 11, 0.15);color:var(--open)}
+.b-prog{background:rgba(76, 201, 240, 0.15);color:var(--prog)}
+.b-done{background:rgba(6, 214, 160, 0.15);color:var(--done)}
+.b-over{background:rgba(255, 107, 107, 0.15);color:var(--overdue)}
+.b-high{background:rgba(255, 107, 107, 0.15);color:var(--danger)}
+.b-med{background:rgba(255, 190, 11, 0.15);color:var(--warning)}
+.b-low{background:rgba(76, 201, 240, 0.15);color:var(--info)}
+
+.list-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:12px;margin-bottom:7px;cursor:pointer;transition:all .15s;box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);}
+.list-item:hover{border-color:var(--accent);transform: translateY(-1px);}
+.li-title{font-size:13px;font-weight:600;margin-bottom:3px;color:var(--fg)}.li-sub{font-size:11px;color:var(--muted);margin-bottom:7px}
+.li-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.li-meta span{font-size:10px;color:var(--fg2)}
+.li-actions{display:flex;gap:5px;margin-top:9px}
+
+.detail-back{display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:14px;padding:0}.detail-back:hover{text-decoration:underline}
+.dl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}.dv{font-size:13px;color:var(--fg)}.ds{margin-bottom:12px}
+
+.filter-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:var(--rads);color:var(--fg);font-size:11px;outline:none;flex:1;min-width:110px}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0, 0, 0, 0.7);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:22px 18px;animation:ms .3s ease}
+@keyframes ms{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 14px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:18px;color:var(--fg)}
+
+.toast-container{position:fixed;top:calc(var(--hdr-h) + 8px);left:14px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:var(--rads);padding:10px 14px;font-size:12px;font-weight:500;pointer-events:auto;animation:ti .3s ease,to .3s ease 2.7s forwards;display:flex;align-items:center;gap:7px;box-shadow:0 8px 30px rgba(0, 0, 0, 0.4);color:var(--fg)}
+.toast.success{border-left:3px solid var(--pass)}.toast.error{border-left:3px solid var(--danger)}.toast.info{border-left:3px solid var(--info)}
+@keyframes ti{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+
+.chart-bar-container{display:flex;align-items:flex-end;gap:7px;height:130px;padding-top:8px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.chart-bar{width:100%;border-radius:5px 5px 2px 2px;min-height:4px;transition:height .6s ease}
+.chart-bar-label{font-size:8px;color:var(--muted);margin-top:5px;text-align:center;word-break:break-all}
+.chart-bar-val{font-size:9px;font-weight:700;margin-bottom:3px;color:var(--fg)}
+
+.progress-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+.empty-state{text-align:center;padding:36px 18px;color:var(--muted)}.empty-state i{font-size:36px;margin-bottom:10px;opacity:.3}.empty-state p{font-size:13px}
+
+.fab{position:fixed;bottom:calc(var(--nav-h) + 14px);right:14px;width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,var(--accent),#00F5C8);color:#0B0F1A;border:none;font-size:19px;cursor:pointer;z-index:90;box-shadow:0 4px 20px var(--glow);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fab:hover{transform:scale(1.05)}.fab.hidden{display:none}
+
+.section-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px;color:var(--fg)}.section-title i{color:var(--accent);font-size:13px}
+
+.tabs{display:flex;gap:3px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}.tabs::-webkit-scrollbar{display:none}
+.tab-btn{padding:7px 12px;border-radius:7px;border:none;background:var(--card2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#0B0F1A}
+
+.loading-spinner{display:flex;align-items:center;justify-content:center;padding:40px}.loading-spinner i{font-size:24px;color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BEFORE-AFTER LAYOUT */
+.ba-container{display:flex;gap:10px;margin-top:10px}
+.ba-box{flex:1;text-align:center}
+.ba-box label{display:block;font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.ba-box img{width:100%;height:120px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border)}
+@media(max-width:768px){.ba-container{flex-direction:column}.ba-box img{height:180px}}
+
+/* INSIGHT CARD STYLE */
+.insight-card { background: linear-gradient(to bottom right, #1E2740, #151C2C); border-left: 5px solid var(--accent); }
+.insight-text { font-size: 13px; line-height: 1.6; color: var(--fg2); margin-bottom: 10px; }
+.insight-highlight { color: var(--accent); font-weight: 700; }
+
+@media(min-width:768px){.main-content{max-width:800px}.stat-grid{grid-template-columns:repeat(4,1fr)}.modal{border-radius:var(--rad);margin-bottom:20px;max-height:80vh}.modal-overlay{align-items:center}}
+@media(min-width:1024px){.main-content{max-width:960px}}
+@media print{.app-header,.bottom-nav,.fab,.filter-bar,.btn,.more-menu{display:none!important}.main-content{padding:0}body{background:#fff;color:#000}.card,.list-item,.stat-card{border:1px solid #ddd;background:#fff}.stat-num,.li-title,.card-title{color:#000}.stat-label,.li-sub,.dl{color:#666}}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+<div id="setupScreen">
+<div class="setup-logo">S</div>
+<div class="setup-box">
+<div class="setup-title">SOIS Configuration</div>
+<div class="setup-sub">Masukkan kredensial Supabase untuk memulai</div>
+<div class="fg"><label>Supabase URL</label><input type="url" id="cfgUrl" placeholder="https://xxxxx.supabase.co"></div>
+<div class="fg"><label>Supabase Anon Key</label><input type="text" id="cfgKey" placeholder="eyJhbGciOi..."></div>
+<button class="btn btn-p" onclick="saveConfig()" style="margin-top:8px"><i class="fas fa-plug"></i> Hubungkan</button>
+</div>
+</div>
+<div id="loginScreen" class="hidden">
+<div class="login-logo">S</div>
+<div class="login-title">SOIS</div>
+<div class="login-sub">Sales Operation Improvement System</div>
+<div class="login-box">
+<div class="login-error" id="loginError"></div>
+<div class="fg"><label>Username</label><input type="text" id="loginUser" placeholder="Masukkan username" autocomplete="off"></div>
+<div class="fg"><label>Password</label><input type="password" id="loginPass" placeholder="Masukkan password"></div>
+<button class="btn btn-p" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+</div>
+</div>
+<div id="appShell">
+<header class="app-header">
+<div class="header-title" id="headerTitle">Dashboard</div>
+<div class="header-user">
+<div class="header-avatar" id="headerAvatar">O</div>
+<span id="headerName">Owner</span>
+<button class="header-logout" onclick="doLogout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</header>
+<main class="main-content" id="mainContent">
+<div class="page active" id="pageDashboard"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageSchedule"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageVisit"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageIssue"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageActionPlan"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageValidation"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageBusinessReview"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageReport"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+<div class="page" id="pageMaster"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>
+</main>
+<button class="fab hidden" id="fabBtn" onclick="fabAction()"><i class="fas fa-plus"></i></button>
+<div class="more-menu" id="moreMenu"></div>
+<nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="modalContent"><div class="modal-handle"></div><div id="modalBody"></div></div>
+</div>
+<script>
+let sb = null, currentUser = null, currentPage = 'pageDashboard', moreOpen = false;
+
+// ==================== IMAGEKIT HELPER ====================
+const IK_ID = "ylxqitof6"; 
+const IK_BASE_URL = `https://ik.imagekit.io/${IK_ID}`;
+
+function getIkUrl(supabaseUrl) {
+    if (!supabaseUrl) return '';
+    // Handle cases where URL might already be an ImageKit URL or invalid
+    if (supabaseUrl.includes('ik.imagekit.io')) return supabaseUrl;
+    
+    if (!supabaseUrl.includes('/storage/v1/object/public/')) return supabaseUrl;
+    const pathAfterPublic = supabaseUrl.split('/public/')[1]; 
+    // w-800: max width 800px, q-60: quality 60%, f-auto: optimal format
+    return `${IK_BASE_URL}/${pathAfterPublic}?tr=w-800,q-60,f-auto`;
+}
+
+// ==================== UTILITIES & TOAST ====================
+function toast(m,t='success'){const c=document.getElementById('toastContainer'),e=document.createElement('div');e.className='toast '+t;e.innerHTML='<i class="fas fa-'+(t==='success'?'check-circle':t==='error'?'times-circle':'info-circle')+'"></i> '+m;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function notifyClick(actionName) {
+    const c=document.getElementById('toastContainer');
+    const e=document.createElement('div');
+    e.className='toast info';
+    e.style.opacity='0.7';
+    e.style.fontSize='10px';
+    e.style.padding='6px 10px';
+    e.innerHTML='<i class="fas fa-mouse-pointer"></i> ' + actionName;
+    c.appendChild(e);
+    setTimeout(()=>e.remove(), 1500);
+}
+function fmtD(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDF(d){if(!d)return'-';return new Date(d).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}
+function today(){return new Date().toISOString().split('T')[0]}
+function sbadge(s){const m={DRAFT:'b-draft',SUBMITTED:'b-sub',PASS:'b-pass',FAIL:'b-fail',OPEN:'b-open','ON PROGRESS':'b-prog',DONE:'b-done',OVERDUE:'b-over',HIGH:'b-high',MEDIUM:'b-med',LOW:'b-low'};return'<span class="badge '+(m[s]||'b-draft')+'">'+s+'</span>'}
+function canEdit(s){return s==='DRAFT'}
+
+// ==================== PHOTO COMPRESSION (TARGET 150-200KB, MAX 250KB) ====================
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                const MAX_DIM = 1024;
+                
+                if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+                else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+                
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                
+                const tryCompress = (q) => {
+                    canvas.toBlob((blob) => {
+                        if (!blob) return reject(new Error("Gagal proses gambar"));
+                        const sizeKB = blob.size / 1024;
+                        if (sizeKB > 250 && q > 0.1) tryCompress(q - 0.2);
+                        else resolve(blob);
+                    }, 'image/jpeg', q);
+                };
+                tryCompress(0.7);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
+async function handlePhotoUpload(fileInput, bucket, pathPrefix) {
+    if (!fileInput.files || !fileInput.files[0]) return null;
+    const file = fileInput.files[0];
+    
+    toast('Mengompres foto...', 'info');
+    try {
+        const compressedBlob = await compressImage(file);
+        toast(`Foto siap (${Math.round(compressedBlob.size/1024)}KB)`, 'success');
+        
+        const ext = 'jpg'; // Force JPEG
+        const path = pathPrefix + '/' + Date.now() + '.' + ext;
+        
+        toast('Mengupload foto...', 'info');
+        const { data: upData, error: upErr } = await sb.storage.from(bucket).upload(path, compressedBlob, { contentType: 'image/jpeg' });
+        if (upErr) { toast('Upload gagal: ' + upErr.message, 'error'); return null; }
+        
+        const { data: urlData } = sb.storage.from(bucket).getPublicUrl(path);
+        return urlData.publicUrl;
+    } catch (e) {
+        toast('Gagal memproses foto: ' + e.message, 'error');
+        return null;
+    }
+}
+
+// ==================== AUTH & SESSION ====================
+function saveConfig(){
+const u=document.getElementById('cfgUrl').value.trim(),k=document.getElementById('cfgKey').value.trim();
+if(!u||!k){toast('Lengkapi URL dan Key','error');return}
+try{sb=window.supabase.createClient(u,k)}catch(e){toast('Konfigurasi gagal: '+e.message,'error');return}
+localStorage.setItem('sois_url',u);localStorage.setItem('sois_key',k);
+document.getElementById('setupScreen').classList.add('hidden');
+checkSession();
+}
+function loadConfig(){
+const u=localStorage.getItem('sois_url'),k=localStorage.getItem('sois_key');
+if(u&&k){try{sb=window.supabase.createClient(u,k);checkSession()}catch(e){document.getElementById('setupScreen').classList.remove('hidden')}}
+else{document.getElementById('setupScreen').classList.remove('hidden')}
+}
+async function checkSession(){
+if(!sb)return;
+const{data:{session}}=await sb.auth.getSession();
+if(session){
+const email = session.user.email || '';
+let{data:u}=await sb.from('master_user').select('*').eq('email',email).single();
+if(!u){
+const username = email.replace('@sois.local','');
+const{data:u2}=await sb.from('master_user').select('*').eq('username',username).single();
+u = u2;
+}
+if(u){currentUser=u;showApp();return}
+}
+document.getElementById('loginScreen').classList.remove('hidden');
+}
+async function doLogin(){
+const username=document.getElementById('loginUser').value.trim(),password=document.getElementById('loginPass').value.trim();
+if(!username||!password){document.getElementById('loginError').textContent='Username dan password wajib diisi';return}
+document.getElementById('loginError').textContent='';
+try{
+const{data:u,error:errU}=await sb.from('master_user').select('*').eq('username',username).single();
+if(errU||!u)throw new Error('Username tidak ditemukan');
+const userEmail = u.email || (username + '@sois.local');
+const{data,error}=await sb.auth.signInWithPassword({email:userEmail,password});
+if(error)throw error;
+currentUser=u;
+document.getElementById('loginScreen').classList.add('hidden');
+showApp();
+}catch(e){document.getElementById('loginError').textContent=e.message==='Username tidak ditemukan'?'Username tidak ditemukan':'Password salah'}
+}
+async function doLogout(){
+await sb.auth.signOut();
+currentUser=null;
+document.getElementById('appShell').classList.remove('active');
+document.getElementById('loginScreen').classList.remove('hidden');
+document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';document.getElementById('loginError').textContent='';
+closeMore();
+}
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginPass').focus()});
+
+// ==================== NAVIGATION & ACCESS CONTROL ====================
+function hasAccess(p){
+if(!currentUser)return false;const r=currentUser.role;
+if(r==='Owner')return['pageDashboard','pageBusinessReview','pageReport'].includes(p);
+if(r==='Sales Operations Manager')return true;
+// REVISI: Area Manager tidak bisa mengakses Validation
+if(r==='Area Manager')return['pageDashboard','pageSchedule','pageVisit','pageActionPlan'].includes(p);
+if(r==='Leader')return['pageDashboard','pageVisit','pageIssue','pageActionPlan'].includes(p);
+// REVISI: SPG/Staff TIDAK boleh akses Report
+if(r==='SPG')return['pageDashboard','pageIssue','pageVisit'].includes(p);
+return false;
+}
+
+// Helper: Get allowed counter IDs based on role
+async function getAllowedCounterIds() {
+    if (!currentUser) return [];
+    if (currentUser.role === 'Owner' || currentUser.role === 'Sales Operations Manager') return null; // null means ALL
+    
+    // Area Manager: counters where am_id = user.id
+    if (currentUser.role === 'Area Manager') {
+        const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.id_user);
+        return (data || []).map(c => c.id_counter);
+    }
+    
+    // Leader/SPG: counters linked to their schedules or assigned area
+    // For simplicity in this revision, we assume they follow AM's area or specific assignments
+    // If supervisor_id exists in master_user, use that AM's counters
+    if (currentUser.supervisor_id) {
+        const { data } = await sb.from('master_counter').select('id_counter').eq('am_id', currentUser.supervisor_id);
+        return (data || []).map(c => c.id_counter);
+    }
+    
+    return []; // Default empty if no mapping found
+}
+
+function showApp(){
+document.getElementById('appShell').classList.add('active');
+document.getElementById('headerAvatar').textContent=currentUser.nama_user.charAt(0);
+document.getElementById('headerName').textContent=currentUser.nama_user;
+buildNav();navTo('pageDashboard');
+}
+const allPages=[
+{id:'pageDashboard',icon:'fa-th-large',label:'Dashboard'},
+{id:'pageSchedule',icon:'fa-calendar-alt',label:'Schedule'},
+{id:'pageVisit',icon:'fa-store',label:'Visit'},
+{id:'pageIssue',icon:'fa-exclamation-triangle',label:'Issue'}
+];
+const morePages=[
+{id:'pageActionPlan',icon:'fa-tasks',label:'Action Plan'},
+{id:'pageValidation',icon:'fa-check-double',label:'Validation'},
+{id:'pageMaster',icon:'fa-database',label:'Master Data'},
+{id:'pageBusinessReview',icon:'fa-chart-line',label:'Business Review'},
+{id:'pageReport',icon:'fa-file-alt',label:'Report'}
+];
+function buildNav(){
+let h='';
+allPages.forEach(p=>{if(hasAccess(p.id))h+='<div class="nav-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i><span>'+p.label+'</span></div>'});
+const vm=morePages.filter(p=>hasAccess(p.id));
+if(vm.length>0){
+h+='<div class="nav-more-btn" id="moreBtn" onclick="toggleMore()"><i class="fas fa-ellipsis-h"></i><span>More</span></div>';
+let mh='';vm.forEach(p=>{mh+='<div class="more-menu-item" data-page="'+p.id+'" onclick="notifyClick(\''+p.label+'\');navTo(\''+p.id+'\')"><i class="fas '+p.icon+'"></i> '+p.label+'</div>'});
+document.getElementById('moreMenu').innerHTML=mh;
+}
+document.getElementById('bottomNav').innerHTML=h;
+}
+function navTo(p){
+if(!hasAccess(p)){toast('Tidak memiliki akses','error');return}
+closeMore();currentPage=p;
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.getElementById(p).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+document.querySelectorAll('.more-menu-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));
+const t={pageDashboard:'Dashboard',pageSchedule:'Schedule',pageVisit:'Visit',pageIssue:'Issue',pageActionPlan:'Action Plan',pageValidation:'Validation',pageBusinessReview:'Business Review',pageReport:'Report'};
+document.getElementById('headerTitle').textContent=t[p]||'SOIS';
+document.getElementById('fabBtn').classList.toggle('hidden',!{pageSchedule:1,pageVisit:1,pageIssue:1,pageActionPlan:1,pageValidation:1}[p]);
+renderPage(p);
+}
+function toggleMore(){moreOpen=!moreOpen;document.getElementById('moreMenu').classList.toggle('show',moreOpen);document.getElementById('moreBtn')?.classList.toggle('active',moreOpen)}
+function closeMore(){moreOpen=false;document.getElementById('moreMenu')?.classList.remove('show');document.getElementById('moreBtn')?.classList.remove('active')}
+function fabAction(){({pageSchedule:openScheduleForm,pageVisit:openVisitForm,pageIssue:openIssueSourceMenu,pageActionPlan:openActionPlanForm,pageValidation:openValidationForm})[currentPage]?.()}
+function openModal(h){document.getElementById('modalBody').innerHTML=h;document.getElementById('modalOverlay').classList.add('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+function renderPage(p){({pageDashboard:renderDashboard,pageSchedule:renderSchedule,pageVisit:renderVisit,pageIssue:renderIssue,pageActionPlan:renderActionPlan,pageValidation:renderValidation,pageMaster:renderMasterData,pageBusinessReview:renderBusinessReview,pageReport:renderReport})[p]?.()}
+async function getCounterName(id){if(!id)return'-';const{data}=await sb.from('master_counter').select('nama_counter').eq('id_counter',id).single();return data?.nama_counter||'-'}
+async function getUserName(id){if(!id)return'-';const{data}=await sb.from('master_user').select('nama_user').eq('id_user',id).single();return data?.nama_user||'-'}
+async function get4PItem(id){if(!id)return{};const{data}=await sb.from('master_4p').select('*').eq('id_item',id).single();return data||{}}
+function counterOpt(sel){return '<option value="">Pilih Counter</option>'+DB_C.counters.map(c=>'<option value="'+c.id_counter+'"'+(sel===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')}
+function userOpt(sel,roles){let q=sb.from('master_user').select('*');if(roles)q=q.in('role',roles);return q}
+function statusOpt(sel){return['OPEN','ON PROGRESS','DONE'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
+function priOpt(sel){return['HIGH','MEDIUM','LOW'].map(s=>'<option'+(sel===s?' selected':'')+'>'+s+'</option>').join('')}
+
+// FIX: Added issues to DB_C cache
+let DB_C={counters:[],users:[],items4p:[], issues:[]};
+
+async function loadCache(){
+    if(DB_C.counters.length && DB_C.issues.length) return;
+    const[c,u,i, iss]=await Promise.all([
+        sb.from('master_counter').select('*'),
+        sb.from('master_user').select('*'),
+        sb.from('master_4p').select('*'),
+        sb.from('issue').select('*') // Fetch issues for report mapping
+    ]);
+    DB_C.counters=c.data||[];
+    DB_C.users=u.data||[];
+    DB_C.items4p=i.data||[];
+    DB_C.issues=iss.data||[]; // Simpan ke cache
+}
+
+function cn(id){return DB_C.counters.find(c=>c.id_counter===id)?.nama_counter||'-'}
+function un(id){return DB_C.users.find(u=>u.id_user===id)?.nama_user||'-'}
+function fp(id){return DB_C.items4p.find(m=>m.id_item===id)||{}}
+
+// ==================== DASHBOARD ====================
+async function renderDashboard(){
+const el=document.getElementById('pageDashboard');
+el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();
+
+// FILTERING: Get allowed counters
+const allowedIds = await getAllowedCounterIds();
+let vQuery = sb.from('visit').select('*');
+let iQuery = sb.from('issue').select('*');
+let apQuery = sb.from('action_plan').select('*');
+let valQuery = sb.from('validation').select('*');
+let compQuery = sb.from('complaint').select('*');
+let pendQuery = sb.from('pending_issue').select('*');
+
+if (allowedIds !== null && allowedIds.length > 0) {
+    vQuery = vQuery.in('counter_id', allowedIds);
+    iQuery = iQuery.in('counter_id', allowedIds);
+    compQuery = compQuery.in('counter_id', allowedIds);
+    pendQuery = pendQuery.in('counter_id', allowedIds);
+}
+
+const[v,is,ap,val,comp,pend]=await Promise.all([vQuery, iQuery, apQuery, valQuery, compQuery, pendQuery]);
+const vd=v.data||[],id=is.data||[],ad=ap.data||[],vd2=val.data||[],cd=comp.data||[],pd=pend.data||[];
+const openAP=ad.filter(a=>a.status!=='DONE').length,doneAP=ad.filter(a=>a.status==='DONE').length;
+let h='<div class="stat-grid">';
+h+='<div class="stat-card g"><div class="stat-num" style="color:var(--pass)">'+vd.length+'</div><div class="stat-label">Total Visit</div></div>';
+h+='<div class="stat-card r"><div class="stat-num" style="color:var(--danger)">'+id.length+'</div><div class="stat-label">Total Issue</div></div>';
+h+='<div class="stat-card y"><div class="stat-num" style="color:var(--warning)">'+openAP+'</div><div class="stat-label">Open Action</div></div>';
+h+='<div class="stat-card b"><div class="stat-num" style="color:var(--info)">'+doneAP+'</div><div class="stat-label">Done Action</div></div>';
+h+='</div>';
+const cm={};id.forEach(i=>{cm[i.category_4p]=(cm[i.category_4p]||0)+1});
+const cc={PEOPLE:'#5B8C85',PRODUCT:'#E09F3E',PLACE:'#6B9080',PROMOTION:'#D95D5D'};
+h+='<div class="card"><div class="card-header"><div class="card-title">Issue by 4P Category</div></div><div class="chart-bar-container">';
+['PEOPLE','PRODUCT','PLACE','PROMOTION'].forEach(c=>{const v=cm[c]||0;const ht=id.length>0?Math.max(4,(v/id.length)*110):4;h+='<div class="chart-bar-wrap"><div class="chart-bar-val">'+v+'</div><div class="chart-bar" style="height:'+ht+'px;background:'+cc[c]+'"></div><div class="chart-bar-label">'+c.charAt(0)+c.charAt(1)+'</div></div>'});
+h+='</div></div>';
+const pct=ad.length>0?Math.round((doneAP/ad.length)*100):0;
+const apP=ad.filter(a=>a.status==='ON PROGRESS').length,apO=ad.filter(a=>a.status==='OPEN').length,apV=ad.filter(a=>a.status==='OVERDUE').length;
+h+='<div class="card"><div class="card-header"><div class="card-title">Action Plan Progress</div><span style="font-size:18px;font-weight:800;color:var(--accent)">'+pct+'%</span></div>';
+h+='<div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--accent),#D4A373)"></div></div>';
+h+='<div style="display:flex;gap:14px;flex-wrap:wrap">';
+[['Done',doneAP,'--done'],['On Progress',apP,'--prog'],['Open',apO,'--open'],['Overdue',apV,'--overdue']].forEach(([l,v,c])=>{h+='<span style="font-size:11px;color:var(--muted)"><i class="fas fa-circle" style="color:var('+c+');font-size:7px;margin-right:3px"></i>'+l+': '+v+'</span>'});
+h+='</div></div>';
+const rm={};id.forEach(i=>{rm[i.root_driver]=(rm[i.root_driver]||0)+1});
+h+='<div class="card"><div class="card-header"><div class="card-title">Root Driver Distribution</div></div>';
+['QUALITY','SERVICE','CLEANLINESS'].forEach(rd=>{const v=rm[rd]||0;const p=id.length>0?Math.round((v/id.length)*100):0;h+='<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>'+rd+'</span><span style="font-weight:700">'+v+' ('+p+'%)</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+(rd==='QUALITY'?'var(--warning)':rd==='SERVICE'?'var(--info)':'var(--pass)')+'"></div></div></div>'});
+h+='</div>';
+h+='<div class="section-title"><i class="fas fa-exclamation-circle"></i> Recent Issues</div>';
+const recent=[...id].reverse().slice(0,5);
+if(!recent.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada issue</p></div>';
+recent.forEach(is2=>{h+='<div class="list-item" onclick="viewIssueDetail('+is2.id_issue+')"><div class="li-title">'+is2.problem+'</div><div class="li-sub">'+is2.source_type+' &middot; '+fmtD(is2.created_at)+'</div><div class="li-meta">'+sbadge(is2.priority)+'<span style="color:var(--muted)">'+is2.category_4p+'</span><span style="color:var(--muted)">'+is2.root_driver+'</span></div></div>'});
+if(currentUser&&(currentUser.role==='Owner'||currentUser.role==='Sales Operations Manager')){
+h+='<div class="section-title" style="margin-top:14px"><i class="fas fa-comment-dots"></i> Recent Complaints</div>';
+const rc=[...cd].reverse().slice(0,3);
+if(!rc.length)h+='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada complaint</p></div>';
+rc.forEach(c2=>{h+='<div class="list-item"><div class="li-title">'+c2.customer_name+' - '+c2.category+'</div><div class="li-sub">'+c2.detail+'</div><div class="li-meta"><span>'+cn(c2.counter_id)+'</span><span>'+fmtD(c2.tanggal)+'</span></div></div>'});
+}
+el.innerHTML=h;
+}
+
+// ==================== SCHEDULE ====================
+async function renderSchedule(){
+const el=document.getElementById('pageSchedule');
+el.innerHTML='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();
+let{data}=await sb.from('jadwal').select('*').order('created_at',{ascending:false});
+
+// FILTERING BY AM COUNTERS
+const allowedIds = await getAllowedCounterIds();
+if (allowedIds !== null) {
+    data = (data || []).filter(s => allowedIds.includes(s.counter_id));
+}
+
+const fv=document.getElementById('schedFilter')?.value;
+if(fv)data=(data||[]).filter(s=>{const fm=s.tanggal_mulai?.substring(0,7),tm=s.tanggal_selesai?.substring(0,7);return fm===fv||tm===fv||(fv>=fm&&fv<=tm)});
+let h='<div class="filter-bar"><input type="month" id="schedFilter" onchange="renderSchedule()" value="'+(fv||'')+'"></div><div class="section-title"><i class="fas fa-calendar-alt"></i> Visit Schedules</div>';
+if(!data||!data.length)h+='<div class="empty-state"><i class="fas fa-calendar-plus"></i><p>Belum ada schedule</p></div>';
+data.forEach(s=>{
+const ed=canEdit(s.status);
+h+='<div class="list-item"><div class="li-title">'+cn(s.counter_id)+'</div><div class="li-sub">'+s.activity_plan+' &middot; '+(s.notes||'')+'</div><div class="li-meta"><span><i class="fas fa-user" style="margin-right:3px"></i>'+un(s.pic_id)+'</span><span>'+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+'</span>'+sbadge(s.status)+'</div>';
+if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit Schedule\');editSchedule('+s.id_jadwal+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-s btn-xs" onclick="notifyClick(\'Submit Schedule\');submitSchedule('+s.id_jadwal+')"><i class="fas fa-paper-plane"></i> Submit</button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus Schedule\');deleteSchedule('+s.id_jadwal+')"><i class="fas fa-trash"></i></button></div>';
+h+='</div>';
+});
+el.innerHTML=h;
+}
+async function openScheduleForm(eid){
+await loadCache();
+const s=eid?(await sb.from('jadwal').select('*').eq('id_jadwal',eid).single()).data:null;
+let h='<div class="modal-title">'+(s?'Edit':'Tambah')+' Schedule</div>';
+h+='<div class="fg"><label>From Date</label><input type="date" id="sfFrom" value="'+(s?s.tanggal_mulai:today())+'"></div>';
+h+='<div class="fg"><label>To Date</label><input type="date" id="sfTo" value="'+(s?s.tanggal_selesai:today())+'"></div>';
+h+='<div class="fg"><label>PIC</label><select id="sfPic">';
+DB_C.users.filter(u=>['Sales Operations Manager','Area Manager','Leader','SPG'].includes(u.role)).forEach(u=>{h+='<option value="'+u.id_user+'"'+(s&&s.pic_id===u.id_user?' selected':'')+'>'+u.nama_user+' ('+u.role+')</option>'});
+h+='</select></div>';
+
+// FILTER COUNTER DROPDOWN FOR AM
+let counterList = DB_C.counters;
+if (currentUser.role === 'Area Manager') {
+    counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
+}
+
+h+='<div class="fg"><label>Counter</label><select id="sfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'"'+(s&&s.counter_id===c.id_counter?' selected':'')+'>'+c.nama_counter+'</option>').join('')+'</select></div>';
+h+='<div class="fg"><label>Activity Plan</label><input type="text" id="sfActivity" value="'+(s?s.activity_plan:'')+'"></div>';
+h+='<div class="fg"><label>Notes</label><textarea id="sfNotes">'+(s?s.notes||'':'')+'</textarea></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Schedule\');saveSchedule('+(eid||0)+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+openModal(h);
+}
+async function saveSchedule(eid){
+const d={tanggal_mulai:document.getElementById('sfFrom').value,tanggal_selesai:document.getElementById('sfTo').value,pic_id:parseInt(document.getElementById('sfPic').value),counter_id:parseInt(document.getElementById('sfCounter').value),activity_plan:document.getElementById('sfActivity').value,notes:document.getElementById('sfNotes').value};
+if(!d.tanggal_mulai||!d.tanggal_selesai||!d.activity_plan){toast('Lengkapi semua field','error');return}
+toast('Menyimpan schedule...', 'info');
+if(eid){await sb.from('jadwal').update(d).eq('id_jadwal',eid)}
+else{await sb.from('jadwal').insert({...d,status:'DRAFT',created_at:new Date().toISOString()})}
+closeModal();toast(eid?'Schedule diperbarui':'Schedule ditambahkan');renderSchedule();
+}
+function editSchedule(id){openScheduleForm(id)}
+async function submitSchedule(id){toast('Submitting...', 'info');await sb.from('jadwal').update({status:'SUBMITTED'}).eq('id_jadwal',id);toast('Schedule disubmit');renderSchedule()}
+async function deleteSchedule(id){openModal('<div class="modal-title">Hapus Schedule?</div><p style="color:var(--fg2);margin-bottom:18px">Data yang dihapus tidak bisa dikembalikan.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelSched('+id+')">Hapus</button></div>')}
+async function confirmDelSched(id){await sb.from('jadwal').delete().eq('id_jadwal',id);closeModal();toast('Schedule dihapus');renderSchedule()}
+
+// ==================== VISIT ====================
+async function renderVisit(){
+const el=document.getElementById('pageVisit');
+el.innerHTML='<div class="section-title"><i class="fas fa-store"></i> Visits</div><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();
+
+let vQuery = sb.from('visit').select('*').order('created_at',{ascending:false});
+// FILTERING BY AM COUNTERS
+const allowedIds = await getAllowedCounterIds();
+if (allowedIds !== null && allowedIds.length > 0) {
+    vQuery = vQuery.in('counter_id', allowedIds);
+} else if (allowedIds !== null && allowedIds.length === 0) {
+    el.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Tidak ada akses visit.</p></div>';
+    return;
+}
+
+const{data:visits}=await vQuery;
+let h='<div class="section-title"><i class="fas fa-store"></i> Visits</div>';
+if(!visits||!visits.length)h+='<div class="empty-state"><i class="fas fa-store"></i><p>Belum ada visit</p></div>';
+for(const v of visits){
+const{data:details}=await sb.from('visit_detail').select('*').eq('visit_id',v.id_visit);
+const failCount=(details||[]).filter(d=>d.status==='FAIL').length;
+h+='<div class="list-item" onclick="viewVisitDetail('+v.id_visit+')"><div class="li-title">'+cn(v.counter_id)+'</div><div class="li-sub">'+fmtDF(v.tanggal)+' &middot; '+v.check_in+' - '+v.check_out+'</div><div class="li-meta"><span><i class="fas fa-user" style="margin-right:3px"></i>'+un(v.pic_id)+'</span>'+sbadge(v.status);
+if(failCount>0)h+=' <span style="color:var(--danger)"><i class="fas fa-times-circle"></i> '+failCount+' fail</span>';
+h+='</div></div>';
+}
+el.innerHTML=h;
+}
+async function openVisitForm(){
+await loadCache();
+const{data:subs}=await sb.from('jadwal').select('*').eq('status','SUBMITTED');
+if(!subs||!subs.length){toast('Tidak ada schedule yang disubmit','error');return}
+
+// FILTER SCHEDULES BY AM COUNTERS
+let filteredSubs = subs;
+const allowedIds = await getAllowedCounterIds();
+if (allowedIds !== null) {
+    filteredSubs = subs.filter(s => allowedIds.includes(s.counter_id));
+}
+if(!filteredSubs.length){toast('Tidak ada schedule tersedia untuk area Anda','error');return}
+
+let h='<div class="modal-title">Buat Visit</div>';
+h+='<div class="fg"><label>Pilih Schedule</label><select id="vfSched" onchange="vfSchedChange()">';
+filteredSubs.forEach(s=>{h+='<option value="'+s.id_jadwal+'">'+cn(s.counter_id)+' ('+fmtD(s.tanggal_mulai)+' - '+fmtD(s.tanggal_selesai)+')</option>'});
+h+='</select></div><div id="vfDetails"></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Mulai Visit\');startVisit()"><i class="fas fa-play"></i> Mulai Visit</button></div>';
+openModal(h);vfSchedChange();
+}
+async function vfSchedChange(){
+const sid=parseInt(document.getElementById('vfSched').value);
+const{data:s}=await sb.from('jadwal').select('*').eq('id_jadwal',sid).single();
+if(!s)return;
+document.getElementById('vfDetails').innerHTML='<div class="fg"><label>Tanggal</label><input type="date" id="vfDate" value="'+today()+'"></div><div class="fg"><label>Counter</label><input type="text" value="'+cn(s.counter_id)+'" disabled></div><div class="fg"><label>PIC</label><input type="text" value="'+un(s.pic_id)+'" disabled></div><div class="fg"><label>Check In</label><input type="time" id="vfIn" value="'+new Date().toTimeString().substring(0,5)+'"></div><div class="fg"><label>Check Out</label><input type="time" id="vfOut"></div>';
+}
+async function startVisit(){
+const sid=parseInt(document.getElementById('vfSched').value);
+const{data:s}=await sb.from('jadwal').select('*').eq('id_jadwal',sid).single();
+toast('Memulai visit...', 'info');
+const{data:v}=await sb.from('visit').insert({jadwal_id:sid,counter_id:s.counter_id,pic_id:s.pic_id,tanggal:document.getElementById('vfDate').value,check_in:document.getElementById('vfIn').value,check_out:document.getElementById('vfOut').value,photo_url:'',status:'DRAFT',created_at:new Date().toISOString()}).select().single();
+closeModal();openVisitObservation(v.id_visit);
+}
+async function openVisitObservation(vid){
+    await loadCache();
+    const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+    const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+    
+    let h='<div class="modal-title">Observation - '+cn(v.counter_id)+'</div><div id="obsList">';
+    
+    if(obs&&obs.length){
+        obs.forEach((o,i)=>{
+            const m=fp(o.item_id);
+            // Tentukan warna tombol berdasarkan status
+            const isFail = o.status === 'FAIL';
+            
+            h+=`<div class="card" style="margin-bottom:8px; border-left: 4px solid ${isFail ? 'var(--danger)' : 'var(--pass)'}">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:7px">
+                    <div>
+                        <div style="font-size:12px;font-weight:600">${m.item_check}</div>
+                        <div style="font-size:10px;color:var(--muted)">${m.category_4p} / ${m.sub_category}</div>
+                    </div>
+                    <div style="display:flex;gap:3px">
+                        <button class="btn btn-xs ${!isFail?'btn-p':'btn-s'}" onclick="notifyClick(\'Set PASS\');setObsSt(${vid},${o.id_detail},'PASS')">PASS</button>
+                        <button class="btn btn-xs ${isFail?'btn-d':'btn-s'}" onclick="notifyClick(\'Set FAIL\');setObsSt(${vid},${o.id_detail},'FAIL')">FAIL</button>
+                    </div>
+                </div>`;
+                
+            if(isFail){
+                // Kolom Input Detail
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Problem</label><input type="text" id="prob_${o.id_detail}" value="${o.problem||''}"></div>`;
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Root Cause</label><input type="text" id="rc_${o.id_detail}" value="${o.root_cause||''}"></div>`;
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Impact</label><input type="text" id="imp_${o.id_detail}" value="${o.impact||''}"></div>`;
+                h+=`<div class="fg" style="margin-bottom:6px"><label>Recommendation</label><input type="text" id="rec_${o.id_detail}" value="${o.recommendation||''}"></div>`;
+                
+                // Upload Foto Bukti Temuan (Resolusi Rendah/Kompresi)
+                h+=`<div class="fg" style="margin-bottom:0">
+                        <label>Bukti Foto Temuan (Max 250KB)</label>
+                        <input type="file" id="photo_${o.id_detail}" accept="image/*" capture="environment" onchange="previewPhoto(this, 'prev_${o.id_detail}')">
+                        <div id="prev_${o.id_detail}" style="margin-top:5px">
+                            ${o.evidence_photo ? `<img src="${getIkUrl(o.evidence_photo)}" style="height:60px;border-radius:4px;object-fit:cover">` : ''}
+                        </div>
+                    </div>`;
+            }
+            h+='</div>';
+        });
+    }
+    h+='</div>';
+    h+='<div style="display:flex;gap:7px;margin-top:14px"><button class="btn btn-s btn-full" onclick="renderVisit();closeModal()">Cancel</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Observasi\');saveVisitObs('+vid+')"><i class="fas fa-save"></i> Simpan Draft</button></div>';
+    openModal(h);
+}
+
+// Helper untuk preview foto sederhana
+function previewPhoto(input, prevId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(prevId).innerHTML = `<img src="${e.target.result}" style="height:60px;border-radius:4px;object-fit:cover">`;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+async function setObsSt(vid,did,st){
+await sb.from('visit_detail').update({status:st,problem:st==='PASS'?'':undefined,root_cause:st==='PASS'?'':undefined,impact:st==='PASS'?'':undefined,recommendation:st==='PASS'?'':undefined}).eq('id_detail',did);
+openVisitObservation(vid);
+}
+async function saveVisitObs(vid){
+    toast('Menyimpan observasi...', 'info');
+    const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+    
+    // Loop untuk memproses setiap item observasi
+    for(const o of obs){
+        if(o.status === 'FAIL'){
+            // Ambil nilai dari input ID yang baru kita buat
+            const problem = document.getElementById(`prob_${o.id_detail}`)?.value || '';
+            const rootCause = document.getElementById(`rc_${o.id_detail}`)?.value || '';
+            const impact = document.getElementById(`imp_${o.id_detail}`)?.value || '';
+            const rec = document.getElementById(`rec_${o.id_detail}`)?.value || '';
+            const photoInput = document.getElementById(`photo_${o.id_detail}`);
+            
+            let photoUrl = o.evidence_photo; // Keep old photo if exists
+            
+            // Proses Upload Foto Baru jika ada
+            if(photoInput && photoInput.files && photoInput.files[0]){
+                toast(`Mengompres foto untuk ${o.id_detail}...`, 'info');
+                const compressedBlob = await compressImage(photoInput.files[0]);
+                const path = `visit_evidence/${vid}_${o.id_detail}_${Date.now()}.jpg`;
+                
+                const { data: upData, error: upErr } = await sb.storage.from('validation').upload(path, compressedBlob, { contentType: 'image/jpeg' });
+                if(!upErr){
+                    const { data: urlData } = sb.storage.from('validation').getPublicUrl(path);
+                    photoUrl = urlData.publicUrl;
+                } else {
+                    toast(`Gagal upload foto ${o.id_detail}: ${upErr.message}`, 'error');
+                }
+            }
+
+            // Update data ke database
+            await sb.from('visit_detail').update({
+                problem: problem,
+                root_cause: rootCause,
+                impact: impact,
+                recommendation: rec,
+                evidence_photo: photoUrl
+            }).eq('id_detail', o.id_detail);
+        } else {
+            // Jika PASS, kosongkan field detail
+            await sb.from('visit_detail').update({
+                problem: '', root_cause: '', impact: '', recommendation: '', evidence_photo: null
+            }).eq('id_detail', o.id_detail);
+        }
+    }
+    
+    closeModal();
+    toast('Observasi berhasil disimpan');
+    renderVisit();
+}
+// GROUPING LOGIC START
+if(obs && obs.length > 0) {
+    // Siapkan container untuk 4 kategori
+    const categories = ['PEOPLE', 'PRODUCT', 'PLACE', 'PROMOTION'];
+    const grouped = {};
+    categories.forEach(c => grouped[c] = []);
+    
+    // Masukkan observasi ke grup yang sesuai
+    obs.forEach(o => {
+        const itemData = fp(o.item_id);
+        const cat = itemData.category_4p || 'OTHER';
+        if(grouped[cat]) grouped[cat].push({o, itemData});
+    });
+
+    h += '<div class="section-title"><i class="fas fa-clipboard-check"></i> Observations by Category</div>';
+
+    // Render per kategori
+    categories.forEach(cat => {
+        const items = grouped[cat];
+        if(items.length > 0) {
+            h += `<div class="card" style="margin-bottom:12px; border-left: 4px solid var(--accent);">
+                <div class="card-header"><div class="card-title">${cat}</div></div>`;
+            
+            items.forEach(({o, itemData}) => {
+                h+=`<div style="padding:8px 0; border-bottom:1px solid var(--border)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div style="font-size:12px;font-weight:600">${itemData.item_check}</div>
+                        ${sbadge(o.status)}
+                    </div>
+                    <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${itemData.sub_category || ''}</div>
+                `;
+                
+                if(o.status==='FAIL'){
+                    h+='<div style="margin-top:6px;padding:8px;background:var(--bg2);border-radius:6px;font-size:11px;">';
+                    h+='<div style="color:var(--danger);font-weight:600;margin-bottom:2px">Problem:</div><div style="margin-bottom:4px">'+o.problem+'</div>';
+                    if(o.root_cause) h+='<div style="color:var(--fg2);font-weight:600;margin-bottom:2px">Root Cause:</div><div style="margin-bottom:4px">'+o.root_cause+'</div>';
+                    if(o.impact) h+='<div style="color:var(--fg2);font-weight:600;margin-bottom:2px">Impact:</div><div style="margin-bottom:4px">'+o.impact+'</div>';
+                    if(o.recommendation) h+='<div style="color:var(--accent);font-weight:600;margin-bottom:2px">Recommendation:</div><div>'+o.recommendation+'</div>';
+                    h+='</div>';
+                }
+                h+='</div>';
+            });
+            h += '</div>'; // End Card Category
+        }
+    });
+} else {
+    h+='<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>Belum ada observation</p></div>';
+    if(ed)h+='<button class="btn btn-p btn-full" onclick="initObs('+vid+')"><i class="fas fa-clipboard-check"></i> Mulai Observation</button>';
+}
+// GROUPING LOGIC END
+
+if(ed && obs && obs.length > 0){
+h+='<div style="display:flex;gap:7px;margin-top:10px"><button class="btn btn-s btn-full" onclick="openVisitObservation('+vid+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-p btn-full" onclick="submitVisit('+vid+')"><i class="fas fa-paper-plane"></i> Submit</button></div>';
+h+='<button class="btn btn-d btn-full" style="margin-top:7px" onclick="deleteVisit('+vid+')"><i class="fas fa-trash"></i> Hapus</button>';
+}
+
+openModal(h);
+}
+async function initObs(vid){
+await loadCache();
+const rows=DB_C.items4p.map(m=>({visit_id:vid,item_id:m.id_item,status:'PASS',problem:'',root_cause:'',impact:'',recommendation:''}));
+toast('Initializing observations...', 'info');
+await sb.from('visit_detail').insert(rows);
+openVisitObservation(vid);
+}
+async function submitVisit(vid){
+toast('Submitting visit...', 'info');
+const{data:obs}=await sb.from('visit_detail').select('*').eq('visit_id',vid);
+await sb.from('visit').update({status:'SUBMITTED'}).eq('id_visit',vid);
+const{data:v}=await sb.from('visit').select('*').eq('id_visit',vid).single();
+const fails=(obs||[]).filter(o=>o.status==='FAIL');
+for(const o of fails){
+const m=fp(o.item_id);
+await sb.from('issue').insert({source_type:'Visit Observation',source_id:vid,counter_id:v.counter_id,category_4p:m.category_4p,root_driver:m.root_driver,problem:o.problem,root_cause:o.root_cause,impact:o.impact,priority:'HIGH',status:'OPEN',created_at:new Date().toISOString(), evidence_photo: o.evidence_photo});
+}
+closeModal();toast('Visit disubmit'+(fails.length?'.'+fails.length+' issue dibuat otomatis':''));renderVisit();
+}
+async function deleteVisit(vid){openModal('<div class="modal-title">Hapus Visit?</div><p style="color:var(--fg2);margin-bottom:18px">Data visit dan detail akan dihapus.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelVisit('+vid+')">Hapus</button></div>')}
+async function confirmDelVisit(vid){await sb.from('visit_detail').delete().eq('visit_id',vid);await sb.from('visit').delete().eq('id_visit',vid);closeModal();toast('Visit dihapus');renderVisit()}
+
+// ==================== ISSUE ====================
+async function renderIssue(){
+const el=document.getElementById('pageIssue');
+el.innerHTML='<div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+await loadCache();
+const isSPG=currentUser&&currentUser.role==='SPG';
+if(isSPG){
+let h='<div style="display:flex;gap:7px;margin-bottom:14px"><button class="btn btn-s btn-full" onclick="notifyClick(\'Buka Form Complaint\');openComplaintForm()"><i class="fas fa-comment-dots"></i> Complaint</button><button class="btn btn-s btn-full" onclick="notifyClick(\'Buka Form Pending\');openPendingForm()"><i class="fas fa-clock"></i> Pending Issue</button></div>';
+h+='<div class="section-title"><i class="fas fa-comment-dots"></i> My Complaints</div>';
+const{data:mc}=await sb.from('complaint').select('*').eq('pic_id',currentUser.id_user).order('created_at',{ascending:false});
+if(!mc||!mc.length)h+='<div class="empty-state"><i class="fas fa-comment-dots"></i><p>Belum ada complaint</p></div>';
+mc.forEach(c=>{h+='<div class="list-item"><div class="li-title">'+c.category+'</div><div class="li-sub">'+c.detail+'</div><div class="li-meta"><span>'+cn(c.counter_id)+'</span><span>'+fmtD(c.tanggal)+'</span>'+sbadge(c.status)+'</div></div>'});
+h+='<div class="section-title" style="margin-top:14px"><i class="fas fa-clock"></i> My Pending Issues</div>';
+const{data:mp}=await sb.from('pending_issue').select('*').eq('pic_id',currentUser.id_user).order('created_at',{ascending:false});
+if(!mp||!mp.length)h+='<div class="empty-state"><i class="fas fa-clock"></i><p>Belum ada pending issue</p></div>';
+mp.forEach(p=>{h+='<div class="list-item"><div class="li-title">'+p.description+'</div><div class="li-meta"><span>'+cn(p.counter_id)+'</span>'+sbadge(p.priority)+'<span>'+fmtD(p.tanggal)+'</span></div></div>'});
+el.innerHTML=h;
+}else{
+let h='<div class="tabs" id="issueTabs"><button class="tab-btn active" onclick="filterIssueTab(\'all\',this)">All</button><button class="tab-btn" onclick="filterIssueTab(\'PEOPLE\',this)">People</button><button class="tab-btn" onclick="filterIssueTab(\'PRODUCT\',this)">Product</button><button class="tab-btn" onclick="filterIssueTab(\'PLACE\',this)">Place</button><button class="tab-btn" onclick="filterIssueTab(\'PROMOTION\',this)">Promotion</button></div><div id="issueListC"></div>';
+el.innerHTML=h;filterIssueTab('all');
+}
+}
+async function filterIssueTab(cat,btn){
+if(btn){document.querySelectorAll('#issueTabs .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+let q=sb.from('issue').select('*').order('created_at',{ascending:false});
+if(cat!=='all')q=q.eq('category_4p',cat);
+
+// FILTERING BY AM COUNTERS
+const allowedIds = await getAllowedCounterIds();
+if (allowedIds !== null && allowedIds.length > 0) {
+    q = q.in('counter_id', allowedIds);
+} else if (allowedIds !== null && allowedIds.length === 0) {
+    document.getElementById('issueListC').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Tidak ada akses issue.</p></div>';
+    return;
+}
+
+const{data}=await q;
+const c=document.getElementById('issueListC');if(!c)return;
+if(!data||!data.length){c.innerHTML='<div class="empty-state"><i class="fas fa-check-circle"></i><p>Tidak ada issue</p></div>';return}
+let h='';data.forEach(i=>{h+='<div class="list-item" onclick="viewIssueDetail('+i.id_issue+')"><div class="li-title">'+i.problem+'</div><div class="li-sub">'+i.source_type+' &middot; '+i.root_driver+'</div><div class="li-meta">'+sbadge(i.priority)+'<span>'+i.category_4p+'</span><span>'+fmtD(i.created_at)+'</span></div></div>'});
+c.innerHTML=h;
+}
+function openIssueSourceMenu(){openModal('<div class="modal-title">Tambah Issue</div><div class="list-item" onclick="closeModal();notifyClick(\'Buka Form Complaint\');openComplaintForm()"><div class="li-title"><i class="fas fa-comment-dots" style="color:var(--warning);margin-right:7px"></i>Customer Complaint</div><div class="li-sub">Input keluhan customer</div></div><div class="list-item" onclick="closeModal();notifyClick(\'Buka Form Pending\');openPendingForm()"><div class="li-title"><i class="fas fa-clock" style="color:var(--info);margin-right:7px"></i>Pending Operational Issue</div><div class="li-sub">Input issue operasional</div></div>')}
+async function openComplaintForm(){
+await loadCache();
+
+// FILTER COUNTER DROPDOWN FOR AM
+let counterList = DB_C.counters;
+if (currentUser.role === 'Area Manager') {
+    counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
+}
+
+let h='<div class="modal-title">Customer Complaint</div>';
+h+='<div class="fg"><label>Tanggal</label><input type="date" id="cfDate" value="'+today()+'"></div>';
+h+='<div class="fg"><label>Counter</label><select id="cfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
+h+='<div class="fg"><label>Customer Name</label><input type="text" id="cfName"></div>';
+h+='<div class="fg"><label>Category</label><select id="cfCat"><option>Product Quality</option><option>Service</option><option>Place</option><option>Promotion</option><option>Others</option></select></div>';
+h+='<div class="fg"><label>Detail</label><textarea id="cfDetail"></textarea></div>';
+h+='<div class="fg"><label>Root Cause</label><input type="text" id="cfRC"></div>';
+h+='<div class="fg"><label>Impact</label><input type="text" id="cfImpact"></div>';
+h+='<div class="fg"><label>PIC</label><select id="cfPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
+// NEW: Photo Upload Field
+h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="cfPhoto" accept="image/*" capture="environment"></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Complaint\');saveComplaint()"><i class="fas fa-save"></i> Simpan</button></div>';
+openModal(h);
+}
+async function saveComplaint(){
+const d={tanggal:document.getElementById('cfDate').value,counter_id:parseInt(document.getElementById('cfCounter').value),customer_name:document.getElementById('cfName').value,category:document.getElementById('cfCat').value,detail:document.getElementById('cfDetail').value,root_cause:document.getElementById('cfRC').value,impact:document.getElementById('cfImpact').value,pic_id:parseInt(document.getElementById('cfPic').value),status:'OPEN',created_at:new Date().toISOString()};
+if(!d.customer_name||!d.detail){toast('Lengkapi data','error');return}
+
+// COMPRESS & UPLOAD PHOTO
+const photoUrl = await handlePhotoUpload(document.getElementById('cfPhoto'), 'validation', 'complaints');
+if (!photoUrl) { toast('Foto bukti wajib diupload', 'error'); return; }
+d.evidence_photo = photoUrl;
+
+toast('Menyimpan complaint...', 'info');
+const{data:comp}=await sb.from('complaint').insert(d).select().single();
+const cat4p={'Product Quality':'PRODUCT',Service:'PEOPLE',Place:'PLACE',Promotion:'PROMOTION',Others:'PRODUCT'};
+// FIX: Ensure evidence_photo is copied to issue table
+await sb.from('issue').insert({source_type:'Customer Complaint',source_id:comp.id_complaint,counter_id:d.counter_id,category_4p:cat4p[d.category]||'PRODUCT',root_driver:'QUALITY',problem:d.detail,root_cause:d.root_cause,impact:d.impact,priority:'HIGH',status:'OPEN',created_at:new Date().toISOString(), evidence_photo: photoUrl});
+closeModal();toast('Complaint disimpan, issue dibuat otomatis');renderIssue();
+}
+async function openPendingForm(){
+await loadCache();
+
+// FILTER COUNTER DROPDOWN FOR AM
+let counterList = DB_C.counters;
+if (currentUser.role === 'Area Manager') {
+    counterList = DB_C.counters.filter(c => c.am_id === currentUser.id_user);
+}
+
+let h='<div class="modal-title">Pending Operational Issue</div>';
+h+='<div class="fg"><label>Tanggal</label><input type="date" id="pfDate" value="'+today()+'"></div>';
+h+='<div class="fg"><label>Counter</label><select id="pfCounter">'+counterList.map(c=>'<option value="'+c.id_counter+'">'+c.nama_counter+'</option>').join('')+'</select></div>';
+h+='<div class="fg"><label>Issue Category</label><select id="pfCat"><option>People</option><option>Product</option><option>Place</option><option>Promotion</option><option>Others</option></select></div>';
+h+='<div class="fg"><label>Description</label><textarea id="pfDesc"></textarea></div>';
+h+='<div class="fg"><label>Root Cause</label><input type="text" id="pfRC"></div>';
+h+='<div class="fg"><label>Priority</label><select id="pfPri">'+priOpt('HIGH')+'</select></div>';
+h+='<div class="fg"><label>PIC</label><select id="pfPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
+// NEW: Photo Upload Field
+h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="pfPhoto" accept="image/*" capture="environment"></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Pending Issue\');savePending()"><i class="fas fa-save"></i> Simpan</button></div>';
+openModal(h);
+}
+async function savePending(){
+const d={tanggal:document.getElementById('pfDate').value,counter_id:parseInt(document.getElementById('pfCounter').value),issue_category:document.getElementById('pfCat').value,description:document.getElementById('pfDesc').value,root_cause:document.getElementById('pfRC').value,priority:document.getElementById('pfPri').value,pic_id:parseInt(document.getElementById('pfPic').value),status:'OPEN',created_at:new Date().toISOString()};
+if(!d.description){toast('Lengkapi deskripsi','error');return}
+
+// COMPRESS & UPLOAD PHOTO
+const photoUrl = await handlePhotoUpload(document.getElementById('pfPhoto'), 'validation', 'pending_issues');
+if (!photoUrl) { toast('Foto bukti wajib diupload', 'error'); return; }
+d.evidence_photo = photoUrl;
+
+toast('Menyimpan pending issue...', 'info');
+const{data:pi}=await sb.from('pending_issue').insert(d).select().single();
+const cat4p={People:'PEOPLE',Product:'PRODUCT',Place:'PLACE',Promotion:'PROMOTION',Others:'PRODUCT'};
+// FIX: Ensure evidence_photo is copied to issue table
+await sb.from('issue').insert({source_type:'Pending Issue',source_id:pi.id_pending,counter_id:d.counter_id,category_4p:cat4p[d.issue_category]||'PRODUCT',root_driver:'QUALITY',problem:d.description,root_cause:d.root_cause,impact:'-',priority:d.priority,status:'OPEN',created_at:new Date().toISOString(), evidence_photo: photoUrl});
+closeModal();toast('Pending issue disimpan, issue dibuat otomatis');renderIssue();
+}
+async function viewIssueDetail(iid){
+const{data:iss}=await sb.from('issue').select('*').eq('id_issue',iid).single();
+if(!iss)return;
+let h='<button class="detail-back" onclick="renderIssue();closeModal()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+h+='<div class="card"><div class="card-header"><div class="card-title">Issue #'+iss.id_issue+'</div>'+sbadge(iss.priority)+'</div>';
+h+='<div class="ds"><div class="dl">Source</div><div class="dv">'+iss.source_type+'</div></div>';
+h+='<div class="ds"><div class="dl">4P Category</div><div class="dv">'+iss.category_4p+'</div></div>';
+h+='<div class="ds"><div class="dl">Root Driver</div><div class="dv">'+iss.root_driver+'</div></div>';
+h+='<div class="ds"><div class="dl">Problem</div><div class="dv" style="color:var(--danger)">'+iss.problem+'</div></div>';
+h+='<div class="ds"><div class="dl">Root Cause</div><div class="dv">'+iss.root_cause+'</div></div>';
+h+='<div class="ds"><div class="dl">Impact</div><div class="dv">'+iss.impact+'</div></div>';
+h+='<div class="ds"><div class="dl">Counter</div><div class="dv">'+cn(iss.counter_id)+'</div></div>';
+h+='<div class="ds"><div class="dl">Created</div><div class="dv">'+fmtD(iss.created_at)+'</div></div>';
+// Show evidence photo if available
+if(iss.evidence_photo){
+h+='<div class="ds"><div class="dl">Evidence Photo</div><div class="dv"><img src="'+getIkUrl(iss.evidence_photo)+'" style="max-width:100%;border-radius:8px;margin-top:4px;cursor:pointer" onclick="window.open(this.src)"></div></div>';
+}
+h+='</div>';
+const{data:linked}=await sb.from('action_plan').select('*').eq('issue_id',iid);
+if(linked&&linked.length){
+h+='<div class="section-title"><i class="fas fa-tasks"></i> Linked Action Plans</div>';
+linked.forEach(a=>{h+='<div class="card" style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:12px;font-weight:600">'+a.action+'</div>'+sbadge(a.status)+'</div><div style="font-size:10px;color:var(--muted);margin-top:3px">Due: '+fmtD(a.due_date)+' &middot; '+un(a.pic_id)+'</div></div>'});
+}
+openModal(h);
+}
+
+// ==================== ACTION PLAN ====================
+async function renderActionPlan(){
+const el=document.getElementById('pageActionPlan');
+el.innerHTML='<div class="tabs" id="apTabs"><button class="tab-btn active" onclick="filterAP(\'all\',this)">All</button><button class="tab-btn" onclick="filterAP(\'OPEN\',this)">Open</button><button class="tab-btn" onclick="filterAP(\'ON PROGRESS\',this)">On Progress</button><button class="tab-btn" onclick="filterAP(\'DONE\',this)">Done</button><button class="tab-btn" onclick="filterAP(\'OVERDUE\',this)">Overdue</button></div><div id="apListC"><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div></div>';
+filterAP('all');
+}
+async function filterAP(st,btn){
+if(btn){document.querySelectorAll('#apTabs .tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+let q=sb.from('action_plan').select('*').order('created_at',{ascending:false});
+if(st!=='all')q=q.eq('status',st);
+const{data}=await q;
+const c=document.getElementById('apListC');if(!c)return;
+if(!data||!data.length){c.innerHTML='<div class="empty-state"><i class="fas fa-tasks"></i><p>Tidak ada action plan</p></div>';return}
+let h='';
+for(const a of data){
+const ed=canEdit(a.status)||a.status==='OPEN'||a.status==='ON PROGRESS';
+
+// BEFORE-AFTER LOGIC
+let baHtml = '';
+if (a.status === 'DONE' && a.evidence_after) {
+    // Fetch original issue photo for BEFORE
+    const { data: iss } = await sb.from('issue').select('evidence_photo').eq('id_issue', a.issue_id).single();
+    const beforeUrl = iss?.evidence_photo || '';
+    if (beforeUrl) {
+        baHtml = `<div class="ba-container">
+            <div class="ba-box"><label>BEFORE</label><img src="${getIkUrl(beforeUrl)}" onclick="window.open(this.src)"></div>
+            <div class="ba-box"><label>AFTER</label><img src="${getIkUrl(a.evidence_after)}" onclick="window.open(this.src)"></div>
+        </div>`;
+    }
+}
+
+h+='<div class="list-item"><div class="li-title">'+a.action+'</div><div class="li-sub">'+a.problem+'</div><div class="li-meta">'+sbadge(a.status)+'<span><i class="fas fa-user" style="margin-right:3px"></i>'+un(a.pic_id)+'</span><span>Due: '+fmtD(a.due_date)+'</span></div>';
+h+=baHtml;
+if(ed)h+='<div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit Action Plan\');editAP('+a.id_action+')"><i class="fas fa-edit"></i> Edit</button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus Action Plan\');deleteAP('+a.id_action+')"><i class="fas fa-trash"></i></button></div>';
+h+='</div>';
+};
+c.innerHTML=h;
+}
+async function openActionPlanForm(eid){
+await loadCache();
+const a=eid?(await sb.from('action_plan').select('*').eq('id_action',eid).single()).data:null;
+if(!eid){
+const{data:noAp}=await sb.from('issue').select('*').order('created_at',{ascending:false});
+const linked=(await sb.from('action_plan').select('issue_id')).data||[];
+const linkedIds=new Set(linked.map(l=>l.issue_id));
+const avail=noAp.filter(i=>!linkedIds.has(i.id_issue));
+if(!avail.length){openModal('<div class="modal-title">Tambah Action Plan</div><div class="empty-state"><i class="fas fa-check-circle"></i><p>Semua issue sudah memiliki action plan</p></div><button class="btn btn-s btn-full" style="margin-top:12px" onclick="closeModal()">Tutup</button>');return}
+let h='<div class="modal-title">Tambah Action Plan</div>';
+h+='<div class="fg"><label>Issue</label><select id="apIssue" onchange="apIssueCh()">'+avail.map(i=>'<option value="'+i.id_issue+'">['+i.category_4p+'] '+i.problem.substring(0,60)+'</option>').join('')+'</select></div><div id="apIssueDet"></div>';
+h+='<div class="fg"><label>Action</label><textarea id="apAction"></textarea></div>';
+h+='<div class="fg"><label>PIC</label><select id="apPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'">'+u.nama_user+'</option>').join('')+'</select></div>';
+h+='<div class="fg"><label>Due Date</label><input type="date" id="apDue" value="'+today()+'"></div>';
+h+='<div class="fg"><label>Status</label><select id="apStatus">'+statusOpt('OPEN')+'</select></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Action Plan\');saveAP(0)"><i class="fas fa-save"></i> Simpan</button></div>';
+openModal(h);apIssueCh();
+}else{
+let h='<div class="modal-title">Edit Action Plan</div>';
+h+='<div class="fg"><label>Problem</label><input type="text" value="'+a.problem+'" disabled></div>';
+h+='<div class="fg"><label>Action</label><textarea id="apAction">'+a.action+'</textarea></div>';
+h+='<div class="fg"><label>PIC</label><select id="apPic">'+DB_C.users.map(u=>'<option value="'+u.id_user+'"'+(a.pic_id===u.id_user?' selected':'')+'>'+u.nama_user+'</option>').join('')+'</select></div>';
+h+='<div class="fg"><label>Due Date</label><input type="date" id="apDue" value="'+a.due_date+'"></div>';
+h+='<div class="fg"><label>Status</label><select id="apStatus">'+statusOpt(a.status)+'</select></div>';
+// NEW: Evidence After Photo Upload when editing to DONE
+if(a.status === 'DONE' || document.getElementById('apStatus')?.value === 'DONE') {
+    h+='<div class="fg"><label>Evidence After Photo</label><input type="file" id="apPhotoAfter" accept="image/*" capture="environment"></div>';
+}
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Update Action Plan\');saveAP('+eid+')"><i class="fas fa-save"></i> Simpan</button></div>';
+openModal(h);
+}
+}
+async function apIssueCh(){
+const iid=parseInt(document.getElementById('apIssue').value);
+const{data:iss}=await sb.from('issue').select('*').eq('id_issue',iid).single();
+if(!iss)return;
+document.getElementById('apIssueDet').innerHTML='<div class="card" style="margin-bottom:10px;padding:9px"><div style="font-size:10px;color:var(--muted)">Problem</div><div style="font-size:12px;color:var(--danger)">'+iss.problem+'</div><div style="font-size:10px;color:var(--muted);margin-top:3px">Root Cause: '+iss.root_cause+'</div></div>';
+}
+async function saveAP(eid){
+const action=document.getElementById('apAction').value;
+if(!action){toast('Isi action','error');return}
+const statusVal = document.getElementById('apStatus').value;
+const d={action,pic_id:parseInt(document.getElementById('apPic').value),due_date:document.getElementById('apDue').value,status:statusVal};
+
+// Handle Evidence After Photo Upload
+const photoAfterInput = document.getElementById('apPhotoAfter');
+if (photoAfterInput && photoAfterInput.files && photoAfterInput.files[0]) {
+    toast('Mengupload bukti perbaikan...', 'info');
+    const photoUrl = await handlePhotoUpload(photoAfterInput, 'validation', 'action_after');
+    if (photoUrl) d.evidence_after = photoUrl;
+}
+
+toast('Menyimpan action plan...', 'info');
+if(eid){await sb.from('action_plan').update(d).eq('id_action',eid)}
+else{const issueId=parseInt(document.getElementById('apIssue').value);const{data:iss}=await sb.from('issue').select('*').eq('id_issue',issueId).single();await sb.from('action_plan').insert({issue_id:issueId,problem:iss?.problem||'',...d,created_at:new Date().toISOString()})}
+closeModal();toast(eid?'Action plan diperbarui':'Action plan ditambahkan');renderActionPlan();
+}
+function editAP(id){openActionPlanForm(id)}
+async function deleteAP(id){openModal('<div class="modal-title">Hapus Action Plan?</div><p style="color:var(--fg2);margin-bottom:18px">Data akan dihapus.</p><div style="display:flex;gap:7px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-d btn-full" onclick="confirmDelAP('+id+')">Hapus</button></div>')}
+async function confirmDelAP(id){await sb.from('action_plan').delete().eq('id_action',id);closeModal();toast('Dihapus');renderActionPlan()}
+
+// ==================== VALIDATION ====================
+async function renderValidation(){
+const el=document.getElementById('pageValidation');
+el.innerHTML='<div class="section-title"><i class="fas fa-check-double"></i> Validations</div><div class="loading-spinner"><i class="fas fa-circle-notch"></i></div>';
+const{data}=await sb.from('validation').select('*').order('validated_at',{ascending:false});
+let h='<div class="section-title"><i class="fas fa-check-double"></i> Validations</div>';
+if(!data||!data.length)h+='<div class="empty-state"><i class="fas fa-check-double"></i><p>Belum ada validation</p></div>';
+for(const v of data){
+const{data:ap}=await sb.from('action_plan').select('*').eq('id_action',v.action_id).single();
+h+='<div class="list-item"><div class="li-title">'+(ap?ap.action:'Action #'+v.action_id)+'</div><div class="li-sub">'+v.validation_note+'</div><div class="li-meta">'+sbadge(v.result)+'<span>'+un(v.validated_by)+'</span><span>'+fmtD(v.validated_at)+'</span></div></div>';
+}
+el.innerHTML=h;
+}
+async function openValidationForm(){
+const{data:doneAPs}=await sb.from('action_plan').select('*').eq('status','DONE');
+if(!doneAPs||!doneAPs.length){toast('Tidak ada action plan DONE yang belum divalidasi','info');return}
+const{data:valDone}=(await sb.from('validation').select('action_id')).data?await sb.from('validation').select('action_id'):{data:[]};
+const valIds=new Set((valDone||[]).map(v=>v.action_id));
+const avail=doneAPs.filter(a=>!valIds.has(a.id_action));
+if(!avail.length){toast('Semua action plan DONE sudah divalidasi','info');return}
+let h='<div class="modal-title">Tambah Validation</div>';
+h+='<div class="fg"><label>Action Plan</label><select id="valAP">'+avail.map(a=>'<option value="'+a.id_action+'">'+a.action.substring(0,60)+'</option>').join('')+'</select></div>';
+// REVISI: Input file dengan opsi kamera + COMPRESSED UPLOAD
+h+='<div class="fg"><label>Evidence Photo (Wajib)</label><input type="file" id="valPhoto" accept="image/*" capture="environment"></div>';
+h+='<div class="fg"><label>Validation Note</label><textarea id="valNote"></textarea></div>';
+h+='<div class="fg"><label>Result</label><select id="valResult"><option value="PASS">PASS</option><option value="FAIL">FAIL</option></select></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Validasi\');saveValidation()"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 }
 async function saveValidation(){
@@ -1401,7 +3772,7 @@ function getTopRootCause(issues) {
 function renderExportMenu(container) {
     let h = '<div class="section-title"><i class="fas fa-file-export"></i> Export Options</div>';
     [{id:'visit',l:'Visit Report',i:'fa-store'},{id:'issue',l:'Issue Report',i:'fa-exclamation-triangle'},{id:'action',l:'Action Plan',i:'fa-tasks'}].forEach(r=>{
-        h+=`<div class="list-item" style="cursor:default"><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:var(--glow);display:flex;align-items:center;justify-content:center"><i class="fas ${r.i}" style="color:var(--accent)"></i></div><div style="flex:1"><div class="li-title" style="margin-bottom:0">${r.l}</div></div><div style="display:flex;gap:5px"><button class="btn btn-s btn-xs" onclick="exportPDF('${r.id}')"><i class="fas fa-print"></i> PDF</button><button class="btn btn-s btn-xs" onclick="exportCSV('${r.id}')"><i class="fas fa-file-csv"></i> CSV</button><button class="btn btn-s btn-xs" onclick="exportWA('${r.id}')"><i class="fab fa-whatsapp"></i></button></div></div></div>`;
+        h+=`<div class="list-item" style="cursor:default"><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:var(--glow);display:flex;align-items:center;justify-content:center"><i class="fas ${r.i}" style="color:var(--accent)"></i></div><div style="flex:1"><div class="li-title" style="margin-bottom:0">${r.l}</div></div><div style="display:flex;gap:5px"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Export PDF\');exportPDF('${r.id}')"><i class="fas fa-print"></i> PDF</button><button class="btn btn-s btn-xs" onclick="notifyClick(\'Export CSV\');exportCSV('${r.id}')"><i class="fas fa-file-csv"></i> CSV</button><button class="btn btn-s btn-xs" onclick="notifyClick(\'Share WA\');exportWA('${r.id}')"><i class="fab fa-whatsapp"></i></button></div></div></div>`;
     });
     container.innerHTML = h;
 }
@@ -1450,11 +3821,15 @@ async function getReportData(type){
         case 'action': {
             const {data} = await sb.from('action_plan').select('*');
             return fd(data,'created_at').map(a => {
-                // Get counter from linked issue
-                const issue = DB_C.issues?.find(iss => iss.id_issue === a.issue_id); // Note: Need to ensure DB_C.issues is loaded or fetch it
-                // For simplicity, we'll just show PIC and Action details
+                // FIX: Use DB_C.issues cache instead of undefined variable
+                const linkedIssue = DB_C.issues.find(iss => iss.id_issue === a.issue_id);
+                const counterId = linkedIssue ? linkedIssue.counter_id : null;
+                const counter = DB_C.counters.find(c=>c.id_counter===counterId);
+                
                 return {
                     'Action ID': 'AP-'+a.id_action,
+                    Counter: counter ? counter.nama_counter : '-',
+                    AM: counter ? un(counter.am_id) : '-',
                     Problem: a.problem,
                     Action: a.action,
                     PIC: un(a.pic_id),
@@ -1524,23 +3899,23 @@ if(tab==='counter'){
 let h='';
 DB_C.counters.forEach(ct=>{
 const amName = ct.am_id ? un(ct.am_id) : 'Belum ada AM';
-h+='<div class="list-item"><div class="li-title">'+ct.nama_counter+'</div><div class="li-sub">'+ct.area+' &middot; AM: '+amName+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="openCounterForm('+ct.id_counter+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="hapusData(\'master_counter\',\'id_counter\','+ct.id_counter+')"><i class="fas fa-trash"></i></button></div></div>';
+h+='<div class="list-item"><div class="li-title">'+ct.nama_counter+'</div><div class="li-sub">'+ct.area+' &middot; AM: '+amName+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit Counter\');openCounterForm('+ct.id_counter+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus Counter\');hapusData(\'master_counter\',\'id_counter\','+ct.id_counter+')"><i class="fas fa-trash"></i></button></div></div>';
 });
-h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="openCounterForm()"><i class="fas fa-plus"></i> Tambah Counter</button>';
+h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="notifyClick(\'Tambah Counter\');openCounterForm()"><i class="fas fa-plus"></i> Tambah Counter</button>';
 c.innerHTML=h;
 }else if(tab==='user'){
 let h='';
 DB_C.users.forEach(u=>{
-h+='<div class="list-item"><div class="li-title">'+u.nama_user+'</div><div class="li-sub">'+u.username+' &middot; '+u.role+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="openUserForm('+u.id_user+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="hapusData(\'master_user\',\'id_user\','+u.id_user+')"><i class="fas fa-trash"></i></button></div></div>';
+h+='<div class="list-item"><div class="li-title">'+u.nama_user+'</div><div class="li-sub">'+u.username+' &middot; '+u.role+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit User\');openUserForm('+u.id_user+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus User\');hapusData(\'master_user\',\'id_user\','+u.id_user+')"><i class="fas fa-trash"></i></button></div></div>';
 });
-h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="openUserForm()"><i class="fas fa-plus"></i> Tambah User</button>';
+h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="notifyClick(\'Tambah User\');openUserForm()"><i class="fas fa-plus"></i> Tambah User</button>';
 c.innerHTML=h;
 }else if(tab==='4p'){
 let h='';
 DB_C.items4p.forEach(m=>{
-h+='<div class="list-item"><div class="li-title">'+m.item_check+'</div><div class="li-sub">'+m.category_4p+' / '+m.sub_category+' &middot; '+m.root_driver+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="open4PForm('+m.id_item+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="hapusData(\'master_4p\',\'id_item\','+m.id_item+')"><i class="fas fa-trash"></i></button></div></div>';
+h+='<div class="list-item"><div class="li-title">'+m.item_check+'</div><div class="li-sub">'+m.category_4p+' / '+m.sub_category+' &middot; '+m.root_driver+'</div><div class="li-actions"><button class="btn btn-s btn-xs" onclick="notifyClick(\'Edit 4P\');open4PForm('+m.id_item+')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-xs" onclick="notifyClick(\'Hapus 4P\');hapusData(\'master_4p\',\'id_item\','+m.id_item+')"><i class="fas fa-trash"></i></button></div></div>';
 });
-h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="open4PForm()"><i class="fas fa-plus"></i> Tambah 4P Criteria</button>';
+h+='<button class="btn btn-p btn-full" style="margin-top:10px" onclick="notifyClick(\'Tambah 4P\');open4PForm()"><i class="fas fa-plus"></i> Tambah 4P Criteria</button>';
 c.innerHTML=h;
 }
 }
@@ -1556,7 +3931,7 @@ DB_C.users.filter(u=>u.role==='Area Manager').forEach(u=>{
     h+='<option value="'+u.id_user+'"'+(ct&&ct.am_id===u.id_user?' selected':'')+'>'+u.nama_user+'</option>';
 });
 h+='</select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpanCounter('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan Counter\');simpanCounter('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 }
 async function simpanCounter(eid){
@@ -1585,7 +3960,7 @@ DB_C.users.filter(x=>x.role==='Area Manager').forEach(x=>{
     h+='<option value="'+x.id_user+'"'+(u&&u.supervisor_id===x.id_user?' selected':'')+'>'+x.nama_user+'</option>';
 });
 h+='</select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpanUser('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan User\');simpanUser('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 setTimeout(function(){
 if(u){var sel=document.getElementById('muRole');if(sel)sel.value=u.role}
@@ -1618,7 +3993,7 @@ h+='<div class="fg"><label>Category</label><select id="m4Cat"><option>PEOPLE</op
 h+='<div class="fg"><label>Sub Category</label><input type="text" id="m4Sub" value="'+(m?m.sub_category:'')+'"></div>';
 h+='<div class="fg"><label>Item Check</label><input type="text" id="m4Item" value="'+(m?m.item_check:'')+'"></div>';
 h+='<div class="fg"><label>Root Driver</label><select id="m4Driver"><option>QUALITY</option><option>SERVICE</option><option>CLEANLINESS</option></select></div>';
-h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="simpan4P('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
+h+='<div style="display:flex;gap:7px;margin-top:18px"><button class="btn btn-s btn-full" onclick="closeModal()">Batal</button><button class="btn btn-p btn-full" onclick="notifyClick(\'Simpan 4P\');simpan4P('+(eid||0)+')"><i class="fas fa-save"></i> Simpan</button></div>';
 openModal(h);
 setTimeout(function(){
 if(m){
