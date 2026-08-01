@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SOIS - Sales Operation Improvement System</title>
+    
+    <!-- CDNs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -16,6 +18,8 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
         .sidebar { width: 250px; background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
         .sidebar-header h2 { color: var(--primary); font-size: 18px; }
@@ -23,13 +27,20 @@
         .nav-menu { flex: 1; padding: 10px; overflow-y: auto; }
         .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 8px; color: var(--text-sec); cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .nav-item:hover, .nav-item.active { background: #eef2ff; color: var(--primary); }
+        
+        /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .topbar { background: var(--white); padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .topbar h1 { font-size: 20px; }
         .content-area { flex: 1; padding: 20px; overflow-y: auto; }
-        .page { display: none; } .page.active { display: block; }
+        
+        /* Pages & Cards */
+        .page { display: none; } 
+        .page.active { display: block; }
         .card { background: var(--white); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
         .card-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; }
+        
+        /* KPI */
         .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .kpi-card { background: var(--white); padding: 20px; border-radius: 12px; border-left: 5px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .kpi-card h3 { font-size: 28px; margin-bottom: 5px; }
@@ -37,6 +48,8 @@
         .kpi-success { border-left-color: var(--success); } .kpi-success h3 { color: var(--success); }
         .kpi-danger { border-left-color: var(--danger); } .kpi-danger h3 { color: var(--danger); }
         .kpi-warning { border-left-color: var(--warning); } .kpi-warning h3 { color: var(--warning); }
+        
+        /* Forms & Buttons */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text-sec); }
         .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s;}
@@ -47,10 +60,68 @@
         .btn-danger { background: var(--danger); color: var(--white); }
         .btn-warning { background: var(--warning); color: var(--white); }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
+        
+        /* Tables */
+        .table-wrapper { overflow-x: auto; }
         .table-preview { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
         .table-preview th, .table-preview td { border: 1px solid var(--border); padding: 10px; text-align: left; }
         .table-preview th { background-color: var(--bg-main); font-weight: 600; }
         .table-preview tr:nth-child(even) { background-color: #f8fafc; }
+        
+        /* Tabs General */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+        .tab-btn { padding: 10px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-weight: 600; color: var(--text-sec); cursor: pointer; transition: 0.2s; margin-bottom: -2px; white-space: nowrap; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; } 
+        .tab-content.active { display: block; } 
+        .highlight-row { background-color: #fef3c7 !important; }
+
+        /* Tabs 4P */
+        .tabs-4p { display: flex; gap: 0; background: #f1f5f9; border-radius: 10px; padding: 5px; margin-bottom: 20px; overflow-x: auto; }
+        .tab-4p-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; border: none; background: transparent; font-weight: 600; color: var(--text-sec); cursor: pointer; transition: 0.2s; font-size: 13px; white-space: nowrap; }
+        .tab-4p-btn.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tab-4p-content { display: none; } 
+        .tab-4p-content.active { display: block; }
+        
+        /* Fail Foto Area */
+        .fail-foto-area { margin-top: 10px; padding: 15px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; display: none; }
+        .fail-foto-area img { max-width: 100%; border-radius: 5px; margin-top: 10px; border: 1px solid #ccc;}
+
+        /* BR Narrative Styles */
+        .br-narrative { font-size: 14px; line-height: 1.6; color: var(--text-main); margin-bottom: 15px; }
+        .br-narrative b { color: var(--primary); font-weight: 700; }
+        .br-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed var(--border); }
+        .br-section:last-child { border-bottom: none; }
+
+        /* --- STATUS BADGE FOR REVIEW JADWAL --- */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .status-planned { background: #fef3c7; color: #92400e; }
+        .status-confirmed { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+        /* --- MODAL OVERLAY --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; height: 70px; flex-direction: row; position: fixed; bottom: 0; width: 100%; z-index: 1000; border-right: none; border-top: 1px solid var(--border); }
@@ -65,19 +136,23 @@
 </head>
 <body>
 
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header"><h2>SOIS</h2><p>Sales Operation Improvement</p></div>
         <div class="nav-menu">
-            <div class="nav-item active" onclick="showPage('dashboard')"><icon>📊</icon> Dashboard</div>
-            <div class="nav-item" onclick="showPage('jadwal')"><icon>📅</icon> Rencana Jadwal</div>
-            <div class="nav-item" onclick="showPage('setup')"><icon>⚙️</icon> Master & Setup</div>
-            <div class="nav-item" onclick="showPage('visiting')"><icon>👁️</icon> Visiting & 4P</div>
-            <div class="nav-item" onclick="showPage('action')"><icon>🛠️</icon> Action Plan</div>
-            <div class="nav-item" onclick="showPage('issues')"><icon>⚠️</icon> Issues & Req</div>
-            <div class="nav-item" onclick="showPage('review')"><icon>📈</icon> Business Review</div>
+            <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
+            <div class="nav-item" onclick="showPage('jadwal')">📅 Rencana Jadwal</div>
+            <div class="nav-item" onclick="showPage('review-jadwal')">📋 Review Jadwal</div>
+            <div class="nav-item" onclick="showPage('impact-mapping')">🗺️ Impact Mapping</div>
+            <div class="nav-item" onclick="showPage('setup')">⚙️ Master & Setup</div>
+            <div class="nav-item" onclick="showPage('visiting')">👁️ Visiting & 4P</div>
+            <div class="nav-item" onclick="showPage('action')">🛠️ Action Plan</div>
+            <div class="nav-item" onclick="showPage('issues')">️ Issues & Req</div>
+            <div class="nav-item" onclick="showPage('review')">📈 Business Review</div>
         </div>
     </div>
 
+    <!-- MAIN CONTENT -->
     <div class="main-content">
         <div class="topbar">
             <h1 id="page-title">Dashboard KPI</h1>
@@ -86,58 +161,186 @@
 
         <div class="content-area">
             
+            <!-- 1. DASHBOARD -->
             <div id="page-dashboard" class="page active">
                 <div class="grid-kpi">
                     <div class="kpi-card kpi-success"><h3 id="kpi-visit">0</h3><p>Total Visiting</p></div>
-                    <div class="kpi-card kpi-danger"><h3 id="kpi-fail">0</h3><p>Temuan Fail</p></div>
-                    <div class="kpi-card kpi-warning"><h3 id="kpi-cust">0</h3><p>Customer Issue</p></div>
-                    <div class="kpi-card"><h3 id="kpi-pending">0</h3><p>Pending Request</p></div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Tren Temuan per Root Driver</div>
-                    <div style="display: flex; gap: 10px; height: 200px; align-items: flex-end; padding-bottom: 20px; border-bottom: 1px solid #ccc;">
-                        <div style="flex:1; background:var(--success); border-radius: 4px 4px 0 0; height: 80%; display:flex; align-items:end; justify-content:center; color:white; font-weight:bold; padding-bottom:5px;">SERVICE</div>
-                        <div style="flex:1; background:var(--danger); border-radius: 4px 4px 0 0; height: 50%; display:flex; align-items:end; justify-content:center; color:white; font-weight:bold; padding-bottom:5px;">QUALITY</div>
-                        <div style="flex:1; background:var(--warning); border-radius: 4px 4px 0 0; height: 30%; display:flex; align-items:end; justify-content:center; color:white; font-weight:bold; padding-bottom:5px;">CLEAN</div>
-                    </div>
+                    <div class="kpi-card kpi-danger"><h3 id="kpi-fail">0</h3><p>Temuan Open</p></div>
+                    <div class="kpi-card kpi-warning"><h3 id="kpi-onprogress">0</h3><p>On Progress</p></div>
+                    <div class="kpi-card"><h3 id="kpi-cust">0</h3><p>Customer Issue</p></div>
                 </div>
             </div>
 
+            <!-- 2. RENCANA JADWAL -->
             <div id="page-jadwal" class="page">
                 <div class="card">
                     <div class="card-title">Buat Rencana Kunjungan</div>
-                    <div class="form-group">
-                        <label>PIC (Nama Saya)</label>
-                        <select id="j-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('j-pic', 'j-counter')"><option value="">Pilih Nama...</option></select>
-                    </div>
+                    <div class="form-group"><label>PIC</label><select id="j-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('j-pic', 'j-counter')"><option value="">Pilih Nama...</option></select></div>
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
                         <div class="form-group"><label>Tanggal</label><input type="date" id="j-tgl" class="form-control"></div>
-                        <div class="form-group">
-                            <label>Counter</label>
-                            <select id="j-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC terlebih dahulu...</option></select>
-                        </div>
+                        <div class="form-group"><label>Counter</label><select id="j-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC dulu...</option></select></div>
                     </div>
-                    <div class="form-group"><label>Catatan / Activity Plan</label><input type="text" id="j-catatan" class="form-control" placeholder="Contoh: Follow up perbaikan chiller"></div>
+                    <div class="form-group"><label>Catatan</label><input type="text" id="j-catatan" class="form-control"></div>
                     <button class="btn btn-primary" onclick="addJadwalToList()">+ Tambah ke Daftar</button>
+                    <button class="btn btn-success" onclick="saveJadwalToDB()" style="margin-top:10px;">💾 Simplan Rencana ke Database</button>
                 </div>
                 <div class="card" id="jadwal-preview-card" style="display: none;">
-                    <div class="card-title">Preview Jadwal (1-4 Minggu Kedepan)</div>
-                    <p style="font-size:12px; color:var(--text-sec); margin-bottom:10px;">Pastikan jadwal sudah benar, lalu klik tombol export.</p>
+                    <div class="card-title">Preview Jadwal</div>
                     <div id="jadwal-pdf-area">
-                        <h3 style="margin-bottom:10px; font-size:16px;">Rencana Jadwal: <span id="preview-nama-pic" style="color:var(--primary);"></span></h3>
-                        <table class="table-preview" id="table-jadwal-preview">
-                            <thead><tr><th style="width:30px;">No</th><th>Tanggal</th><th>Counter</th><th>Catatan</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
+                        <h3 style="margin-bottom:10px;">PIC: <span id="preview-nama-pic" style="color:var(--primary);"></span></h3>
+                        <div class="table-wrapper">
+                            <table class="table-preview" id="table-jadwal-preview"><thead><tr><th>No</th><th>Tanggal</th><th>Counter</th><th>Catatan</th></tr></thead><tbody></tbody></table>
+                        </div>
                     </div>
-                    <div style="margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px;">
-                        <button class="btn btn-success" onclick="exportJadwalExcel()">📥 Export Excel</button>
-                        <button class="btn btn-danger" onclick="exportJadwalPDF()">📄 Export PDF</button>
-                        <button class="btn btn-warning" onclick="sendJadwalWA()">💬 Kirim via WA</button>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-success" onclick="exportJadwalExcel()"> Excel</button>
+                        <button class="btn btn-danger" onclick="exportJadwalPDF()"> PDF</button>
+                        <button class="btn btn-warning" onclick="sendJadwalWA()"> WA</button>
                     </div>
                 </div>
             </div>
 
+            <!-- 3. REVIEW RENCANA KUNJUNGAN (PLANNING CONTROL) -->
+            <div id="page-review-jadwal" class="page">
+                <!-- Filter Bar -->
+                <div class="card">
+                    <div class="card-title">Filter Rencana Kunjungan</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px;">
+                        <div class="form-group">
+                            <label>Tanggal Awal</label>
+                            <input type="date" id="rj-start" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Akhir</label>
+                            <input type="date" id="rj-end" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>PIC / Area Manager</label>
+                            <select id="rj-pic" class="form-control pic-dropdown">
+                                <option value="">Semua PIC</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="rj-status" class="form-control">
+                                <option value="">Semua Status</option>
+                                <option value="PLANNED">Planned</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <button class="btn btn-primary" onclick="loadReviewJadwal()">🔍 Tampilkan Rencana</button>
+                        <button class="btn btn-success" onclick="exportReviewJadwalExcel()">📥 Export Excel</button>
+                        <button class="btn btn-danger" onclick="exportReviewJadwalPDF()">📄 Export PDF</button>
+                        <button class="btn btn-warning" onclick="exportReviewJadwalWA()">💬 Share WA</button>
+                    </div>
+                </div>
+
+                <!-- Summary KPI -->
+                <div class="grid-kpi" id="rj-summary" style="display:none;">
+                    <div class="kpi-card">
+                        <h3 id="rj-kpi-total">0</h3>
+                        <p>Total Rencana</p>
+                    </div>
+                    <div class="kpi-card kpi-warning">
+                        <h3 id="rj-kpi-planned">0</h3>
+                        <p>Planned</p>
+                    </div>
+                    <div class="kpi-card kpi-success">
+                        <h3 id="rj-kpi-confirmed">0</h3>
+                        <p>Confirmed</p>
+                    </div>
+                    <div class="kpi-card kpi-danger">
+                        <h3 id="rj-kpi-cancelled">0</h3>
+                        <p>Cancelled</p>
+                    </div>
+                </div>
+
+                <!-- Tabel Review -->
+                <div class="card" id="rj-table-card" style="display:none;">
+                    <div class="card-title">Daftar Rencana Kunjungan</div>
+                    <div class="table-wrapper">
+                        <table class="table-preview" id="table-review-jadwal">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>PIC</th>
+                                    <th>Counter</th>
+                                    <th>Tujuan Visit</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tb-review-jadwal">
+                                <tr><td colspan="6" style="text-align:center; padding:20px;">Gunakan filter untuk menampilkan data</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. MASTER IMPACT MAPPING -->
+            <div id="page-impact-mapping" class="page">
+                <div class="card">
+                    <div class="card-title">Master Impact Mapping</div>
+                    <p style="font-size:13px; color:var(--text-sec); margin-bottom:15px;">
+                        Hubungkan temuan operasional (Root Driver) dengan dampak bisnis untuk prioritas perbaikan.
+                    </p>
+                    
+                    <!-- Form Input -->
+                    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
+                            <div class="form-group" style="margin:0;">
+                                <label>Root Driver</label>
+                                <input type="text" id="im-driver" class="form-control" placeholder="Contoh: Stock Kosong">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Kategori Dampak</label>
+                                <select id="im-category" class="form-control">
+                                    <option value="Sales">Sales</option>
+                                    <option value="Customer Satisfaction">Customer Satisfaction</option>
+                                    <option value="Product Quality">Product Quality</option>
+                                    <option value="Compliance">Compliance</option>
+                                    <option value="Operation">Operation</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Metric</label>
+                                <input type="text" id="im-metric" class="form-control" placeholder="Contoh: Lost Opp">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Weight (1-5)</label>
+                                <input type="number" id="im-weight" class="form-control" min="1" max="5" value="3">
+                            </div>
+                            <button class="btn btn-primary" onclick="addImpactMapping()">+ Add</button>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Mapping -->
+                    <div class="table-wrapper">
+                        <table class="table-preview" id="table-impact-mapping">
+                            <thead>
+                                <tr>
+                                    <th>Root Driver</th>
+                                    <th>Category</th>
+                                    <th>Metric</th>
+                                    <th>Weight</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tb-impact-mapping">
+                                <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. MASTER & SETUP -->
             <div id="page-setup" class="page">
                 <div class="card">
                     <div class="card-title">1. Import Data PIC</div>
@@ -156,331 +359,1157 @@
                 </div>
             </div>
 
+            <!-- 6. VISITING & 4P -->
             <div id="page-visiting" class="page">
-                <div class="card">
+                <div class="card" id="visiting-form-card">
                     <div class="card-title">Input Kunjungan</div>
                     <div class="form-group"><label>Tanggal</label><input type="date" id="v-tgl" class="form-control"></div>
                     <div class="form-group"><label>Jam Mulai</label><input type="time" id="v-jam" class="form-control"></div>
-                    <div class="form-group">
-                        <label>PIC</label>
-                        <select id="v-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('v-pic', 'v-counter')"><option value="">Pilih PIC...</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Counter</label>
-                        <select id="v-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC terlebih dahulu...</option></select>
-                    </div>
+                    <div class="form-group"><label>PIC</label><select id="v-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('v-pic', 'v-counter')"><option value="">Pilih PIC...</option></select></div>
+                    <div class="form-group"><label>Counter</label><select id="v-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC dulu...</option></select></div>
                     <button class="btn btn-primary" onclick="startVisiting()">Mulai Visiting</button>
                 </div>
-                <div class="card" id="checklist-area" style="display:none;">
-                    <div class="card-title">Checklist 4P</div>
-                    <div id="checklist-container"></div>
-                    <button class="btn btn-success" style="margin-top:15px;" onclick="submitChecklist()">Simpan Hasil Ceklist</button>
+
+                <div id="checklist-area" style="display:none;">
+                    <div class="tabs-4p" id="tabs-4p-container"></div>
+                    <div id="tab-4p-content-container"></div>
+                    <button class="btn btn-success" style="margin-top:20px; width:100%;" onclick="submitChecklist()">✓ Simpan Semua Hasil Ceklist</button>
                 </div>
             </div>
 
+            <!-- 7. ACTION PLAN -->
             <div id="page-action" class="page">
-                <div class="card">
-                    <div class="card-title">Daftar Action Plan (Open)</div>
-                    <table style="width:100%; font-size: 13px; border-collapse: collapse;">
-                        <thead><tr style="text-align:left; border-bottom:2px solid var(--border);"><th style="padding:10px;">Masalah</th><th style="padding:10px;">Tindakan</th><th style="padding:10px;">Due Date</th><th style="padding:10px;">Aksi</th></tr></thead>
-                        <tbody id="tb-action"><tr><td colspan="4" style="padding:20px; text-align:center; color:var(--text-sec);">Tidak ada action plan terbuka.</td></tr></tbody>
-                    </table>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchActionTab('tab-open', this)">Daftar Temuan (Open)</button>
+                    <button class="tab-btn" onclick="switchActionTab('tab-form', this)">Buat Action Plan</button>
+                    <button class="tab-btn" onclick="switchActionTab('tab-validasi', this)">Validasi (On-Progress)</button>
+                </div>
+
+                <div id="tab-open" class="tab-content active">
+                    <div class="card">
+                        <div class="card-title">Masalah yang membutuhkan Action Plan</div>
+                        <div class="table-wrapper">
+                            <table style="width:100%; font-size: 13px; border-collapse: collapse;">
+                                <thead><tr style="text-align:left; border-bottom:2px solid var(--border);"><th style="padding:10px;">Sumber</th><th style="padding:10px;">Detail Masalah</th><th style="padding:10px;">Aksi</th></tr></thead>
+                                <tbody id="tb-open"><tr><td colspan="3" style="padding:20px; text-align:center; color:var(--text-sec);">Memuat data...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-form" class="tab-content">
+                    <div class="card" id="action-form-card" style="display:none; border-left: 5px solid var(--warning);">
+                        <div class="card-title">Rencana Tindakan</div>
+                        <p id="action-masalah-text" style="background:var(--bg-main); padding:10px; border-radius:8px; margin-bottom:15px;"></p>
+                        <input type="hidden" id="action-id-target">
+                        <div class="form-group"><label>Apa tindakan yang akan dilakukan?</label><textarea id="action-tindakan" class="form-control" rows="3"></textarea></div>
+                        <div class="form-group"><label>Batas Waktu (Due Date)</label><input type="date" id="action-due" class="form-control"></div>
+                        <button class="btn btn-primary" onclick="submitActionPlan()">Simpan Action Plan</button>
+                        <button class="btn btn-danger" onclick="cancelActionForm()">Batal</button>
+                    </div>
+                    <div id="action-form-empty" style="text-align:center; padding:40px; color:var(--text-sec);">&lt;- Pilih masalah dari tab "Daftar Temuan" untuk membuat action plan</div>
+                </div>
+
+                <div id="tab-validasi" class="tab-content">
+                    <div class="card">
+                        <div class="card-title">Daftar Tindakan Sedang Berjalan</div>
+                        <div class="table-wrapper">
+                            <table style="width:100%; font-size: 13px; border-collapse: collapse;">
+                                <thead><tr style="text-align:left; border-bottom:2px solid var(--border);"><th style="padding:10px;">Masalah</th><th style="padding:10px;">Tindakan</th><th style="padding:10px;">Due Date</th><th style="padding:10px;">Aksi</th></tr></thead>
+                                <tbody id="tb-validasi"><tr><td colspan="4" style="padding:20px; text-align:center; color:var(--text-sec);">Memuat data...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- 8. ISSUES & REQUEST -->
             <div id="page-issues" class="page">
                 <div class="card">
                     <div class="card-title">Input Customer Issue</div>
-                    <div class="form-group">
-                        <label>PIC</label>
-                        <select id="ci-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('ci-pic', 'ci-counter')"><option value="">Pilih...</option></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Counter</label>
-                        <select id="ci-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC terlebih dahulu...</option></select>
-                    </div>
+                    <div class="form-group"><label>PIC</label><select id="ci-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('ci-pic', 'ci-counter')"><option value="">Pilih...</option></select></div>
+                    <div class="form-group"><label>Counter</label><select id="ci-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC dulu...</option></select></div>
                     <div class="form-group"><label>Isi Keluhan</label><textarea id="ci-keluhan" class="form-control" rows="3"></textarea></div>
                     <button class="btn btn-danger" onclick="submitCustIssue()">Simpan Cust Issue</button>
                 </div>
                 <div class="card">
                     <div class="card-title">Input Pending Request</div>
-                    <div class="form-group"><label>Kategori</label><input type="text" id="pr-kat" class="form-control" placeholder="Req Lampu, Req Interview..."></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" id="pr-kat" class="form-control"></div>
                     <div class="form-group"><label>Detail</label><textarea id="pr-detail" class="form-control" rows="3"></textarea></div>
                     <div class="form-group"><label>Due Date</label><input type="date" id="pr-due" class="form-control"></div>
                     <button class="btn btn-primary" onclick="submitPendingReq()">Ajukan Request</button>
                 </div>
             </div>
 
+            <!-- 9. BUSINESS REVIEW (UPGRADED) -->
             <div id="page-review" class="page">
                 <div class="card">
-                    <div class="card-title">Input Business Review</div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div class="card-title">1. Generate Business Impact Analysis</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px;">
                         <div class="form-group"><label>Periode Awal</label><input type="date" id="br-start" class="form-control"></div>
                         <div class="form-group"><label>Periode Akhir</label><input type="date" id="br-end" class="form-control"></div>
+                        <div class="form-group"><label>PIC (Opsional)</label><select id="br-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('br-pic', 'br-counter')"><option value="">Semua PIC</option></select></div>
+                        <div class="form-group"><label>Counter (Opsional)</label><select id="br-counter" class="form-control counter-dropdown" disabled><option value="">Semua Counter</option></select></div>
                     </div>
-                    <div class="form-group"><label>Top Problem</label><textarea id="br-top" class="form-control" rows="2"></textarea></div>
-                    <div class="form-group"><label>Root Cause</label><textarea id="br-cause" class="form-control" rows="2"></textarea></div>
-                    <div class="form-group"><label>Recommendation</label><textarea id="br-rec" class="form-control" rows="2"></textarea></div>
-                    <button class="btn btn-primary" onclick="submitBR()">Simpan BR</button>
+                    <button class="btn btn-primary" onclick="generateBRAuto()">⚡ Analyze Impact</button>
+                </div>
+
+                <div id="br-output-area" style="display:none;">
+                    <!-- KPI Impact Cards -->
+                    <div class="grid-kpi">
+                        <div class="kpi-card">
+                            <h3 id="br-kpi-score">0</h3>
+                            <p>Total Risk Score</p>
+                        </div>
+                        <div class="kpi-card kpi-danger">
+                            <h3 id="br-kpi-category">-</h3>
+                            <p>Dominant Impact</p>
+                        </div>
+                        <div class="kpi-card kpi-warning">
+                            <h3 id="br-kpi-fail">0</h3>
+                            <p>Total Findings (Fail)</p>
+                        </div>
+                        <div class="kpi-card kpi-success">
+                            <h3 id="br-kpi-visit">0</h3>
+                            <p>Total Visits</p>
+                        </div>
+                    </div>
+
+                    <div class="card" id="br-narrative-content">
+                        <div class="card-title" style="text-align:center;">BUSINESS IMPACT REPORT</div>
+                        
+                        <!-- Auto Narrative Section -->
+                        <div class="br-section">
+                            <h3 style="color:var(--primary); margin-bottom:10px;">📊 Executive Summary</h3>
+                            <div id="br-auto-narrative" class="br-narrative" style="font-style:italic; background:#f0f9ff; padding:15px; border-left:4px solid var(--primary);"></div>
+                        </div>
+
+                        <!-- Top Drivers Section -->
+                        <div class="br-section">
+                            <h3 style="color:var(--primary); margin-bottom:10px;">🔥 Top Root Drivers by Impact</h3>
+                            <div id="br-top-drivers-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Action & Save</div>
+                        <div class="form-group"><label>Manual Recommendation (Optional)</label><textarea id="br-manual-rec" class="form-control" rows="2" placeholder="Tambahkan rekomendasi spesifik jika diperlukan..."></textarea></div>
+                        <button class="btn btn-success" onclick="saveBRSnapshot()">💾 Save to History (Snapshot)</button>
+                        <button class="btn btn-warning" onclick="exportBRPDF()">📄 Export PDF</button>
+                    </div>
+                </div>
+                
+                <!-- Histori Snapshot (Optional View) -->
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-title">Riwayat Business Review</div>
+                    <div class="table-wrapper">
+                        <table class="table-preview">
+                            <thead><tr><th>Periode</th><th>Risk Score</th><th>Dominant Impact</th><th>Aksi</th></tr></thead>
+                            <tbody id="tb-br-history"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
 
-<script>
-    const SUPABASE_URL = 'https://lbdjoptoyymhcusavzkb.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiZGpvcHRveXltaGN1c2F2emtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjM3NzYsImV4cCI6MjEwMDM5OTc3Nn0.hDEvvlOIDZo0gRHBT4W2_dMKl8x_XHanWeCj1HTUNf4';
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let dataPicExcel = [], data4pExcel = [], tempJadwalList = [], currentVisitingId = null;
-    
-    // Variabel penyimpanan data master untuk pemrosesan lokal
-    let masterDataPic = [];
-    let masterDataCounter = [];
-    let masterDataGrouping = [];
-
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('page-' + pageId).classList.add('active');
-        event.currentTarget.classList.add('active');
-        
-        const titles = { 'dashboard': 'Dashboard KPI', 'jadwal': 'Rencana Jadwal PIC', 'setup': 'Master & Setup', 'visiting': 'Visiting & 4P', 'action': 'Action Plan', 'issues': 'Issues & Request', 'review': 'Business Review' };
-        document.getElementById('page-title').innerText = titles[pageId];
-
-        if(pageId === 'dashboard') loadDashboard();
-        if(pageId === 'jadwal' || pageId === 'visiting' || pageId === 'issues') initDropdowns();
-        if(pageId === 'action') loadActions();
-    }
-
-    async function loadDashboard() {
-        const { count: cV } = await db.from('visiting').select('*', { count: 'exact', head: true });
-        const { count: cF } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'Open');
-        const { count: cC } = await db.from('cust_issue').select('*', { count: 'exact', head: true });
-        const { count: cP } = await db.from('pending_request').select('*', { count: 'exact', head: true }).eq('status_req', 'Open');
-        document.getElementById('kpi-visit').innerText = cV || 0;
-        document.getElementById('kpi-fail').innerText = cF || 0;
-        document.getElementById('kpi-cust').innerText = cC || 0;
-        document.getElementById('kpi-pending').innerText = cP || 0;
-    }
-
-    // MASTER & SETUP
-    document.getElementById('filePic').addEventListener('change', e => readExcel(e.target.files[0], d => dataPicExcel = d));
-    document.getElementById('file4p').addEventListener('change', e => readExcel(e.target.files[0], d => data4pExcel = d));
-
-    function readExcel(file, cb) { if(!file) return; const r = new FileReader(); r.onload = e => { const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])); }; r.readAsArrayBuffer(file); }
-
-    async function submitPic() { 
-        if(!dataPicExcel.length) return alert("Pilih file dulu!"); 
-        const f = dataPicExcel.map(r => ({ username: String(r.user||''), pass: String(r.pass||''), jabatan: String(r.jabatan||'') })); 
-        await db.from('pic').insert(f); alert("Berhasil import PIC!"); loadGroupingData(); 
-    }
-
-    async function submit4p() { 
-        if(!data4pExcel.length) return alert("Pilih file dulu!"); 
-        const f = data4pExcel.map(r => ({ "kategoti 4p": String(r['kategoti 4p']||''), "bagian 4p": String(r['bagian 4p']||''), "ceklist": String(r['ceklist']||''), "root driver": String(r['root driver']||''), "nama_counter": String(r['nama_counter']||'') })); 
-        await db.from('master baru 4p').insert(f); alert("Berhasil import 4P!"); 
-    }
-    
-    async function loadGroupingData() {
-        const { data: pic } = await db.from('pic').select('*');
-        const { data: counter } = await db.from('master_counter').select('*');
-        const c = document.getElementById('groupingContainer'); c.innerHTML = '';
-        pic.forEach(p => { 
-            let h = `<div style="margin-bottom:15px;"><b>${p.nama_user || p.username}</b><div style="margin-top:5px; display:grid; grid-template-columns:1fr 1fr; gap:5px;">`; 
-            counter.forEach(ct => { h += `<label style="font-size:13px;"><input type="checkbox" value="${ct.id_counter}" class="cb-counter" data-pic="${p.id}"> ${ct.nama_counter}</label>`; }); 
-            c.innerHTML += h + '</div></div>'; 
-        });
-    }
-
-    async function submitGrouping() { 
-        const d = []; 
-        document.querySelectorAll('.cb-counter:checked').forEach(cb => d.push({ pic_id: parseInt(cb.dataset.pic), counter_id: parseInt(cb.value) })); 
-        if(!d.length) return alert("Centang dulu!"); 
-        await db.from('pic_counter_group').insert(d); alert("Berhasil simpan grouping!"); 
-    }
-
-    // ==========================================================
-    // LOGIKA DROPDOWN DINAMIS (PIC -> COUNTER GROUPING)
-    // ==========================================================
-    
-    // 1. Ambil data dasar dari DB lalu isi dropdown PIC
-    async function initDropdowns() {
-        const { data: dataPic } = await db.from('pic').select('*');
-        const { data: dataCounter } = await db.from('master_counter').select('*');
-        const { data: dataGroup } = await db.from('pic_counter_group').select('*');
-
-        masterDataPic = dataPic || [];
-        masterDataCounter = dataCounter || [];
-        masterDataGrouping = dataGroup || [];
-
-        // Isi semua dropdown PIC di halaman manapun yang ada
-        document.querySelectorAll('.pic-dropdown').forEach(el => {
-            el.innerHTML = '<option value="">Pilih PIC...</option>' + 
-                masterDataPic.map(p => `<option value="${p.id}">${p.nama_user || p.username}</option>`).join('');
+    <!-- Modal Confirm/Cancel for Review Jadwal -->
+    <div id="modal-jadwal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+        <div class="card" style="width:400px; max-width:90%;">
+            <div class="card-title" id="modal-jadwal-title">Update Status</div>
+            <input type="hidden" id="modal-jadwal-id">
+            <input type="hidden" id="modal-jadwal-action">
             
-            // Reset dropdown Counter pas ganti halaman
-            el.value = ""; 
-        });
+            <div id="modal-jadwal-confirm-fields" style="display:none;">
+                <div class="form-group">
+                    <label>Confirm By (PIC yang approve)</label>
+                    <select id="modal-jadwal-confirmed-by" class="form-control pic-dropdown">
+                        <option value="">Pilih PIC...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="modal-jadwal-cancel-fields" style="display:none;">
+                <div class="form-group">
+                    <label>Alasan Pembatalan <span style="color:var(--danger)">*</span></label>
+                    <textarea id="modal-jadwal-cancel-reason" class="form-control" rows="3" placeholder="Wajib diisi jika membatalkan jadwal"></textarea>
+                </div>
+            </div>
+            
+            <div style="margin-top:15px; text-align:right;">
+                <button class="btn btn-danger" onclick="closeModalJadwal()">Batal</button>
+                <button class="btn btn-primary" onclick="submitModalJadwal()">Simpan</button>
+            </div>
+        </div>
+    </div>
 
-        // Reset & Disable dropdown Counter pas ganti halaman
-        document.querySelectorAll('.counter-dropdown').forEach(el => {
-            el.innerHTML = '<option value="">Pilih PIC terlebih dahulu...</option>';
-            el.disabled = true;
-        });
-    }
+    <!-- JAVASCRIPT -->
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://lbdjoptoyymhcusavzkb.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiZGpvcHRveXltaGN1c2F2emtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjM3NzYsImV4cCI6MjEwMDM5OTc3Nn0.hDEvvlOIDZo0gRHBT4W2_dMKl8x_XHanWeCj1HTUNf4';
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2. Fungsi Filter Counter berdasarkan PIC yang dipilih
-    function filterCounterByPic(picId, counterId) {
-        const selectedPicId = document.getElementById(picId).value;
-        const counterDropdown = document.getElementById(counterId);
+        // --- VARIABEL GLOBAL ---
+        let dataPicExcel = [], data4pExcel = [], tempJadwalList = [], currentVisitingId = null;
+        let masterDataPic = [], masterDataCounter = [], masterDataGrouping = [];
+        let brStats = {}; 
+        let reviewJadwalData = []; 
+        let masterImpactData = []; 
+        let currentBRData = null; 
 
-        if (!selectedPicId) {
-            counterDropdown.innerHTML = '<option value="">Pilih PIC terlebih dahulu...</option>';
-            counterDropdown.disabled = true;
-            return;
+        // --- NAVIGASI ---
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            const pageEl = document.getElementById('page-' + pageId);
+            if(pageEl) pageEl.classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if(item.getAttribute('onclick').includes(pageId)) item.classList.add('active');
+            });
+
+            const titles = { 
+                'dashboard': 'Dashboard KPI', 'jadwal': 'Rencana Jadwal PIC', 'review-jadwal': 'Review Jadwal', 
+                'impact-mapping': 'Impact Mapping', 'setup': 'Master & Setup', 
+                'visiting': 'Visiting & 4P', 'action': 'Action Plan & Validasi', 'issues': 'Issues & Request', 'review': 'Business Review' 
+            };
+            document.getElementById('page-title').innerText = titles[pageId] || 'SOIS';
+
+            if(pageId === 'dashboard') loadDashboard();
+            if(pageId === 'jadwal' || pageId === 'visiting' || pageId === 'issues' || pageId === 'review' || pageId === 'review-jadwal') initDropdowns();
+            if(pageId === 'action') openActionPage(); 
+            if(pageId === 'impact-mapping') loadImpactMapping();
+            if(pageId === 'review') loadBRHistory();
+            
+            if(pageId !== 'visiting') {
+                document.getElementById('visiting-form-card').style.display = 'block';
+                document.getElementById('checklist-area').style.display = 'none';
+            }
         }
 
-        // Cari di array grouping, mana saja counter_id yang punya pic_id sama dengan yang dipilih
-        const allowedCounterIds = masterDataGrouping
-            .filter(g => g.pic_id == selectedPicId)
-            .map(g => g.counter_id);
-
-        // Filter data master counter berdasarkan ID yang diperbolehkan
-        const filteredCounters = masterDataCounter.filter(c => allowedCounterIds.includes(c.id_counter));
-
-        if (filteredCounters.length === 0) {
-            counterDropdown.innerHTML = '<option value="">PIC ini belum punya group counter</option>';
-            counterDropdown.disabled = true;
-        } else {
-            counterDropdown.disabled = false;
-            counterDropdown.innerHTML = '<option value="">Pilih Counter...</option>' + 
-                filteredCounters.map(c => `<option value="${c.id_counter}">${c.nama_counter}</option>`).join('');
+        // --- DASHBOARD ---
+        async function loadDashboard() {
+            try {
+                const { count: cV } = await db.from('visiting').select('*', { count: 'exact', head: true });
+                const { count: cF } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'Open');
+                const { count: cP } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'On-Progress');
+                const { count: cC } = await db.from('cust_issue').select('*', { count: 'exact', head: true });
+                
+                document.getElementById('kpi-visit').innerText = cV || 0;
+                document.getElementById('kpi-fail').innerText = cF || 0;
+                document.getElementById('kpi-onprogress').innerText = cP || 0;
+                document.getElementById('kpi-cust').innerText = cC || 0;
+            } catch (e) { console.error("Error loading dashboard:", e); }
         }
-    }
 
-
-    // RENCANA JADWAL LOGIC
-    function addJadwalToList() {
-        const picEl = document.getElementById('j-pic');
-        const tgl = document.getElementById('j-tgl').value;
-        const counterEl = document.getElementById('j-counter');
-        const catatan = document.getElementById('j-catatan').value;
-
-        if(!picEl.value || !tgl || !counterEl.value) return alert("PIC, Tanggal, dan Counter wajib diisi!");
-
-        const picText = picEl.options[picEl.selectedIndex].text;
-        const counterText = counterEl.options[counterEl.selectedIndex].text;
-
-        tempJadwalList.push({ tgl, counter: counterText, catatan });
-        renderJadwalPreview();
+        // --- MASTER & SETUP ---
+        document.getElementById('filePic').addEventListener('change', e => readExcel(e.target.files[0], d => dataPicExcel = d));
+        document.getElementById('file4p').addEventListener('change', e => readExcel(e.target.files[0], d => data4pExcel = d));
         
-        document.getElementById('j-tgl').value = '';
-        counterEl.value = '';
-        document.getElementById('j-catatan').value = '';
-    }
+        function readExcel(file, cb) { 
+            if(!file) return; 
+            const r = new FileReader(); 
+            r.onload = e => { 
+                const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); 
+                cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])); 
+            }; 
+            r.readAsArrayBuffer(file); 
+        }
 
-    function renderJadwalPreview() {
-        const card = document.getElementById('jadwal-preview-card');
-        const tbody = document.querySelector('#table-jadwal-preview tbody');
-        const picText = document.getElementById('j-pic').options[document.getElementById('j-pic').selectedIndex].text;
+        async function submitPic() { 
+            if(!dataPicExcel.length) return alert("Pilih file dulu!"); 
+            const f = dataPicExcel.map(r => ({ 
+                username: String(r.user || r.username || ''), 
+                pass: String(r.pass || ''), 
+                jabatan: String(r.jabatan || '')
+            })); 
+            await db.from('pic').insert(f); 
+            alert("Berhasil import PIC!"); 
+            loadGroupingData(); 
+        }
+
+        async function submit4p() { 
+            if(!data4pExcel.length) return alert("Pilih file dulu!"); 
+            const f = data4pExcel.map(r => ({ 
+                "kategoti 4p": String(r['kategoti 4p']||''), 
+                "bagian 4p": String(r['bagian 4p']||''), 
+                "ceklist": String(r['ceklist']||''), 
+                "root_driver": String(r['root driver']||''), 
+                "nama_counter": String(r['nama_counter']||'') 
+            })); 
+            await db.from('master baru 4p').insert(f); 
+            alert("Berhasil import 4P!"); 
+        }
         
-        document.getElementById('preview-nama-pic').innerText = picText;
-        card.style.display = 'block';
+        async function loadGroupingData() {
+            const { data: pic } = await db.from('pic').select('*');
+            const { data: counter } = await db.from('master_counter').select('*');
+            const c = document.getElementById('groupingContainer'); 
+            if(!c) return;
+            c.innerHTML = '';
+            if(pic && counter) {
+                pic.forEach(p => { 
+                    let h = `<div style="margin-bottom:15px;"><b>${p.username}</b><div style="margin-top:5px; display:grid; grid-template-columns:1fr 1fr; gap:5px;">`; 
+                    counter.forEach(ct => { h += `<label style="font-size:13px;"><input type="checkbox" value="${ct.id_counter}" class="cb-counter" data-pic="${p.id}"> ${ct.nama_counter}</label>`; }); 
+                    c.innerHTML += h + '</div></div>'; 
+                });
+            }
+        }
 
-        tbody.innerHTML = tempJadwalList.map((item, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${item.tgl}</td>
-                <td>${item.counter}</td>
-                <td>${item.catatan || '-'}</td>
-            </tr>
-        `).join('');
-    }
+        async function submitGrouping() { 
+            const d = []; 
+            document.querySelectorAll('.cb-counter:checked').forEach(cb => d.push({ pic_id: parseInt(cb.dataset.pic), counter_id: parseInt(cb.value) })); 
+            if(!d.length) return alert("Centang dulu!"); 
+            await db.from('pic_counter_group').insert(d); 
+            alert("Berhasil simpan grouping!"); 
+        }
 
-    function getJadwalText() {
-        let text = `*RENCANA JADWAL KUNJUNGAN*\nPIC: ${document.getElementById('preview-nama-pic').innerText}\n\n`;
-        tempJadwalList.forEach((item, i) => { text += `${i+1}. ${item.tgl} | ${item.counter} | ${item.catatan || '-'}\n`; });
-        return text;
-    }
+        // --- DROPDOWNS ---
+        async function initDropdowns() {
+            const { data: dataPic } = await db.from('pic').select('*');
+            const { data: dataCounter } = await db.from('master_counter').select('*');
+            const { data: dataGroup } = await db.from('pic_counter_group').select('*');
+            
+            masterDataPic = dataPic || []; masterDataCounter = dataCounter || []; masterDataGrouping = dataGroup || [];
+            
+            document.querySelectorAll('.pic-dropdown').forEach(el => { 
+                el.innerHTML = '<option value="">Pilih PIC...</option>' + masterDataPic.map(p => `<option value="${p.id}">${p.username}</option>`).join(''); 
+                el.value = ""; 
+            });
+            document.querySelectorAll('.counter-dropdown').forEach(el => { 
+                el.innerHTML = '<option value="">Pilih PIC dulu...</option>'; el.disabled = true; 
+            });
+        }
 
-    function exportJadwalExcel() {
-        if(!tempJadwalList.length) return alert("Tidak ada jadwal untuk diexport!");
-        const ws = XLSX.utils.json_to_sheet(tempJadwalList.map((item, i) => ({ No: i+1, Tanggal: item.tgl, Counter: item.counter, Catatan: item.catatan })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Rencana Jadwal");
-        XLSX.writeFile(wb, `Jadwal_${document.getElementById('preview-nama-pic').innerText}.xlsx`);
-    }
+        function filterCounterByPic(picId, counterId) {
+            const selectedPicId = document.getElementById(picId).value;
+            const counterDropdown = document.getElementById(counterId);
+            if (!selectedPicId) { 
+                counterDropdown.innerHTML = '<option value="">Pilih PIC dulu...</option>'; counterDropdown.disabled = true; return; 
+            }
+            const allowedCounterIds = masterDataGrouping.filter(g => g.pic_id == selectedPicId).map(g => g.counter_id);
+            const filteredCounters = masterDataCounter.filter(c => allowedCounterIds.includes(c.id_counter));
+            
+            if (filteredCounters.length === 0) { 
+                counterDropdown.innerHTML = '<option value="">PIC ini belum punya group counter</option>'; counterDropdown.disabled = true; 
+            } else { 
+                counterDropdown.disabled = false; 
+                counterDropdown.innerHTML = '<option value="">Pilih Counter...</option>' + filteredCounters.map(c => `<option value="${c.id_counter}">${c.nama_counter}</option>`).join(''); 
+            }
+        }
 
-    function exportJadwalPDF() {
-        if(!tempJadwalList.length) return alert("Tidak ada jadwal untuk diexport!");
-        const element = document.getElementById('jadwal-pdf-area');
-        const sidebar = document.querySelector('.sidebar');
-        const topbar = document.querySelector('.topbar');
-        sidebar.style.display = 'none'; topbar.style.display = 'none'; document.body.style.background = 'white';
-        const opt = { margin: 10, filename: `Jadwal_${document.getElementById('preview-nama-pic').innerText}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-        html2pdf().set(opt).from(element).save().finally(() => { sidebar.style.display = ''; topbar.style.display = ''; document.body.style.background = ''; });
-    }
+        // --- RENCANA JADWAL ---
+        function addJadwalToList() {
+            const picEl = document.getElementById('j-pic'), tgl = document.getElementById('j-tgl').value, counterEl = document.getElementById('j-counter'), catatan = document.getElementById('j-catatan').value;
+            if(!picEl.value || !tgl || !counterEl.value) return alert("Isi semua!");
+            tempJadwalList.push({ pic_id: picEl.value, counter_id: counterEl.value, tgl, counter: counterEl.options[counterEl.selectedIndex].text, catatan });
+            renderJadwalPreview(); 
+            document.getElementById('j-tgl').value = ''; counterEl.value = ''; document.getElementById('j-catatan').value = '';
+        }
 
-    function sendJadwalWA() {
-        if(!tempJadwalList.length) return alert("Tidak ada jadwal untuk dikirim!");
-        window.open(`https://wa.me/?text=${encodeURIComponent(getJadwalText())}`, '_blank');
-    }
+        async function saveJadwalToDB() {
+            if(tempJadwalList.length === 0) return alert("Daftar jadwal kosong!");
+            const payload = tempJadwalList.map(item => ({
+                pic_id: parseInt(item.pic_id),
+                counter_id: parseInt(item.counter_id),
+                tanggal: item.tgl,
+                catatan: item.catatan
+            }));
+            const { error } = await db.from('jadwal').insert(payload);
+            if(error) return alert("Gagal simpan ke DB: " + error.message);
+            alert("Berhasil menyimpan rencana ke database!");
+            tempJadwalList = [];
+            renderJadwalPreview();
+        }
 
-    // VISITING LOGIC
-    async function startVisiting() {
-        const obj = { tanggal: document.getElementById('v-tgl').value, jam_mulai: document.getElementById('v-jam').value, pic_id: document.getElementById('v-pic').value, counter_id: document.getElementById('v-counter').value };
-        if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Tanggal, PIC, dan Counter wajib diisi!");
-        const { data } = await db.from('visiting').insert(obj).select();
-        currentVisitingId = data[0].id;
-        const { data: cl } = await db.from('master baru 4p').select('*');
-        document.getElementById('checklist-container').innerHTML = cl.map(c => `<div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center;"><div><div style="font-weight:600;">${c.ceklist}</div><div style="font-size:11px; color:gray;">${c['kategoti 4p']} - ${c['bagian 4p']}</div></div><select class="form-control status-cek" data-item="${c.ceklist}" style="width:120px;"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>`).join('');
-        document.getElementById('checklist-area').style.display = 'block';
-    }
+        function renderJadwalPreview() {
+            const card = document.getElementById('jadwal-preview-card'), tbody = document.querySelector('#table-jadwal-preview tbody');
+            const picSelect = document.getElementById('j-pic');
+            document.getElementById('preview-nama-pic').innerText = picSelect.options[picSelect.selectedIndex]?.text || '-'; 
+            card.style.display = 'block';
+            tbody.innerHTML = tempJadwalList.map((item, i) => `<tr><td>${i + 1}</td><td>${item.tgl}</td><td>${item.counter}</td><td>${item.catatan || '-'}</td></tr>`).join('');
+        }
 
-    async function submitChecklist() {
-        const items = []; document.querySelectorAll('.status-cek').forEach(s => items.push({ visiting_id: currentVisitingId, item_ceklist: s.dataset.item, status_cek: s.value }));
-        await db.from('visiting_checklist').insert(items);
-        const failItems = items.filter(i => i.status_cek === 'Fail');
-        if(failItems.length > 0) { const actions = failItems.map(f => ({ visiting_id: currentVisitingId, sumber_masalah: 'Visit Fail', masalah: f.item_ceklist, tindakan: 'Perlu tindakan perbaikan', due_date: new Date(Date.now() + 3*24*60*60*1000).toISOString().split('T')[0] })); await db.from('visiting_action').insert(actions); }
-        alert("Berhasil simpan checklist!" + (failItems.length > 0 ? ` (${failItems.length} item FAIL masuk ke Action Plan)` : ""));
-        document.getElementById('checklist-area').style.display = 'none';
-    }
+        function getJadwalText() { 
+            let text = `*RENCANA JADWAL*\nPIC: ${document.getElementById('preview-nama-pic').innerText}\n\n`; 
+            tempJadwalList.forEach((item, i) => { text += `${i+1}. ${item.tgl} | ${item.counter} | ${item.catatan || '-'}\n`; }); 
+            return text; 
+        }
 
-    // ISSUES LOGIC
-    async function submitCustIssue() {
-        const obj = { tanggal: new Date().toISOString().split('T')[0], pic_id: document.getElementById('ci-pic').value, counter_id: document.getElementById('ci-counter').value, keluhan: document.getElementById('ci-keluhan').value };
-        if(!obj.pic_id || !obj.counter_id || !obj.keluhan) return alert("PIC, Counter, dan Keluhan wajib diisi!");
-        await db.from('cust_issue').insert(obj);
-        await db.from('visiting_action').insert({ sumber_masalah: 'Cust Issue', masalah: "Keluhan: " + obj.keluhan, tindakan: "Tindak lanjut keluhan pelanggan", due_date: new Date(Date.now() + 2*24*60*60*1000).toISOString().split('T')[0] });
-        alert("Customer Issue tersimpan!"); document.getElementById('ci-keluhan').value = '';
-    }
+        function exportJadwalExcel() { 
+            if(!tempJadwalList.length) return alert("Kosong!"); 
+            const ws = XLSX.utils.json_to_sheet(tempJadwalList.map((item, i) => ({ No: i+1, Tanggal: item.tgl, Counter: item.counter, Catatan: item.catatan }))); 
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Rencana Jadwal"); 
+            XLSX.writeFile(wb, `Jadwal_${document.getElementById('preview-nama-pic').innerText}.xlsx`); 
+        }
 
-    async function submitPendingReq() {
-        const obj = { tanggal_req: new Date().toISOString().split('T')[0], kategori_req: document.getElementById('pr-kat').value, detail_req: document.getElementById('pr-detail').value, due_date: document.getElementById('pr-due').value };
-        if(!obj.kategori_req || !obj.due_date) return alert("Kategori dan Due Date wajib diisi!");
-        await db.from('pending_request').insert(obj); alert("Request berhasil diajukan!");
-    }
+        function exportJadwalPDF() { 
+            if(!tempJadwalList.length) return alert("Kosong!"); 
+            const element = document.getElementById('jadwal-pdf-area'), sidebar = document.querySelector('.sidebar'), topbar = document.querySelector('.topbar'); 
+            sidebar.style.display = 'none'; topbar.style.display = 'none'; document.body.style.background = 'white'; 
+            const opt = { margin: 10, filename: `Jadwal.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; 
+            html2pdf().set(opt).from(element).save().finally(() => { sidebar.style.display = ''; topbar.style.display = ''; document.body.style.background = ''; }); 
+        }
 
-    // ACTION PLAN LOGIC
-    async function loadActions() {
-        const { data } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('due_date', { ascending: true });
-        const tb = document.getElementById('tb-action');
-        if(!data.length) { tb.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center;">Tidak ada action plan terbuka.</td></tr>'; return; }
-        tb.innerHTML = data.map(d => `<tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;">${d.masalah}</td><td style="padding:10px;">${d.tindakan}</td><td style="padding:10px;">${d.due_date}</td><td style="padding:10px;"><button class="btn btn-sm btn-success" onclick="validateAction(${d.id})">Done</button></td></tr>`).join('');
-    }
+        function sendJadwalWA() { 
+            if(!tempJadwalList.length) return alert("Kosong!"); 
+            window.open(`https://wa.me/?text=${encodeURIComponent(getJadwalText())}`, '_blank'); 
+        }
 
-    async function validateAction(id) { await db.from('visiting_action').update({ status_action: 'Done', validated_at: new Date().toISOString() }).eq('id', id); loadActions(); }
+        // ============================================
+        // REVIEW RENCANA KUNJUNGAN (PLANNING CONTROL)
+        // ============================================
 
-    // BUSINESS REVIEW LOGIC
-    async function submitBR() {
-        const obj = { periode_start: document.getElementById('br-start').value, periode_end: document.getElementById('br-end').value, top_problem: document.getElementById('br-top').value, root_cause: document.getElementById('br-cause').value, recommendation: document.getElementById('br-rec').value };
-        if(!obj.periode_start || !obj.periode_end) return alert("Periode wajib diisi!");
-        await db.from('br_summary').insert(obj); alert("Business Review disimpan!");
-    }
+        async function loadReviewJadwal() {
+            const start = document.getElementById('rj-start').value;
+            const end = document.getElementById('rj-end').value;
+            const picId = document.getElementById('rj-pic').value;
+            const status = document.getElementById('rj-status').value;
 
-    window.onload = () => { loadDashboard(); loadGroupingData(); };
-</script>
+            if (!start || !end) {
+                alert("Tanggal Awal dan Akhir wajib diisi!");
+                return;
+            }
+
+            if (new Date(start) > new Date(end)) {
+                alert("Tanggal Awal tidak boleh lebih besar dari Tanggal Akhir!");
+                return;
+            }
+
+            const tbody = document.getElementById('tb-review-jadwal');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">Loading...</td></tr>';
+
+            try {
+                let query = db.from('jadwal')
+                    .select(`
+                        *,
+                        pic:pic_id(username),
+                        counter:counter_id(nama_counter)
+                    `)
+                    .gte('tanggal', start)
+                    .lte('tanggal', end)
+                    .order('tanggal', { ascending: true });
+
+                if (picId) query = query.eq('pic_id', picId);
+                if (status) query = query.eq('status', status);
+
+                const { data, error } = await query;
+
+                if (error) throw error;
+
+                reviewJadwalData = data || [];
+
+                document.getElementById('rj-summary').style.display = 'grid';
+                document.getElementById('rj-kpi-total').innerText = reviewJadwalData.length;
+                document.getElementById('rj-kpi-planned').innerText = reviewJadwalData.filter(d => d.status === 'PLANNED').length;
+                document.getElementById('rj-kpi-confirmed').innerText = reviewJadwalData.filter(d => d.status === 'CONFIRMED').length;
+                document.getElementById('rj-kpi-cancelled').innerText = reviewJadwalData.filter(d => d.status === 'CANCELLED').length;
+
+                document.getElementById('rj-table-card').style.display = 'block';
+
+                if (reviewJadwalData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-sec);">Tidak ada data untuk periode ini</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = reviewJadwalData.map(d => {
+                    const statusClass = `status-${d.status.toLowerCase()}`;
+                    const picName = d.pic?.username || '-';
+                    const counterName = d.counter?.nama_counter || '-';
+                    
+                    let actionButtons = '';
+                    if (d.status === 'PLANNED') {
+                        actionButtons = `
+                            <button class="btn btn-sm btn-success" onclick="openModalJadwal(${d.id}, 'CONFIRMED')">✓ Confirm</button>
+                            <button class="btn btn-sm btn-danger" onclick="openModalJadwal(${d.id}, 'CANCELLED')">✗ Cancel</button>
+                        `;
+                    } else if (d.status === 'CONFIRMED') {
+                        actionButtons = `
+                            <button class="btn btn-sm btn-primary" onclick="markAsCompleted(${d.id})">✓ Completed</button>
+                            <button class="btn btn-sm btn-danger" onclick="openModalJadwal(${d.id}, 'CANCELLED')">✗ Cancel</button>
+                        `;
+                    } else {
+                        actionButtons = '<span style="color:var(--text-sec); font-size:12px;">Selesai</span>';
+                    }
+
+                    return `
+                        <tr>
+                            <td>${formatDate(d.tanggal)}</td>
+                            <td>${picName}</td>
+                            <td>${counterName}</td>
+                            <td>${d.catatan || '-'}</td>
+                            <td><span class="status-badge ${statusClass}">${d.status}</span></td>
+                            <td>${actionButtons}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--danger);">Error: ' + e.message + '</td></tr>';
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            const options = { day: '2-digit', month: 'short', year: 'numeric' };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        function openModalJadwal(id, action) {
+            document.getElementById('modal-jadwal').style.display = 'flex';
+            document.getElementById('modal-jadwal-id').value = id;
+            document.getElementById('modal-jadwal-action').value = action;
+            document.getElementById('modal-jadwal-title').innerText = action === 'CONFIRMED' ? 'Confirm Jadwal' : 'Cancel Jadwal';
+
+            document.getElementById('modal-jadwal-confirm-fields').style.display = action === 'CONFIRMED' ? 'block' : 'none';
+            document.getElementById('modal-jadwal-cancel-fields').style.display = action === 'CANCELLED' ? 'block' : 'none';
+
+            document.getElementById('modal-jadwal-confirmed-by').value = '';
+            document.getElementById('modal-jadwal-cancel-reason').value = '';
+        }
+
+        function closeModalJadwal() {
+            document.getElementById('modal-jadwal').style.display = 'none';
+        }
+
+        async function submitModalJadwal() {
+            const id = document.getElementById('modal-jadwal-id').value;
+            const action = document.getElementById('modal-jadwal-action').value;
+            
+            let payload = { status: action };
+
+            if (action === 'CONFIRMED') {
+                const confirmedBy = document.getElementById('modal-jadwal-confirmed-by').value;
+                if (!confirmedBy) {
+                    alert("PIC yang confirm wajib dipilih!");
+                    return;
+                }
+                payload.confirmed_by = parseInt(confirmedBy);
+                payload.confirmed_at = new Date().toISOString();
+            } else if (action === 'CANCELLED') {
+                const cancelReason = document.getElementById('modal-jadwal-cancel-reason').value.trim();
+                if (!cancelReason) {
+                    alert("Alasan pembatalan wajib diisi!");
+                    return;
+                }
+                payload.cancel_reason = cancelReason;
+            }
+
+            try {
+                const { error } = await db.from('jadwal').update(payload).eq('id', id);
+                if (error) throw error;
+
+                alert(`Jadwal berhasil di-${action.toLowerCase()}!`);
+                closeModalJadwal();
+                loadReviewJadwal(); 
+            } catch (e) {
+                alert("Gagal update status: " + e.message);
+            }
+        }
+
+        async function markAsCompleted(id) {
+            if (!confirm("Tandai jadwal ini sebagai COMPLETED?")) return;
+
+            try {
+                const { error } = await db.from('jadwal').update({ 
+                    status: 'COMPLETED',
+                    confirmed_at: new Date().toISOString()
+                }).eq('id', id);
+                
+                if (error) throw error;
+
+                alert("Jadwal ditandai sebagai COMPLETED!");
+                loadReviewJadwal();
+            } catch (e) {
+                alert("Gagal update: " + e.message);
+            }
+        }
+
+        function exportReviewJadwalExcel() {
+            if (reviewJadwalData.length === 0) {
+                alert("Tidak ada data untuk diexport!");
+                return;
+            }
+
+            const exportData = reviewJadwalData.map((d, i) => ({
+                No: i + 1,
+                Tanggal: d.tanggal,
+                PIC: d.pic?.username || '-',
+                Counter: d.counter?.nama_counter || '-',
+                Tujuan: d.catatan || '-',
+                Status: d.status,
+                Confirmed_At: d.confirmed_at ? new Date(d.confirmed_at).toLocaleString('id-ID') : '-',
+                Cancel_Reason: d.cancel_reason || '-'
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Review Jadwal");
+            
+            const start = document.getElementById('rj-start').value;
+            const end = document.getElementById('rj-end').value;
+            XLSX.writeFile(wb, `Review_Jadwal_${start}_to_${end}.xlsx`);
+        }
+
+        function exportReviewJadwalPDF() {
+            if (reviewJadwalData.length === 0) {
+                alert("Tidak ada data untuk diexport!");
+                return;
+            }
+
+            const start = document.getElementById('rj-start').value;
+            const end = document.getElementById('rj-end').value;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.style.padding = '20px';
+            tempDiv.innerHTML = `
+                <h2 style="text-align:center; margin-bottom:20px;">REVIEW RENCANA KUNJUNGAN</h2>
+                <p style="text-align:center; margin-bottom:20px;">Periode: ${formatDate(start)} - ${formatDate(end)}</p>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="border:1px solid #ccc; padding:8px;">Tanggal</th>
+                            <th style="border:1px solid #ccc; padding:8px;">PIC</th>
+                            <th style="border:1px solid #ccc; padding:8px;">Counter</th>
+                            <th style="border:1px solid #ccc; padding:8px;">Tujuan</th>
+                            <th style="border:1px solid #ccc; padding:8px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reviewJadwalData.map(d => `
+                            <tr>
+                                <td style="border:1px solid #ccc; padding:8px;">${formatDate(d.tanggal)}</td>
+                                <td style="border:1px solid #ccc; padding:8px;">${d.pic?.username || '-'}</td>
+                                <td style="border:1px solid #ccc; padding:8px;">${d.counter?.nama_counter || '-'}</td>
+                                <td style="border:1px solid #ccc; padding:8px;">${d.catatan || '-'}</td>
+                                <td style="border:1px solid #ccc; padding:8px;">${d.status}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.body.appendChild(tempDiv);
+            
+            const opt = {
+                margin: 10,
+                filename: `Review_Jadwal_${start}_to_${end}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(tempDiv).save().finally(() => {
+                document.body.removeChild(tempDiv);
+            });
+        }
+
+        function exportReviewJadwalWA() {
+            if (reviewJadwalData.length === 0) {
+                alert("Tidak ada data untuk dishare!");
+                return;
+            }
+
+            const start = document.getElementById('rj-start').value;
+            const end = document.getElementById('rj-end').value;
+            
+            let text = `*REVIEW RENCANA KUNJUNGAN*\n`;
+            text += `Periode: ${formatDate(start)} - ${formatDate(end)}\n\n`;
+            text += `Total Rencana: ${reviewJadwalData.length}\n`;
+            text += `Planned: ${reviewJadwalData.filter(d => d.status === 'PLANNED').length}\n`;
+            text += `Confirmed: ${reviewJadwalData.filter(d => d.status === 'CONFIRMED').length}\n`;
+            text += `Completed: ${reviewJadwalData.filter(d => d.status === 'COMPLETED').length}\n`;
+            text += `Cancelled: ${reviewJadwalData.filter(d => d.status === 'CANCELLED').length}\n\n`;
+            text += `*Detail:*\n`;
+            
+            reviewJadwalData.forEach((d, i) => {
+                text += `${i+1}. ${formatDate(d.tanggal)} | ${d.pic?.username || '-'} | ${d.counter?.nama_counter || '-'} | ${d.status}\n`;
+            });
+
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // --- MASTER IMPACT MAPPING FUNCTIONS ---
+        async function loadImpactMapping() {
+            const tbody = document.getElementById('tb-impact-mapping');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
+            
+            try {
+                const { data, error } = await db.from('master_impact_mapping').select('*').order('id', {ascending: false});
+                if(error) throw error;
+                
+                masterImpactData = data || [];
+                
+                if(masterImpactData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data mapping.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = masterImpactData.map(item => `
+                    <tr>
+                        <td><b>${item.root_driver}</b></td>
+                        <td>${item.impact_category}</td>
+                        <td>${item.impact_metric}</td>
+                        <td><span style="background:${getWeightColor(item.severity_weight)}; color:white; padding:2px 8px; border-radius:4px;">${item.severity_weight}</span></td>
+                        <td>${item.active ? '<span style="color:green">● Active</span>' : '<span style="color:red">● Inactive</span>'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">
+                                ${item.active ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error loading data</td></tr>';
+            }
+        }
+
+        function getWeightColor(w) {
+            if(w >= 5) return '#ef4444'; 
+            if(w >= 3) return '#f59e0b'; 
+            return '#10b981'; 
+        }
+
+        async function addImpactMapping() {
+            const driver = document.getElementById('im-driver').value;
+            const cat = document.getElementById('im-category').value;
+            const metric = document.getElementById('im-metric').value;
+            const weight = document.getElementById('im-weight').value;
+
+            if(!driver || !metric) return alert("Driver dan Metric wajib diisi!");
+
+            const { error } = await db.from('master_impact_mapping').insert({
+                root_driver: driver,
+                impact_category: cat,
+                impact_metric: metric,
+                severity_weight: parseInt(weight)
+            });
+
+            if(error) return alert("Gagal simpan: " + error.message);
+            
+            alert("Mapping berhasil ditambahkan!");
+            document.getElementById('im-driver').value = '';
+            document.getElementById('im-metric').value = '';
+            loadImpactMapping();
+        }
+
+        async function toggleImpactStatus(id, newStatus) {
+            const { error } = await db.from('master_impact_mapping').update({ active: newStatus }).eq('id', id);
+            if(error) return alert("Gagal update status");
+            loadImpactMapping();
+        }
+
+        // --- VISITING & 4P ---
+        async function startVisiting() {
+            const obj = { tanggal: document.getElementById('v-tgl').value, jam_mulai: document.getElementById('v-jam').value, pic_id: document.getElementById('v-pic').value, counter_id: document.getElementById('v-counter').value };
+            if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Tanggal, PIC, dan Counter wajib diisi!");
+            
+            const { data, error } = await db.from('visiting').insert(obj).select();
+            if(error) return alert("Gagal menyimpan kunjungan: " + error.message);
+
+            currentVisitingId = data[0].id;
+            const { data: cl, error: errCl } = await db.from('master baru 4p').select('*');
+            if(errCl || !cl || cl.length === 0) return alert("Gagal mengambil data master 4P atau data kosong.");
+
+            const groupedData = cl.reduce((group, item) => {
+                const category = item['kategoti 4p'] || 'LAINNYA';
+                if (!group[category]) group[category] = [];
+                group[category].push(item);
+                return group;
+            }, {});
+
+            const tabsEl = document.getElementById('tabs-4p-container'), containerEl = document.getElementById('tab-4p-content-container');
+            tabsEl.innerHTML = ''; containerEl.innerHTML = '';
+            let isFirst = true;
+
+            for (const [category, items] of Object.entries(groupedData)) {
+                const safeCatId = category.replace(/[^a-zA-Z0-9]/g, '-');
+                tabsEl.innerHTML += `<button class="tab-4p-btn ${isFirst ? 'active' : ''}" onclick="switchTab4P('tab4p-${safeCatId}', this)">${category}</button>`;
+                
+                let htmlItems = '';
+                items.forEach(c => {
+                    htmlItems += `
+                        <div style="border-bottom:1px solid #eee; padding:15px 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                <div><div style="font-weight:600;">${c.ceklist}</div><div style="font-size:11px; color:gray;">${c['bagian 4p']}</div></div>
+                                <select class="form-control status-cek" data-item="${c.ceklist}" style="width:120px;" onchange="toggleFailFoto(this)">
+                                    <option value="Pass">Pass</option><option value="Fail">Fail</option>
+                                </select>
+                            </div>
+                            <div class="fail-foto-area">
+                                <label style="font-size:12px; font-weight:bold; color:var(--danger); display:block; margin-bottom:5px;">⚠️ WAJIB UPLOAD BUKTI FOTO FAIL:</label>
+                                <input type="file" accept="image/*" class="form-control fail-foto-input" style="padding:5px;">
+                                <img class="fail-foto-preview" src="#" alt="preview" style="display:none; max-width: 200px; margin-top: 10px;">
+                            </div>
+                        </div>`;
+                });
+                containerEl.innerHTML += `<div id="tab4p-${safeCatId}" class="tab-4p-content ${isFirst ? 'active' : ''}">${htmlItems}</div>`;
+                isFirst = false;
+            }
+            document.getElementById('visiting-form-card').style.display = 'none';
+            document.getElementById('checklist-area').style.display = 'block';
+        }
+
+        function switchTab4P(tabId, el) {
+            document.querySelectorAll('.tab-4p-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-4p-content').forEach(c => c.classList.remove('active'));
+            const target = document.getElementById(tabId);
+            if(target) target.classList.add('active');
+            if(el) el.classList.add('active');
+        }
+
+        function toggleFailFoto(selectEl) {
+            const parentDiv = selectEl.closest('div[style*="border-bottom"]') || selectEl.parentElement.parentElement;
+            const failArea = parentDiv.querySelector('.fail-foto-area');
+            if (selectEl.value === 'Fail') { failArea.style.display = 'block'; } 
+            else { failArea.style.display = 'none'; failArea.querySelector('.fail-foto-input').value = ''; failArea.querySelector('.fail-foto-preview').style.display = 'none'; }
+        }
+
+        document.addEventListener('change', function(e) {
+            if(e.target.classList.contains('fail-foto-input')) {
+                const preview = e.target.parentElement.querySelector('.fail-foto-preview');
+                if(e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) { preview.src = evt.target.result; preview.style.display = 'block'; }
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            }
+        });
+
+        // --- SUBMIT CHECKLIST ---
+        async function submitChecklist() {
+            if(!currentVisitingId) return alert("Sesi visiting tidak valid!");
+            
+            const selects = document.querySelectorAll('.status-cek');
+            const payloadsDetail = [];
+            const payloadsAction = [];
+            let failCount = 0;
+            let hasFailWithoutPhoto = false;
+
+            for(let sel of selects) {
+                const status = sel.value;
+                const itemName = sel.dataset.item;
+                let photoUrl = null;
+
+                if(status === 'Fail') {
+                    failCount++;
+                    const parentDiv = sel.closest('div[style*="border-bottom"]') || sel.parentElement.parentElement;
+                    const fileInput = parentDiv.querySelector('.fail-foto-input');
+                    
+                    if(fileInput && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const fileName = `${currentVisitingId}_${Date.now()}_${file.name}`;
+                        const { data: uploadData, error: uploadError } = await db.storage.from('visit-fotos').upload(fileName, file);
+                        if(uploadError) { alert(`Gagal upload foto untuk: ${itemName}`); return; }
+                        const { data: urlData } = db.storage.from('visit-fotos').getPublicUrl(fileName);
+                        photoUrl = urlData.publicUrl;
+                    } else { hasFailWithoutPhoto = true; }
+
+                    payloadsAction.push({
+                        visiting_id: currentVisitingId,
+                        sumber_masalah: 'Visiting 4P Check',
+                        masalah: `FAIL: ${itemName}`,
+                        foto_before: photoUrl || '',
+                        status_action: 'Open',
+                        tindakan: '-'
+                    });
+                }
+
+                payloadsDetail.push({ 
+                    visiting_id: currentVisitingId, 
+                    item_name: itemName, 
+                    status: status, 
+                    foto_url: photoUrl || ''
+                });
+            }
+
+            if(hasFailWithoutPhoto && !confirm(`Ada ${failCount} item FAIL tanpa foto. Lanjutkan?`)) return;
+
+            try {
+                if(payloadsDetail.length > 0) {
+                    const { error: errDetail } = await db.from('visiting_detail').insert(payloadsDetail);
+                    if(errDetail) throw new Error("Gagal detail: " + errDetail.message); 
+                }
+
+                if(payloadsAction.length > 0) {
+                    const { error: errAction } = await db.from('visiting_action').insert(payloadsAction);
+                    if(errAction) throw new Error("Gagal action: " + errAction.message); 
+                    alert(`✅ Berhasil! ${payloadsAction.length} temuan FAIL dibuat.`);
+                } else {
+                    alert(`✅ Semua PASS!`);
+                }
+
+                document.getElementById('visiting-form-card').style.display = 'block';
+                document.getElementById('checklist-area').style.display = 'none';
+                loadDashboard();
+            } catch (error) {
+                alert("❌ Error: " + error.message);
+            }
+        }
+
+        // --- ACTION PLAN ---
+        function switchActionTab(tabId, btnEl) {
+            document.querySelectorAll('#page-action .tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('#page-action .tab-btn').forEach(b => b.classList.remove('active'));
+            const targetContent = document.getElementById(tabId);
+            if (targetContent) targetContent.classList.add('active');
+            if (btnEl) btnEl.classList.add('active');
+        }
+
+        async function openActionPage() {
+            document.getElementById('action-form-card').style.display = 'none';
+            document.getElementById('action-form-empty').style.display = 'block';
+            const firstBtn = document.querySelector('#page-action .tab-btn');
+            switchActionTab('tab-open', firstBtn);
+            await loadOpenActions();
+            await loadValidasiActions();
+        }
+
+        async function loadOpenActions() {
+            const tb = document.getElementById('tb-open');
+            tb.innerHTML = '<tr><td colspan="3" style="padding:20px; text-align:center;">Loading...</td></tr>';
+            try {
+                const { data, error } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('id', { ascending: false });
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    tb.innerHTML = '<tr><td colspan="3" style="padding:20px; text-align:center; color:var(--text-sec);">Tidak ada temuan baru.</td></tr>';
+                    return;
+                }
+                tb.innerHTML = data.map(d => `
+                    <tr class="highlight-row">
+                        <td style="padding:10px;"><span style="background:#e0e7ff; color:#3730a3; padding:3px 8px; border-radius:10px; font-size:11px;">${d.sumber_masalah || '-'}</span></td>
+                        <td style="padding:10px;">${d.masalah}</td>
+                        <td style="padding:10px;"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${(d.masalah || '').replace(/'/g, "\\'")}')">Buat Action</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) { tb.innerHTML = '<tr><td colspan="3" style="padding:20px; text-align:center; color:red;">Error.</td></tr>'; }
+        }
+
+        function openActionForm(id, masalah) {
+            const formBtn = document.querySelectorAll('#page-action .tab-btn')[1];
+            switchActionTab('tab-form', formBtn);
+            document.getElementById('action-form-card').style.display = 'block';
+            document.getElementById('action-form-empty').style.display = 'none';
+            document.getElementById('action-id-target').value = id;
+            document.getElementById('action-masalah-text').innerText = masalah;
+            document.getElementById('action-tindakan').value = '';
+            document.getElementById('action-due').value = '';
+        }
+
+        function cancelActionForm() {
+            document.getElementById('action-form-card').style.display = 'none';
+            document.getElementById('action-form-empty').style.display = 'block';
+            const openBtn = document.querySelectorAll('#page-action .tab-btn')[0];
+            switchActionTab('tab-open', openBtn);
+        }
+
+        async function submitActionPlan() {
+            const id = document.getElementById('action-id-target').value;
+            const tindakan = document.getElementById('action-tindakan').value;
+            const dueDate = document.getElementById('action-due').value;
+            if(!tindakan || !dueDate) return alert("Tindakan dan Due Date wajib diisi!");
+            
+            const { error } = await db.from('visiting_action').update({ tindakan: tindakan, due_date: dueDate, status_action: 'On-Progress' }).eq('id', id);
+            if(error) return alert("Gagal: " + error.message);
+            
+            alert("Action Plan berhasil dibuat!");
+            cancelActionForm();
+            loadOpenActions();
+            loadValidasiActions();
+        }
+
+        async function loadValidasiActions() {
+            const tb = document.getElementById('tb-validasi');
+            try {
+                const { data, error } = await db.from('visiting_action').select('*').eq('status_action', 'On-Progress').order('due_date', { ascending: true });
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    tb.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:var(--text-sec);">Tidak ada tindakan on-progress.</td></tr>';
+                    return;
+                }
+                tb.innerHTML = data.map(d => `
+                    <tr>
+                        <td style="padding:10px;">${d.masalah}</td>
+                        <td style="padding:10px;">${d.tindakan}</td>
+                        <td style="padding:10px; font-weight:600;">${d.due_date}</td>
+                        <td style="padding:10px;"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓ Tutup</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function closeAction(id) {
+            if(!confirm("Yakin masalah ini sudah selesai?")) return;
+            await db.from('visiting_action').update({ status_action: 'Done', validated_at: new Date().toISOString() }).eq('id', id);
+            loadValidasiActions();
+        }
+
+        // --- ISSUES & REQUEST ---
+        async function submitCustIssue() {
+            const obj = { tanggal: new Date().toISOString().split('T')[0], pic_id: document.getElementById('ci-pic').value, counter_id: document.getElementById('ci-counter').value, keluhan: document.getElementById('ci-keluhan').value };
+            if(!obj.pic_id || !obj.counter_id || !obj.keluhan) return alert("Isi semua!");
+            await db.from('cust_issue').insert(obj);
+            await db.from('visiting_action').insert({ sumber_masalah: 'Cust Issue', masalah: "Keluhan: " + obj.keluhan, tindakan: '-', status_action: 'Open' });
+            alert("Customer Issue tersimpan!"); document.getElementById('ci-keluhan').value = '';
+        }
+
+        async function submitPendingReq() { 
+            const obj = { tanggal_req: new Date().toISOString().split('T')[0], pic_id: document.getElementById('ci-pic')?.value || null, counter_id: document.getElementById('ci-counter')?.value || null, kategori_req: document.getElementById('pr-kat').value, detail_req: document.getElementById('pr-detail').value, due_date: document.getElementById('pr-due').value }; 
+            if(!obj.kategori_req || !obj.due_date) return alert("Isi semua!"); 
+            await db.from('pending_request').insert(obj); 
+            alert("Request diajukan!"); 
+        }
+
+        // --- BUSINESS REVIEW ENGINE (AUTO ANALYSIS) ---
+        async function generateBRAuto() {
+            const start = document.getElementById('br-start').value;
+            const end = document.getElementById('br-end').value;
+            const picId = document.getElementById('br-pic').value;
+            const counterId = document.getElementById('br-counter').value;
+
+            if(!start || !end) return alert("Periode wajib diisi!");
+
+            document.getElementById('br-output-area').style.display = 'block';
+            document.getElementById('br-auto-narrative').innerHTML = 'Sedang menganalisis dampak bisnis...';
+            document.getElementById('br-top-drivers-list').innerHTML = '';
+
+            try {
+                let qVisit = db.from('visiting').select('id').gte('tanggal', start).lte('tanggal', end);
+                if(picId) qVisit = qVisit.eq('pic_id', picId);
+                if(counterId) qVisit = qVisit.eq('counter_id', counterId);
+                
+                const { data: visits, count: visitCount } = await qVisit;
+                const visitIds = visits.map(v => v.id);
+
+                if(visitIds.length === 0) {
+                    document.getElementById('br-auto-narrative').innerHTML = "Tidak ada data kunjungan pada periode ini.";
+                    return;
+                }
+
+                const { data: details } = await db.from('visiting_detail')
+                    .select('*, visiting:visiting_id(pic_id, counter_id)')
+                    .in('visiting_id', visitIds)
+                    .eq('status', 'Fail');
+
+                const failCount = details.length;
+                
+                let totalScore = 0;
+                let categoryScores = {};
+                let driverScores = {};
+
+                for(let d of details) {
+                    const impact = masterImpactData.find(m => 
+                        m.active && d.item_name.toLowerCase().includes(m.root_driver.toLowerCase())
+                    );
+
+                    if(impact) {
+                        const score = impact.severity_weight;
+                        totalScore += score;
+                        categoryScores[impact.impact_category] = (categoryScores[impact.impact_category] || 0) + score;
+                        driverScores[impact.root_driver] = (driverScores[impact.root_driver] || 0) + score;
+                    }
+                }
+
+                const dominantCat = Object.keys(categoryScores).reduce((a, b) => categoryScores[a] > categoryScores[b] ? a : b, '-');
+                
+                const sortedDrivers = Object.entries(driverScores)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 5)
+                    .map(([name, score]) => ({ name, score }));
+
+                document.getElementById('br-kpi-score').innerText = totalScore;
+                document.getElementById('br-kpi-category').innerText = dominantCat;
+                document.getElementById('br-kpi-fail').innerText = failCount;
+                document.getElementById('br-kpi-visit').innerText = visitCount;
+
+                const topDriverName = sortedDrivers.length > 0 ? sortedDrivers[0].name : 'N/A';
+                const narrative = `
+                    Berdasarkan analisis <b>${failCount} temuan FAIL</b> dari <b>${visitCount} kunjungan</b>, 
+                    dampak bisnis terbesar berada pada kategori <b>${dominantCat}</b> dengan Total Risk Score <b>${totalScore}</b>.
+                    <br><br>
+                    Root driver utama yang paling kritis adalah <b>"${topDriverName}"</b>. 
+                    Jika tidak segera ditangani, hal ini berpotensi menghambat pencapaian target sales dan kepuasan pelanggan.
+                `;
+                document.getElementById('br-auto-narrative').innerHTML = narrative;
+
+                document.getElementById('br-top-drivers-list').innerHTML = sortedDrivers.map((d, i) => `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:5px;">
+                        <span>${i+1}. ${d.name}</span>
+                        <span style="font-weight:bold; color:var(--danger);">Score: ${d.score}</span>
+                    </div>
+                `).join('');
+
+                currentBRData = {
+                    start, end, visitCount, failCount, totalScore, dominantCat, sortedDrivers, narrative
+                };
+
+            } catch(e) {
+                console.error(e);
+                alert("Gagal analisis: " + e.message);
+            }
+        }
+
+        async function saveBRSnapshot() {
+            if(!currentBRData) return alert("Generate analisis terlebih dahulu!");
+            
+            const manualRec = document.getElementById('br-manual-rec').value;
+            const finalNarrative = currentBRData.narrative + (manualRec ? `<br><br><b>Rekomendasi Tambahan:</b> ${manualRec}` : '');
+
+            const payload = {
+                periode_start: currentBRData.start,
+                periode_end: currentBRData.end,
+                total_visit: currentBRData.visitCount,
+                total_fail: currentBRData.failCount,
+                impact_category_dominant: currentBRData.dominantCat,
+                impact_score_total: currentBRData.totalScore,
+                top_drivers_json: currentBRData.sortedDrivers,
+                generated_narrative: finalNarrative
+            };
+
+            const { error } = await db.from('business_review_snapshot').insert(payload);
+            if(error) return alert("Gagal simpan snapshot: " + error.message);
+
+            alert("✅ Business Review berhasil disimpan ke histori permanen!");
+            loadBRHistory();
+        }
+
+        async function loadBRHistory() {
+            const tbody = document.getElementById('tb-br-history');
+            if(!tbody) return;
+            
+            try {
+                const { data } = await db.from('business_review_snapshot').select('*').order('created_at', {ascending: false}).limit(10);
+                if(!data) return;
+
+                tbody.innerHTML = data.map(d => `
+                    <tr>
+                        <td>${d.periode_start} s/d ${d.periode_end}</td>
+                        <td><b>${d.impact_score_total}</b></td>
+                        <td>${d.impact_category_dominant}</td>
+                        <td><button class="btn btn-sm btn-primary" onclick="alert('Lihat detail di laporan utama')">View</button></td>
+                    </tr>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        function exportBRPDF() {
+            const element = document.getElementById('br-narrative-content');
+            const sidebar = document.querySelector('.sidebar');
+            const topbar = document.querySelector('.topbar');
+            sidebar.style.display = 'none'; topbar.style.display = 'none'; document.body.style.background = 'white';
+            
+            const opt = { margin: 10, filename: `BR_Impact_Analysis.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save().finally(() => { sidebar.style.display = ''; topbar.style.display = ''; document.body.style.background = ''; });
+        }
+
+        // --- INIT ---
+        window.onload = () => { loadDashboard(); loadGroupingData(); };
+    </script>
 </body>
 </html>
