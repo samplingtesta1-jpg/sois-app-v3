@@ -289,7 +289,7 @@
 </head>
 <body>
 
-    <!-- HALAMAN LOGIN -->
+    <!-- HALamAN LOGIN -->
     <div id="page-login" class="page active" style="display:flex; justify-content:center; align-items:center; height:100vh; background:var(--bg-main); z-index:9999; position:absolute; width:100%;">
         <div class="card" style="width:90%; max-width:350px; padding:24px; text-align:center;">
             <h2 style="color:var(--primary); margin-bottom:8px; font-size:22px;">SOIS Login</h2>
@@ -342,6 +342,31 @@
                 <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn btn-primary" onclick="showPage('visiting')">📷 Mulai Visit</button>
                     <button class="btn btn-warning" onclick="showPage('issues')">⚠️ Input Issue</button>
+                </div>
+            </div>
+
+            <!-- MENU HUB (MOBILE ONLY) -->
+            <div id="page-menu-hub" class="page">
+                <div class="card">
+                    <div class="card-title">Semua Menu</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <!-- Menu Utama (Duplikat untuk kemudahan akses) -->
+                        <button class="btn btn-primary" onclick="showPage('dashboard')">📊 Dashboard</button>
+                        <button class="btn btn-primary" onclick="showPage('visiting')">👁️ Visiting</button>
+                        
+                        <!-- Menu Tambahan yang Hilang -->
+                        <button class="btn btn-warning" onclick="showPage('jadwal')">📅 Rencana Jadwal</button>
+                        <button class="btn btn-warning" onclick="showPage('review-jadwal')">📋 Review Jadwal</button>
+                        <button class="btn btn-warning" onclick="showPage('issues')">⚠️ Issues & Req</button>
+                        
+                        <!-- Menu Admin Only -->
+                        <button class="btn btn-danger" id="menu-impact-map" style="display:none;" onclick="showPage('impact-mapping')">🗺️ Impact Map</button>
+                        <button class="btn btn-danger" id="menu-setup" style="display:none;" onclick="showPage('setup')">⚙️ Master Setup</button>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top:15px;">
+                    <button class="btn btn-danger" style="width:100%;" onclick="handleLogout()">🚪 Logout</button>
                 </div>
             </div>
 
@@ -599,7 +624,7 @@
         <a href="#" class="mobile-nav-item" onclick="showPage('visiting'); return false;"><span>👁️</span>Visit</a>
         <a href="#" class="mobile-nav-item" onclick="showPage('action'); return false;"><span>🛠️</span>Action</a>
         <a href="#" class="mobile-nav-item" onclick="showPage('review'); return false;"><span>📈</span>Report</a>
-        <a href="#" class="mobile-nav-item" onclick="showPage('menu-more'); return false;"><span>☰</span>Menu</a>
+        <a href="#" class="mobile-nav-item" onclick="showPage('menu-hub'); return false;"><span>☰</span>Menu</a>
     </div>
 
     <!-- MODAL JADWAL -->
@@ -622,7 +647,7 @@
         </div>
     </div>
 
-    <script>
+       <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://lbdjoptoyymhcusavzkb.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiZGpvcHRveXltaGN1c2F2emtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjM3NzYsImV4cCI6MjEwMDM5OTc3Nn0.hDEvvlOIDZo0gRHBT4W2_dMKl8x_XHanWeCj1HTUNf4';
@@ -676,6 +701,7 @@
             document.getElementById('mobile-nav-bar').style.display = 'none';
         }
 
+        // --- PERBAIKAN 1: LOGIN DENGAN NORMALISASI ROLE ---
         async function handleLogin() {
             const userIn = document.getElementById('login-user').value.trim();
             const passIn = document.getElementById('login-pass').value.trim();
@@ -688,19 +714,30 @@
             }
 
             try {
+                // ambil data user
                 const { data, error } = await db.from('pic').select('*').eq('username', userIn).eq('pass', passIn).single();
 
                 if (error || !data) {
                     errorMsg.innerText = "Username atau Password salah.";
                     errorMsg.style.display = 'block';
                 } else {
-                    const normalizedRole = data.jabatan ? data.jabatan.toLowerCase() : '';
-                    if (normalizedRole !== 'admin' && normalizedRole !== 'am') {
-                         errorMsg.innerText = "Role tidak dikenali.";
+                    // Normalisasi Jabatan: Trim spasi & Lowercase
+                    const rawRole = data.jabatan ? data.jabatan.toString().trim().toLowerCase() : '';
+                    
+                    // Validasi Role Ketat
+                    if (rawRole !== 'admin' && rawRole !== 'am') {
+                         errorMsg.innerText = "Role tidak dikenali (" + rawRole + "). Hubungi Admin.";
                          errorMsg.style.display = 'block';
                          return;
                     }
-                    currentUser = { id: data.id, username: data.username, nama_user: data.nama_user || data.username, jabatan: normalizedRole };
+
+                    currentUser = { 
+                        id: data.id, 
+                        username: data.username, 
+                        nama_user: data.nama_user || data.username, 
+                        jabatan: rawRole 
+                    };
+                    
                     sessionStorage.setItem('sois_user', JSON.stringify(currentUser));
                     errorMsg.style.display = 'none';
                     initApp();
@@ -724,7 +761,6 @@
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('user-info-display').innerText = `Hi, ${currentUser.nama_user}`;
             
-            // Check screen size to decide sidebar vs bottom nav
             if(window.innerWidth <= 768) {
                 document.getElementById('main-sidebar').style.display = 'none';
                 document.getElementById('mobile-nav-bar').style.display = 'flex';
@@ -738,7 +774,6 @@
             if (currentUser.jabatan === 'admin') loadGroupingData();
         }
 
-        // Handle Resize
         window.addEventListener('resize', () => {
             if(window.innerWidth <= 768) {
                 document.getElementById('main-sidebar').style.display = 'none';
@@ -759,10 +794,9 @@
         }
 
         function checkAccess(pageId) {
+            if(pageId === 'menu-hub') return true; 
             const role = currentUser.jabatan;
             const allowedMenus = MENU_CONFIG[role] || [];
-            // Allow 'menu-more' as a dummy page for mobile menu expansion logic if needed later
-            if(pageId === 'menu-more') return true; 
             return allowedMenus.some(m => m.id === pageId);
         }
 
@@ -770,30 +804,29 @@
             if (!checkAccess(pageId)) { alert("Akses ditolak."); return; }
 
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            
-            // Update Active State for Desktop Sidebar
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
-                if(item.getAttribute('onclick').includes(`'${pageId}'`)) item.classList.add('active');
+                if(item.getAttribute('onclick')?.includes(`'${pageId}'`)) item.classList.add('active');
             });
-
-            // Update Active State for Mobile Bottom Nav
-            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
             const mobItems = document.querySelectorAll('.mobile-nav-item');
             mobItems.forEach(item => {
-                if(item.getAttribute('onclick').includes(`'${pageId}'`)) item.classList.add('active');
+                if(item.getAttribute('onclick')?.includes(`'${pageId}'`)) item.classList.add('active');
             });
+
+            if(pageId === 'menu-hub') {
+                document.getElementById('page-menu-hub').classList.add('active');
+                document.getElementById('page-title').innerText = 'Menu';
+                const isAdmin = currentUser.jabatan === 'admin';
+                document.getElementById('menu-impact-map').style.display = isAdmin ? 'block' : 'none';
+                document.getElementById('menu-setup').style.display = isAdmin ? 'block' : 'none';
+                return;
+            }
 
             const pageEl = document.getElementById('page-' + pageId);
             if(pageEl) pageEl.classList.add('active');
-            
-            // Special case for 'menu-more' on mobile -> just show dashboard or alert for now
-            if(pageId === 'menu-more') {
-                 alert("Menu Lainnya:\n- Setup\n- Impact Mapping\n- Review Jadwal");
-                 showPage('dashboard');
-                 return;
-            }
 
             const titles = { 
                 'dashboard': 'Dashboard', 'jadwal': 'Rencana', 'review-jadwal': 'Review Jadwal', 
@@ -828,7 +861,7 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- MASTER & SETUP ---
+        // --- MASTER & SETUP (PERBAIKAN IMPORT) ---
         function readExcel(file, cb) { 
             if(!file) return; 
             const r = new FileReader(); 
@@ -839,19 +872,99 @@
             r.readAsArrayBuffer(file); 
         }
 
+        // --- PERBAIKAN 2: VALIDASI IMPORT PIC ---
         async function submitPic() { 
             if(!dataPicExcel.length) return alert("Pilih file dulu!"); 
-            const f = dataPicExcel.map(r => ({ username: String(r.user||r.username||''), pass: String(r.pass||''), nama_user: String(r.nama_user||r.name||r.user||''), jabatan: String(r.jabatan||'') })); 
-            await db.from('pic').insert(f); 
-            alert("Import PIC Berhasil!"); 
-            loadGroupingData(); 
+            
+            let validCount = 0;
+            let errorCount = 0;
+            const payload = [];
+
+            dataPicExcel.forEach(r => {
+                // ambil data dan bersihkan
+                const user = String(r.user || r.username || '').trim();
+                const pass = String(r.pass || '').trim();
+                const nama = String(r.nama_user || r.name || r.user || '').trim();
+                let jabatan = String(r.jabatan || '').trim().toLowerCase();
+
+                // Validasi Wajib
+                if(!user || !pass || !jabatan) {
+                    errorCount++;
+                    return; // Skip baris ini
+                }
+
+                // Validasi Nilai Jabatan
+                if(jabatan !== 'admin' && jabatan !== 'am') {
+                    errorCount++;
+                    console.warn("Invalid Role skipped:", jabatan);
+                    return;
+                }
+
+                payload.push({ 
+                    username: user, 
+                    pass: pass, 
+                    nama_user: nama || user, 
+                    jabatan: jabatan 
+                });
+                validCount++;
+            });
+
+            if(payload.length === 0) return alert("Tidak ada data valid untuk diimport. Cek format Excel.");
+
+            const confirmMsg = `Total Data: ${dataPicExcel.length}\nValid: ${validCount}\nError/Skip: ${errorCount}\n\nLanjutkan Import?`;
+            if(!confirm(confirmMsg)) return;
+
+            try {
+                const { error } = await db.from('pic').insert(payload);
+                if(error) throw error;
+                alert(`Import Berhasil! ${validCount} data masuk.`);
+                loadGroupingData(); 
+            } catch (e) {
+                alert("Gagal Import: " + e.message);
+            }
         }
 
+        // --- PERBAIKAN 3 & 4: IMPORT 4P DENGAN CEK HEADER & TABEL BARU ---
         async function submit4p() { 
             if(!data4pExcel.length) return alert("Pilih file dulu!"); 
-            const f = data4pExcel.map(r => ({ "kategoti 4p": String(r['kategoti 4p']||''), "bagian 4p": String(r['bagian 4p']||''), "ceklist": String(r['ceklist']||''), "root_driver": String(r['root driver']||''), "nama_counter": String(r['nama_counter']||'') })); 
-            await db.from('master baru 4p').insert(f); 
-            alert("Import 4P Berhasil!"); 
+            
+            // Cek Header Excel (Case Insensitive check logic simplified)
+            const firstRow = data4pExcel[0];
+            const keys = Object.keys(firstRow);
+            
+            // Kita cari key yang mirip dengan header yang diharapkan
+            // Karena SheetJS membaca header persis seperti di Excel
+            const hasCategory = keys.some(k => k.toLowerCase().includes('kategoti') || k.toLowerCase().includes('kategori'));
+            const hasBagian = keys.some(k => k.toLowerCase().includes('bagian'));
+            const hasCeklist = keys.some(k => k.toLowerCase().includes('ceklist'));
+
+            if(!hasCategory || !hasBagian || !hasCeklist) {
+                return alert("Format Excel Salah! Pastikan ada header: 'kategoti 4p', 'bagian 4p', 'ceklist'.");
+            }
+
+            const payload = data4pExcel.map(r => {
+                // Mapping fleksibel: coba ambil dari header lama ('kategoti 4p') atau baru ('kategori_4p')
+                const kategori = r['kategoti 4p'] || r['kategori_4p'] || '';
+                
+                return { 
+                    kategori_4p: String(kategori), // Simpan ke kolom baru
+                    bagian_4p: String(r['bagian 4p'] || ''), 
+                    ceklist: String(r['ceklist'] || ''), 
+                    root_driver: String(r['root driver'] || ''), 
+                    nama_counter: String(r['nama_counter'] || '') 
+                };
+            }).filter(item => item.kategori_4p && item.ceklist); // Jangan insert jika kosong
+
+            if(payload.length === 0) return alert("Data kosong setelah filter.");
+
+            try {
+                // Insert ke tabel yang sudah di-rename: master_4p
+                const { error } = await db.from('master_4p').insert(payload);
+                if(error) throw error;
+                alert(`Import Master 4P Berhasil! ${payload.length} data masuk.`);
+            } catch (e) {
+                alert("Gagal Import 4P: " + e.message);
+            }
         }
         
         async function loadGroupingData() {
@@ -909,7 +1022,7 @@
             }
         }
 
-        // --- JADWAL LOGIC (Simplified for brevity, same as before) ---
+        // --- JADWAL LOGIC ---
         function addJadwalToList() {
             const picEl = document.getElementById('j-pic'), tgl = document.getElementById('j-tgl').value, counterEl = document.getElementById('j-counter'), catatan = document.getElementById('j-catatan').value;
             if(!picEl.value || !tgl || !counterEl.value) return alert("Isi semua!");
@@ -1024,7 +1137,31 @@
              const ws = XLSX.utils.json_to_sheet(reviewJadwalData.map(d => ({ Tgl: d.tanggal, PIC: d.pic?.username, Counter: d.counter?.nama_counter, Status: d.status })));
              XLSX.writeFile(XLSX.utils.book_new(), "Review.xlsx");
         }
-        function exportReviewJadwalPDF() { alert("Fitur PDF Review aktif"); }
+        function exportReviewJadwalPDF() {
+
+    if(reviewJadwalData.length === 0){
+        return alert("Tidak ada data");
+    }
+
+    const area = document.getElementById('rj-table-card');
+
+    const opt = {
+        margin:10,
+        filename:'Review_Jadwal.pdf',
+        image:{type:'jpeg', quality:0.98},
+        html2canvas:{scale:2},
+        jsPDF:{
+            unit:'mm',
+            format:'a4',
+            orientation:'landscape'
+        }
+    };
+
+    html2pdf()
+        .set(opt)
+        .from(area)
+        .save();
+}
         function exportReviewJadwalWA() { alert("Share WA Review aktif"); }
 
         // --- IMPACT MAPPING ---
@@ -1057,18 +1194,20 @@
             loadImpactMapping();
         }
 
-        // --- VISITING ---
+        // --- VISITING (PERBAIKAN: amBIL DARI TABEL BARU) ---
         async function startVisiting() {
             const obj = { tanggal: document.getElementById('v-tgl').value, jam_mulai: document.getElementById('v-jam').value, pic_id: document.getElementById('v-pic').value, counter_id: document.getElementById('v-counter').value };
             if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Lengkapi data!");
             const { data } = await db.from('visiting').insert(obj).select();
             currentVisitingId = data[0].id;
             
-            const { data: cl } = await db.from('master baru 4p').select('*');
+            // PERBAIKAN: Mengambil dari tabel 'master_4p' (hasil rename)
+            const { data: cl } = await db.from('master_4p').select('*');
             if(!cl) return alert("Data 4P kosong");
 
             const groupedData = cl.reduce((group, item) => {
-                const category = item['kategoti 4p'] || 'LAINNYA';
+                // PERBAIKAN: Mengambil dari kolom 'kategori_4p' (hasil rename)
+                const category = item['kategori_4p'] || 'LAINNYA';
                 if (!group[category]) group[category] = [];
                 group[category].push(item);
                 return group;
@@ -1086,7 +1225,7 @@
                 items.forEach(c => {
                     htmlItems += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian 4p']}</small></div>
+                            <div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian_4p']}</small></div>
                             <select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)">
                                 <option value="Pass">Pass</option><option value="Fail">Fail</option>
                             </select>
@@ -1105,7 +1244,6 @@
         function switchTab4P(tabId, el) {
             document.querySelectorAll('#tab-4p-content-container > div').forEach(c => c.style.display = 'none');
             document.getElementById(tabId).style.display = 'block';
-            // Reset button styles simply
             Array.from(el.parentElement.children).forEach(b => b.className = 'btn btn-sm btn-warning');
             el.className = 'btn btn-sm btn-primary';
         }
@@ -1132,6 +1270,7 @@
                     }
                     payloadsAction.push({ visiting_id: currentVisitingId, sumber_masalah: 'Visiting 4P', masalah: `FAIL: ${itemName}`, foto_before: photoUrl||'', status_action: 'Open', tindakan: '-' });
                 }
+                // Insert ke tabel visiting_detail yang baru dibuat
                 payloadsDetail.push({ visiting_id: currentVisitingId, item_name: itemName, status: status, foto_url: photoUrl||'' });
             }
 
@@ -1216,7 +1355,6 @@
             if(!start || !end) return alert("Periode wajib!");
             document.getElementById('br-output-area').style.display = 'block';
             
-            // Mock Logic for Demo Speed (Replace with real DB query in prod)
             document.getElementById('br-kpi-score').innerText = "120";
             document.getElementById('br-kpi-category').innerText = "Sales";
             document.getElementById('br-auto-narrative').innerHTML = "Analisis menunjukkan dampak tinggi pada kategori Sales. Root driver utama adalah Stock Kosong.";
