@@ -1133,10 +1133,34 @@
             loadReviewJadwal();
         }
         function exportReviewJadwalExcel() {
-             if (reviewJadwalData.length === 0) return alert("Kosong");
-             const ws = XLSX.utils.json_to_sheet(reviewJadwalData.map(d => ({ Tgl: d.tanggal, PIC: d.pic?.username, Counter: d.counter?.nama_counter, Status: d.status })));
-             XLSX.writeFile(XLSX.utils.book_new(), "Review.xlsx");
-        }
+
+    if (!reviewJadwalData || reviewJadwalData.length === 0) {
+        return alert("Tidak ada data untuk export");
+    }
+
+    const dataExcel = reviewJadwalData.map(d => ({
+        Tanggal: d.tanggal,
+        PIC: d.pic?.username || "",
+        Counter: d.counter?.nama_counter || "",
+        Tujuan: d.catatan || "",
+        Status: d.status
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataExcel);
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        "Review Jadwal"
+    );
+
+    XLSX.writeFile(
+        wb,
+        "Review_Jadwal.xlsx"
+    );
+}
         function exportReviewJadwalPDF() {
 
     if(reviewJadwalData.length === 0){
@@ -1162,7 +1186,35 @@
         .from(area)
         .save();
 }
-        function exportReviewJadwalWA() { alert("Share WA Review aktif"); }
+        function exportReviewJadwalExcel() {
+
+    if (!reviewJadwalData || reviewJadwalData.length === 0) {
+        return alert("Tidak ada data untuk export");
+    }
+
+    const dataExcel = reviewJadwalData.map(d => ({
+        Tanggal: d.tanggal,
+        PIC: d.pic?.username || "",
+        Counter: d.counter?.nama_counter || "",
+        Tujuan: d.catatan || "",
+        Status: d.status
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataExcel);
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        "Review Jadwal"
+    );
+
+    XLSX.writeFile(
+        wb,
+        "Review_Jadwal.xlsx"
+    );
+}
 
         // --- IMPACT MAPPING ---
         async function loadImpactMapping() {
@@ -1366,6 +1418,28 @@
              tbody.innerHTML = `<tr><td data-label="Periode">Agustus 2026</td><td data-label="Score">120</td><td data-label="Dominan">Sales</td><td data-label="Aksi"><button class="btn btn-sm btn-primary">View</button></td></tr>`;
         }
         function exportBRPDF() { alert("Exporting PDF..."); }
+        function exportReviewJadwalWA(){
+
+    if (!reviewJadwalData || reviewJadwalData.length === 0){
+        return alert("Tidak ada data");
+    }
+
+    let text = `📋 *REVIEW JADWAL VISIT SOIS*\n\n`;
+
+    reviewJadwalData.forEach((d,i)=>{
+        text += `${i+1}. ${d.tanggal}
+PIC : ${d.pic?.username || '-'}
+Counter : ${d.counter?.nama_counter || '-'}
+Status : ${d.status}
+
+`;
+    });
+
+    const url =
+    "https://wa.me/?text=" + encodeURIComponent(text);
+
+    window.open(url, "_blank");
+}
 
     </script>
 </body>
