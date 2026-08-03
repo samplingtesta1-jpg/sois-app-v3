@@ -1221,7 +1221,7 @@
     async function loadOpenActions() {
         const { data } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('id', { ascending: false });
         const tb = document.getElementById('tb-open');
-        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Sumber">${d.sumber_masalah}</td><td data-label="Masalah">${d.masalah}</td><td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">Zonk</td></tr>';
+        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Sumber">${d.sumber_masalah}</td><td data-label="Masalah">${d.masalah}</td><td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">____</td></tr>';
     }
     function openActionForm(id, masalah) {
         switchActionTab('tab-form', document.querySelectorAll('#page-action .tab-btn')[1]);
@@ -1243,7 +1243,7 @@
     async function loadValidasiActions() {
         const { data } = await db.from('visiting_action').select('*').eq('status_action', 'On-Progress');
         const tb = document.getElementById('tb-validasi');
-        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Masalah">${d.masalah}</td><td data-label="Tindakan">${d.tindakan}</td><td data-label="Due">${d.due_date}</td><td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
+        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Masalah">${d.masalah}</td><td data-label="Tindakan">${d.tindakan}</td><td data-label="Due">${d.due_date}</td><td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">____</td></tr>';
     }
     async function closeAction(id) {
         await db.from('visiting_action').update({ status_action: 'Done' }).eq('id', id);
@@ -1431,13 +1431,13 @@
                 return `<tr><td data-label="Sumber">${a.sumber_masalah}</td><td data-label="Masalah">${a.masalah}</td><td data-label="Tgl">${v.tanggal||'-'}</td><td data-label="PIC">${pic}</td><td data-label="Counter">${ctr}</td></tr>`;
             };
 
-            document.getElementById('tb-pdca-open').innerHTML = openActions.length ? openActions.map(a => renderActionRow(a, false)).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
-            document.getElementById('tb-pdca-progress').innerHTML = progressActions.length ? progressActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
-            document.getElementById('tb-pdca-done').innerHTML = doneActions.length ? doneActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
+            document.getElementById('tb-pdca-open').innerHTML = openActions.length ? openActions.map(a => renderActionRow(a, false)).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
+            document.getElementById('tb-pdca-progress').innerHTML = progressActions.length ? progressActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
+            document.getElementById('tb-pdca-done').innerHTML = doneActions.length ? doneActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
 
-            document.querySelector('#table-pdca-jadwal tbody').innerHTML = completedJadwal.length ? completedJadwal.map((j,i) => `<tr><td data-label="No">${i+1}</td><td data-label="Tgl">${j.tanggal}</td><td data-label="PIC">${j.pic?.nama_user||j.pic?.username||'-'}</td><td data-label="Counter">${j.counter?.nama_counter||'-'}</td><td data-label="Cat">${j.catatan||'-'}</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
+            document.querySelector('#table-pdca-jadwal tbody').innerHTML = completedJadwal.length ? completedJadwal.map((j,i) => `<tr><td data-label="No">${i+1}</td><td data-label="Tgl">${j.tanggal}</td><td data-label="PIC">${j.pic?.nama_user||j.pic?.username||'-'}</td><td data-label="Counter">${j.counter?.nama_counter||'-'}</td><td data-label="Cat">${j.catatan||'-'}</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
 
-            document.querySelector('#table-pdca-history tbody').innerHTML = history.length ? history.map(h => `<tr><td data-label="Periode">${h.periode_start} s/d ${h.periode_end}</td><td data-label="Score">${h.risk_score}</td><td data-label="Dom">${h.dominant_category||'-'}</td><td data-label="Narrative">${(h.narrative||'').substring(0,60)}...</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
+            document.querySelector('#table-pdca-history tbody').innerHTML = history.length ? history.map(h => `<tr><td data-label="Periode">${h.periode_start} s/d ${h.periode_end}</td><td data-label="Score">${h.risk_score}</td><td data-label="Dom">${h.dominant_category||'-'}</td><td data-label="Narrative">${(h.narrative||'').substring(0,60)}...</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">____</td></tr>';
 
             // Cache Data
             pdcaData = { start, end, completedJadwal, openActions, progressActions, doneActions, topDrivers, history, totalVisit };
