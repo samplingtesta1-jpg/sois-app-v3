@@ -27,10 +27,9 @@
             display: flex; 
             height: 100vh; 
             overflow: hidden; 
-            font-size: 14px; /* Default Desktop */
+            font-size: 14px;
         }
         
-        /* --- SIDEBAR (DESKTOP) --- */
         .sidebar { 
             width: 240px; 
             background: var(--white); 
@@ -59,7 +58,6 @@
         }
         .nav-item:hover, .nav-item.active { background: #eef2ff; color: var(--primary); }
         
-        /* --- MAIN CONTENT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .topbar { 
             background: var(--white); 
@@ -73,7 +71,6 @@
         .topbar h1 { font-size: 18px; font-weight: 600; }
         .content-area { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 80px; }
         
-        /* --- CARDS & LAYOUT --- */
         .page { display: none; animation: fadeIn 0.2s ease-in-out; } 
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -95,7 +92,6 @@
             color: var(--text-main);
         }
         
-        /* --- KPI GRID --- */
         .grid-kpi { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
@@ -116,7 +112,6 @@
         .kpi-danger { border-left-color: var(--danger); } .kpi-danger h3 { color: var(--danger); }
         .kpi-warning { border-left-color: var(--warning); } .kpi-warning h3 { color: var(--warning); }
         
-        /* --- FORMS & BUTTONS --- */
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-sec); }
         .form-control { 
@@ -151,13 +146,11 @@
         .btn-warning { background: var(--warning); color: var(--white); }
         .btn-sm { padding: 6px 12px; font-size: 12px; }
         
-        /* --- TABLES --- */
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-preview { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
         .table-preview th, .table-preview td { border-bottom: 1px solid var(--border); padding: 12px 10px; text-align: left; }
         .table-preview th { background-color: #f8fafc; font-weight: 600; color: var(--text-sec); font-size: 12px; text-transform: uppercase; }
         
-        /* --- TABS --- */
         .tabs { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border); overflow-x: auto; padding-bottom: 1px; }
         .tab-btn { 
             padding: 10px 0; 
@@ -174,51 +167,29 @@
         .tab-content { display: none; } 
         .tab-content.active { display: block; } 
         
-        /* --- STATUS BADGES --- */
         .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
         .status-planned { background: #fef3c7; color: #92400e; }
         .status-confirmed { background: #dbeafe; color: #1e40af; }
         .status-completed { background: #d1fae5; color: #065f46; }
         .status-cancelled { background: #fee2e2; color: #991b1b; }
 
-        /* --- MOBILE OPTIMIZATION (TARGET 320px - 430px) --- */
         @media (max-width: 768px) {
             body { flex-direction: column; font-size: 13px; }
-            
-            /* Hide Desktop Sidebar */
-            .sidebar { 
-                display: none; /* Hidden by default on mobile */
-            }
-            
-            /* Show Mobile Bottom Nav */
-            .mobile-nav {
-                display: flex !important;
-            }
-
-            /* Adjust Main Content */
+            .sidebar { display: none; }
+            .mobile-nav { display: flex !important; }
             .main-content { margin-bottom: 60px; height: calc(100vh - 60px); }
             .content-area { padding: 12px; padding-bottom: 110px; }
             .topbar { padding: 12px 16px; height: 50px; }
             .topbar h1 { font-size: 16px; }
-            
-            /* Responsive Grid KPI -> 2 Columns */
             .grid-kpi { grid-template-columns: 1fr 1fr; gap: 10px; }
             .kpi-card { padding: 12px; border-radius: 8px; }
             .kpi-card h3 { font-size: 20px; }
-            
-            /* Card Compact */
             .card { padding: 16px; margin-bottom: 12px; border-radius: 10px; }
             .card-title { font-size: 15px; margin-bottom: 12px; }
-            
-            /* Form Stacking (1 Column) */
             .form-grid-desktop { display: block !important; }
             .form-group { margin-bottom: 10px; }
-            
-            /* Button Sizing */
             .btn { padding: 10px 14px; font-size: 13px; width: 100%; margin-bottom: 8px; }
             .btn-sm { width: auto; margin-bottom: 0; }
-            
-            /* Table to Card List Conversion */
             .table-wrapper { overflow: visible; }
             .table-preview { display: block; min-width: 100%; }
             .table-preview thead { display: none; }
@@ -251,7 +222,6 @@
             .table-preview td:last-child { justify-content: flex-end; margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 10px; }
         }
 
-        /* --- BOTTOM NAVIGATION (MOBILE ONLY) --- */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -278,7 +248,6 @@
         .mobile-nav-item span { font-size: 18px; margin-bottom: 2px; }
         .mobile-nav-item.active { color: var(--primary); font-weight: 600; }
         
-        /* Modal Overlay Fix */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 2000;
@@ -289,7 +258,7 @@
 </head>
 <body>
 
-    <!-- HALamAN LOGIN -->
+    <!-- HALAMAN LOGIN -->
     <div id="page-login" class="page active" style="display:flex; justify-content:center; align-items:center; height:100vh; background:var(--bg-main); z-index:9999; position:absolute; width:100%;">
         <div class="card" style="width:90%; max-width:350px; padding:24px; text-align:center;">
             <h2 style="color:var(--primary); margin-bottom:8px; font-size:22px;">SOIS Login</h2>
@@ -312,9 +281,7 @@
     <!-- SIDEBAR (DESKTOP) -->
     <div class="sidebar" id="main-sidebar" style="display:none;">
         <div class="sidebar-header"><h2>SOIS</h2><p>Sales Operation Improvement</p></div>
-        <div class="nav-menu" id="nav-menu-container">
-            <!-- Menu generated by JS -->
-        </div>
+        <div class="nav-menu" id="nav-menu-container"></div>
         <div style="padding:15px; border-top:1px solid var(--border);">
             <div class="nav-item" onclick="handleLogout()" style="color:var(--danger);">🚪 Logout</div>
         </div>
@@ -337,8 +304,6 @@
                     <div class="kpi-card kpi-warning"><h3 id="kpi-onprogress">0</h3><p>On Progress</p></div>
                     <div class="kpi-card"><h3 id="kpi-cust">0</h3><p>Cust Issue</p></div>
                 </div>
-                
-                <!-- Quick Actions Mobile -->
                 <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn btn-primary" onclick="showPage('visiting')">📷 Mulai Visit</button>
                     <button class="btn btn-warning" onclick="showPage('issues')">⚠️ Input Issue</button>
@@ -350,21 +315,18 @@
                 <div class="card">
                     <div class="card-title">Semua Menu</div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <!-- Menu Utama (Duplikat untuk kemudahan akses) -->
                         <button class="btn btn-primary" onclick="showPage('dashboard')">📊 Dashboard</button>
                         <button class="btn btn-primary" onclick="showPage('visiting')">👁️ Visiting</button>
-                        
-                        <!-- Menu Tambahan yang Hilang -->
                         <button class="btn btn-warning" onclick="showPage('jadwal')">📅 Rencana Jadwal</button>
                         <button class="btn btn-warning" onclick="showPage('review-jadwal')">📋 Review Jadwal</button>
                         <button class="btn btn-warning" onclick="showPage('issues')">⚠️ Issues & Req</button>
+                        <!-- NEW: Export PDCA Menu -->
+                        <button class="btn btn-success" onclick="showPage('export-pdca')">📤 Export PDCA</button>
                         
-                        <!-- Menu Admin Only -->
                         <button class="btn btn-danger" id="menu-impact-map" style="display:none;" onclick="showPage('impact-mapping')">🗺️ Impact Map</button>
                         <button class="btn btn-danger" id="menu-setup" style="display:none;" onclick="showPage('setup')">⚙️ Master Setup</button>
                     </div>
                 </div>
-                
                 <div class="card" style="margin-top:15px;">
                     <button class="btn btn-danger" style="width:100%;" onclick="handleLogout()">🚪 Logout</button>
                 </div>
@@ -375,13 +337,10 @@
                 <div class="card">
                     <div class="card-title">Buat Rencana Kunjungan</div>
                     <div class="form-group"><label>PIC</label><select id="j-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('j-pic', 'j-counter')"><option value="">Pilih Nama...</option></select></div>
-                    
-                    <!-- Grid Helper for Desktop/Mobile switch -->
                     <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
                         <div class="form-group"><label>Tanggal</label><input type="date" id="j-tgl" class="form-control"></div>
                         <div class="form-group"><label>Counter</label><select id="j-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC dulu...</option></select></div>
                     </div>
-                    
                     <div class="form-group"><label>Catatan</label><input type="text" id="j-catatan" class="form-control"></div>
                     <button class="btn btn-primary" onclick="addJadwalToList()">+ Tambah ke Daftar</button>
                     <button class="btn btn-success" onclick="saveJadwalToDB()" style="margin-top:10px;">💾 Simpan Rencana</button>
@@ -419,13 +378,11 @@
                         <button class="btn btn-warning" onclick="exportReviewJadwalWA()">💬 WA</button>
                     </div>
                 </div>
-
                 <div class="grid-kpi" id="rj-summary" style="display:none;">
                     <div class="kpi-card"><h3 id="rj-kpi-total">0</h3><p>Total</p></div>
                     <div class="kpi-card kpi-warning"><h3 id="rj-kpi-planned">0</h3><p>Planned</p></div>
                     <div class="kpi-card kpi-success"><h3 id="rj-kpi-confirmed">0</h3><p>Confirmed</p></div>
                 </div>
-
                 <div class="card" id="rj-table-card" style="display:none;">
                     <div class="card-title">Daftar Rencana</div>
                     <div class="table-wrapper">
@@ -475,7 +432,6 @@
                     </div>
                     <input type="file" id="filePic" style="display:none" accept=".xlsx, .xls" onchange="readExcel(this.files[0], d => dataPicExcel = d)">
                     <input type="file" id="file4p" style="display:none" accept=".xlsx, .xls" onchange="readExcel(this.files[0], d => data4pExcel = d)">
-                    
                     <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="submitPic()">Submit Data PIC</button>
                     <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="submit4p()">Submit Master 4P</button>
                 </div>
@@ -496,7 +452,6 @@
                     <div class="form-group"><label>Counter</label><select id="v-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC dulu...</option></select></div>
                     <button class="btn btn-primary" style="width:100%;" onclick="startVisiting()">Mulai Visiting</button>
                 </div>
-
                 <div id="checklist-area" style="display:none;">
                     <div class="tabs-4p" id="tabs-4p-container" style="display:flex; gap:5px; overflow-x:auto; margin-bottom:15px;"></div>
                     <div id="tab-4p-content-container"></div>
@@ -511,7 +466,6 @@
                     <button class="tab-btn" onclick="switchActionTab('tab-form', this)">Buat Plan</button>
                     <button class="tab-btn" onclick="switchActionTab('tab-validasi', this)">Validasi</button>
                 </div>
-
                 <div id="tab-open" class="tab-content active">
                     <div class="card">
                         <div class="table-wrapper">
@@ -522,7 +476,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="tab-form" class="tab-content">
                     <div class="card" id="action-form-card" style="display:none; border-left: 5px solid var(--warning);">
                         <div class="card-title">Rencana Tindakan</div>
@@ -535,7 +488,6 @@
                     </div>
                     <div id="action-form-empty" style="text-align:center; padding:40px; color:var(--text-sec);">&lt;- Pilih masalah dari tab "Open"</div>
                 </div>
-
                 <div id="tab-validasi" class="tab-content">
                     <div class="card">
                         <div class="table-wrapper">
@@ -578,13 +530,11 @@
                     </div>
                     <button class="btn btn-primary" style="width:100%;" onclick="generateBRAuto()">⚡ Analyze Impact</button>
                 </div>
-
                 <div id="br-output-area" style="display:none;">
                     <div class="grid-kpi">
                         <div class="kpi-card"><h3 id="br-kpi-score">0</h3><p>Risk Score</p></div>
                         <div class="kpi-card kpi-danger"><h3 id="br-kpi-category">-</h3><p>Dominant</p></div>
                     </div>
-
                     <div class="card" id="br-narrative-content">
                         <div class="card-title" style="text-align:center;">BUSINESS IMPACT REPORT</div>
                         <div class="br-section">
@@ -596,14 +546,12 @@
                             <div id="br-top-drivers-list"></div>
                         </div>
                     </div>
-
                     <div class="card">
                         <div class="form-group"><label>Rekomendasi Manual</label><textarea id="br-manual-rec" class="form-control" rows="2"></textarea></div>
                         <button class="btn btn-success" onclick="saveBRSnapshot()">💾 Save Snapshot</button>
                         <button class="btn btn-warning" onclick="exportBRPDF()">📄 PDF</button>
                     </div>
                 </div>
-                
                 <div class="card" style="margin-top:20px;">
                     <div class="card-title">History Review</div>
                     <div class="table-wrapper">
@@ -611,6 +559,89 @@
                             <thead><tr><th>Periode</th><th>Score</th><th>Dominan</th><th>Aksi</th></tr></thead>
                             <tbody id="tb-br-history"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. EXPORT PDCA / SEBAB AKIBAT (NEW) -->
+            <div id="page-export-pdca" class="page">
+                <div class="card">
+                    <div class="card-title">📤 Export Laporan PDCA / Sebab-Akibat</div>
+                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                        <div class="form-group"><label>Mulai</label><input type="date" id="pdca-start" class="form-control"></div>
+                        <div class="form-group"><label>Akhir</label><input type="date" id="pdca-end" class="form-control"></div>
+                        <div class="form-group"><label>PIC</label><select id="pdca-pic" class="form-control pic-dropdown"><option value="">Semua</option></select></div>
+                    </div>
+                    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="generatePDCAReport()">⚡ Generate Laporan</button>
+                        <button class="btn btn-success" id="btn-pdca-excel" onclick="exportPDCAExcel()" disabled>📥 Excel</button>
+                        <button class="btn btn-danger" id="btn-pdca-pdf" onclick="exportPDCAPDF()" disabled>📄 PDF</button>
+                    </div>
+                </div>
+
+                <div id="pdca-preview-area" style="display:none;">
+                    <!-- SECTION 1: EXECUTIVE SUMMARY -->
+                    <div class="card pdca-section">
+                        <div class="card-title" style="text-align:center; font-size:18px;">LAPORAN PDCA / SEBAB-AKIBAT</div>
+                        <p id="pdca-period-label" style="text-align:center; color:var(--text-sec); margin-bottom:15px; font-size:13px;"></p>
+                        <div class="grid-kpi" style="grid-template-columns: repeat(3,1fr);">
+                            <div class="kpi-card"><h3 id="pdca-total-visit">0</h3><p>Total Visit</p></div>
+                            <div class="kpi-card kpi-warning"><h3 id="pdca-open-action">0</h3><p>Open Action</p></div>
+                            <div class="kpi-card kpi-success"><h3 id="pdca-done-action">0</h3><p>Completed Action</p></div>
+                        </div>
+                        <div id="pdca-exec-summary" style="font-size:13px; line-height:1.6; background:#f0f9ff; padding:15px; border-left:4px solid var(--primary); border-radius:8px; margin-top:10px;"></div>
+                    </div>
+
+                    <!-- SECTION 2: TOP ROOT DRIVERS -->
+                    <div class="card pdca-section">
+                        <div class="card-title">🔥 Top Root Drivers (Sebab)</div>
+                        <div class="table-wrapper">
+                            <table class="table-preview" id="table-pdca-drivers">
+                                <thead><tr><th>#</th><th>Root Driver</th><th>Kategori</th><th>Jumlah</th><th>Total Weight</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: ACTION PLAN STATUS -->
+                    <div class="card pdca-section">
+                        <div class="card-title">🛠️ Action Plan (PDCA Status)</div>
+                        <div class="tabs" style="margin-bottom:10px;">
+                            <button class="tab-btn active" onclick="switchPDCATab('pdca-tab-open',this)">Open</button>
+                            <button class="tab-btn" onclick="switchPDCATab('pdca-tab-progress',this)">On Progress (Plan)</button>
+                            <button class="tab-btn" onclick="switchPDCATab('pdca-tab-done',this)">Validasi (Done)</button>
+                        </div>
+                        <div id="pdca-tab-open" class="tab-content active">
+                            <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Sumber</th><th>Masalah (Akibat)</th><th>Tanggal</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-open"></tbody></table></div>
+                        </div>
+                        <div id="pdca-tab-progress" class="tab-content">
+                            <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Masalah</th><th>Tindakan (Do)</th><th>Due Date</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-progress"></tbody></table></div>
+                        </div>
+                        <div id="pdca-tab-done" class="tab-content">
+                            <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Masalah</th><th>Tindakan</th><th>Due Date</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-done"></tbody></table></div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: COMPLETE JADWAL -->
+                    <div class="card pdca-section">
+                        <div class="card-title">📋 Daftar Jadwal Selesai (Check)</div>
+                        <div class="table-wrapper">
+                            <table class="table-preview" id="table-pdca-jadwal">
+                                <thead><tr><th>No</th><th>Tanggal</th><th>Nama PIC</th><th>Counter</th><th>Catatan</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 5: HISTORY REVIEW -->
+                    <div class="card pdca-section">
+                        <div class="card-title">📈 History Business Review (Act)</div>
+                        <div class="table-wrapper">
+                            <table class="table-preview" id="table-pdca-history">
+                                <thead><tr><th>Periode</th><th>Risk Score</th><th>Dominan</th><th>Narrative</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -633,7 +664,6 @@
             <div class="card-title" id="modal-jadwal-title">Update Status</div>
             <input type="hidden" id="modal-jadwal-id">
             <input type="hidden" id="modal-jadwal-action">
-            
             <div id="modal-jadwal-confirm-fields" style="display:none;">
                 <div class="form-group"><label>Confirm By</label><select id="modal-jadwal-confirmed-by" class="form-control pic-dropdown"><option value="">Pilih PIC...</option></select></div>
             </div>
@@ -660,7 +690,9 @@
     let reviewJadwalData = []; 
     let masterImpactData = []; 
     let currentBRData = null; 
+    let pdcaData = null; // Cache untuk export PDCA
 
+    // [FIX] Tambah koma setelah 'review' dan tambahkan menu export-pdca
     const MENU_CONFIG = {
         'admin': [
             { id: 'dashboard', label: '📊 Dashboard' },
@@ -671,7 +703,8 @@
             { id: 'visiting', label: '👁️ Visiting' },
             { id: 'action', label: '🛠️ Action' },
             { id: 'issues', label: '⚠️ Issues' },
-            { id: 'review', label: '📈 Business Rev' }
+            { id: 'review', label: '📈 Business Rev' },
+            { id: 'export-pdca', label: '📤 Export PDCA' }
         ],
         'am': [
             { id: 'dashboard', label: '📊 Dashboard' },
@@ -680,7 +713,8 @@
             { id: 'visiting', label: '👁️ Visiting' },
             { id: 'action', label: '🛠️ Action' },
             { id: 'issues', label: '⚠️ Issues' },
-            { id: 'review', label: '📈 Business Rev' }
+            { id: 'review', label: '📈 Business Rev' },
+            { id: 'export-pdca', label: '📤 Export PDCA' }
         ]
     };
 
@@ -827,12 +861,14 @@
         const titles = { 
             'dashboard': 'Dashboard', 'jadwal': 'Rencana', 'review-jadwal': 'Review Jadwal', 
             'impact-mapping': 'Impact Map', 'setup': 'Master Setup', 
-            'visiting': 'Visiting', 'action': 'Action Plan', 'issues': 'Issues', 'review': 'Business Review' 
+            'visiting': 'Visiting', 'action': 'Action Plan', 'issues': 'Issues', 'review': 'Business Review',
+            'export-pdca': 'Export Laporan PDCA'
         };
         document.getElementById('page-title').innerText = titles[pageId] || 'SOIS';
 
         if(pageId === 'dashboard') loadDashboard();
-        if(['jadwal', 'visiting', 'issues', 'review', 'review-jadwal'].includes(pageId)) initDropdowns();
+        // [UPDATE] Tambah export-pdca ke list initDropdowns
+        if(['jadwal', 'visiting', 'issues', 'review', 'review-jadwal', 'export-pdca'].includes(pageId)) initDropdowns();
         if(pageId === 'action') openActionPage(); 
         if(pageId === 'impact-mapping') loadImpactMapping();
         if(pageId === 'review') loadBRHistory();
@@ -869,87 +905,49 @@
 
     async function submitPic() { 
         if(!dataPicExcel.length) return alert("Pilih file dulu!"); 
-        
-        let validCount = 0;
-        let errorCount = 0;
+        let validCount = 0, errorCount = 0;
         const payload = [];
-
         dataPicExcel.forEach(r => {
             const user = String(r.user || r.username || '').trim();
             const pass = String(r.pass || '').trim();
             const nama = String(r.nama_user || r.name || r.user || '').trim();
             let jabatan = String(r.jabatan || '').trim().toLowerCase();
-
-            if(!user || !pass || !jabatan) {
-                errorCount++;
-                return; 
-            }
-
-            if(jabatan !== 'admin' && jabatan !== 'am') {
-                errorCount++;
-                console.warn("Invalid Role skipped:", jabatan);
-                return;
-            }
-
-            payload.push({ 
-                username: user, 
-                pass: pass, 
-                nama_user: nama || user, 
-                jabatan: jabatan 
-            });
+            if(!user || !pass || !jabatan) { errorCount++; return; }
+            if(jabatan !== 'admin' && jabatan !== 'am') { errorCount++; return; }
+            payload.push({ username: user, pass: pass, nama_user: nama || user, jabatan: jabatan });
             validCount++;
         });
-
-        if(payload.length === 0) return alert("Tidak ada data valid untuk diimport. Cek format Excel.");
-
-        const confirmMsg = `Total Data: ${dataPicExcel.length}\nValid: ${validCount}\nError/Skip: ${errorCount}\n\nLanjutkan Import?`;
-        if(!confirm(confirmMsg)) return;
-
+        if(payload.length === 0) return alert("Tidak ada data valid.");
+        if(!confirm(`Total: ${dataPicExcel.length}, Valid: ${validCount}, Skip: ${errorCount}. Lanjut?`)) return;
         try {
             const { error } = await db.from('pic').insert(payload);
             if(error) throw error;
             alert(`Import Berhasil! ${validCount} data masuk.`);
             loadGroupingData(); 
-        } catch (e) {
-            alert("Gagal Import: " + e.message);
-        }
+        } catch (e) { alert("Gagal Import: " + e.message); }
     }
 
     async function submit4p() { 
         if(!data4pExcel.length) return alert("Pilih file dulu!"); 
-        
         const firstRow = data4pExcel[0];
         const keys = Object.keys(firstRow);
-        
         const hasCategory = keys.some(k => k.toLowerCase().includes('kategoti') || k.toLowerCase().includes('kategori'));
         const hasBagian = keys.some(k => k.toLowerCase().includes('bagian'));
         const hasCeklist = keys.some(k => k.toLowerCase().includes('ceklist'));
-
-        if(!hasCategory || !hasBagian || !hasCeklist) {
-            return alert("Format Excel Salah! Pastikan ada header: 'kategoti 4p', 'bagian 4p', 'ceklist'.");
-        }
-
-        const payload = data4pExcel.map(r => {
-            const kategori = r['kategoti 4p'] || r['kategori_4p'] || '';
-            
-            return { 
-                kategori_4p: String(kategori), 
-                bagian_4p: String(r['bagian 4p'] || ''), 
-                ceklist: String(r['ceklist'] || ''), 
-                root_driver: String(r['root driver'] || ''), 
-                nama_counter: String(r['nama_counter'] || '') 
-            };
-        }).filter(item => item.kategori_4p && item.ceklist); 
-
-        if(payload.length === 0) return alert("Data kosong setelah filter.");
-
+        if(!hasCategory || !hasBagian || !hasCeklist) return alert("Format Excel Salah!");
+        const payload = data4pExcel.map(r => ({ 
+            kategori_4p: String(r['kategoti 4p'] || r['kategori_4p'] || ''), 
+            bagian_4p: String(r['bagian 4p'] || ''), 
+            ceklist: String(r['ceklist'] || ''), 
+            root_driver: String(r['root driver'] || ''), 
+            nama_counter: String(r['nama_counter'] || '') 
+        })).filter(item => item.kategori_4p && item.ceklist); 
+        if(payload.length === 0) return alert("Data kosong.");
         try {
             const { error } = await db.from('master_4p').insert(payload);
             if(error) throw error;
-            alert(`Import Master 4P Berhasil! ${payload.length} data masuk.`);
-        } catch (e) {
-            alert("Gagal Import 4P: " + e.message);
-        }
+            alert(`Import Master 4P Berhasil! ${payload.length} data.`);
+        } catch (e) { alert("Gagal Import 4P: " + e.message); }
     }
     
     async function loadGroupingData() {
@@ -975,14 +973,11 @@
         alert("Grouping Disimpan!"); 
     }
 
-    // [FIX UX MOBILE] Tambah indikator loading saat filter counter
     async function initDropdowns() {
         const { data: dataPic } = await db.from('pic').select('*');
         const { data: dataCounter } = await db.from('master_counter').select('*');
         const { data: dataGroup } = await db.from('pic_counter_group').select('*');
-        
         masterDataPic = dataPic || []; masterDataCounter = dataCounter || []; masterDataGrouping = dataGroup || [];
-        
         document.querySelectorAll('.pic-dropdown').forEach(el => { 
             el.innerHTML = '<option value="">Pilih PIC...</option>' + masterDataPic.map(p => `<option value="${p.id}">${p.username}</option>`).join(''); 
         });
@@ -991,26 +986,19 @@
         });
     }
 
-    // [FIX UX MOBILE] Indikator visual loading pada dropdown counter
     function filterCounterByPic(picId, counterId) {
         const selectedPicId = document.getElementById(picId).value;
         const counterDropdown = document.getElementById(counterId);
-        
         if (!selectedPicId) { 
             counterDropdown.innerHTML = '<option value="">Pilih PIC dulu...</option>'; 
             counterDropdown.disabled = true; 
             return; 
         }
-
-        // Tampilkan loading state
         counterDropdown.innerHTML = '<option value="">⏳ Memuat counter...</option>';
         counterDropdown.disabled = true;
-
-        // Gunakan setTimeout agar UI bisa merender loading state sebelum proses filter
         setTimeout(() => {
             const allowedCounterIds = masterDataGrouping.filter(g => g.pic_id == selectedPicId).map(g => g.counter_id);
             const filteredCounters = masterDataCounter.filter(c => allowedCounterIds.includes(c.id_counter));
-            
             if (filteredCounters.length === 0) { 
                 counterDropdown.innerHTML = '<option value="">Belum ada group</option>'; 
                 counterDropdown.disabled = true; 
@@ -1064,10 +1052,8 @@
         const start = document.getElementById('rj-start').value, end = document.getElementById('rj-end').value;
         const picId = document.getElementById('rj-pic').value, status = document.getElementById('rj-status').value;
         if (!start || !end) return alert("Tanggal wajib diisi!");
-        
         const tbody = document.getElementById('tb-review-jadwal');
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
-
         try {
             let query = db.from('jadwal').select(`*, pic:pic_id(username), counter:counter_id(nama_counter)`).gte('tanggal', start).lte('tanggal', end).order('tanggal', { ascending: true });
             if (picId) query = query.eq('pic_id', picId);
@@ -1075,32 +1061,18 @@
             const { data, error } = await query;
             if (error) throw error;
             reviewJadwalData = data || [];
-
             document.getElementById('rj-summary').style.display = 'grid';
             document.getElementById('rj-kpi-total').innerText = reviewJadwalData.length;
             document.getElementById('rj-kpi-planned').innerText = reviewJadwalData.filter(d => d.status === 'PLANNED').length;
             document.getElementById('rj-kpi-confirmed').innerText = reviewJadwalData.filter(d => d.status === 'CONFIRMED').length;
             document.getElementById('rj-table-card').style.display = 'block';
-
-            if (reviewJadwalData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>';
-                return;
-            }
-
+            if (reviewJadwalData.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>'; return; }
             tbody.innerHTML = reviewJadwalData.map(d => {
                 const statusClass = `status-${d.status.toLowerCase()}`;
                 let actionButtons = '';
                 if (d.status === 'PLANNED') actionButtons = `<button class="btn btn-sm btn-success" onclick="openModalJadwal(${d.id}, 'CONFIRMED')">✓</button> <button class="btn btn-sm btn-danger" onclick="openModalJadwal(${d.id}, 'CANCELLED')">✗</button>`;
                 else if (d.status === 'CONFIRMED') actionButtons = `<button class="btn btn-sm btn-primary" onclick="markAsCompleted(${d.id})">Done</button>`;
-                
-                return `<tr>
-                    <td data-label="Tanggal">${d.tanggal}</td>
-                    <td data-label="PIC">${d.pic?.username || '-'}</td>
-                    <td data-label="Counter">${d.counter?.nama_counter || '-'}</td>
-                    <td data-label="Tujuan">${d.catatan || '-'}</td>
-                    <td data-label="Status"><span class="status-badge ${statusClass}">${d.status}</span></td>
-                    <td data-label="Aksi">${actionButtons}</td>
-                </tr>`;
+                return `<tr><td data-label="Tanggal">${d.tanggal}</td><td data-label="PIC">${d.pic?.username || '-'}</td><td data-label="Counter">${d.counter?.nama_counter || '-'}</td><td data-label="Tujuan">${d.catatan || '-'}</td><td data-label="Status"><span class="status-badge ${statusClass}">${d.status}</span></td><td data-label="Aksi">${actionButtons}</td></tr>`;
             }).join('');
         } catch (e) { console.error(e); }
     }
@@ -1130,20 +1102,9 @@
         loadReviewJadwal();
     }
 
-    // [FIX KODE DUPLIKAT] Hanya satu definisi exportReviewJadwalExcel
     function exportReviewJadwalExcel() {
-        if (!reviewJadwalData || reviewJadwalData.length === 0) {
-            return alert("Tidak ada data untuk export");
-        }
-
-        const dataExcel = reviewJadwalData.map(d => ({
-            Tanggal: d.tanggal,
-            PIC: d.pic?.username || "",
-            Counter: d.counter?.nama_counter || "",
-            Tujuan: d.catatan || "",
-            Status: d.status
-        }));
-
+        if (!reviewJadwalData || reviewJadwalData.length === 0) return alert("Tidak ada data");
+        const dataExcel = reviewJadwalData.map(d => ({ Tanggal: d.tanggal, PIC: d.pic?.username || "", Counter: d.counter?.nama_counter || "", Tujuan: d.catatan || "", Status: d.status }));
         const ws = XLSX.utils.json_to_sheet(dataExcel);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Review Jadwal");
@@ -1151,18 +1112,9 @@
     }
 
     function exportReviewJadwalPDF() {
-        if(reviewJadwalData.length === 0){
-            return alert("Tidak ada data");
-        }
-
+        if(reviewJadwalData.length === 0) return alert("Tidak ada data");
         const area = document.getElementById('rj-table-card');
-        const opt = {
-            margin:10,
-            filename:'Review_Jadwal.pdf',
-            image:{type:'jpeg', quality:0.98},
-            html2canvas:{scale:2},
-            jsPDF:{unit:'mm', format:'a4', orientation:'landscape'}
-        };
+        const opt = { margin:10, filename:'Review_Jadwal.pdf', image:{type:'jpeg', quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'mm', format:'a4', orientation:'landscape'} };
         html2pdf().set(opt).from(area).save();
     }
 
@@ -1171,23 +1123,11 @@
         const { data } = await db.from('master_impact_mapping').select('*').order('id', {ascending: false});
         masterImpactData = data || [];
         const tbody = document.getElementById('tb-impact-mapping');
-        tbody.innerHTML = masterImpactData.map(item => `<tr>
-            <td data-label="Driver">${item.root_driver}</td>
-            <td data-label="Cat">${item.impact_category}</td>
-            <td data-label="Metric">${item.impact_metric}</td>
-            <td data-label="Weight">${item.severity_weight}</td>
-            <td data-label="Status">${item.active ? 'Active' : 'Inactive'}</td>
-            <td data-label="Aksi"><button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">Toggle</button></td>
-        </tr>`).join('');
+        tbody.innerHTML = masterImpactData.map(item => `<tr><td data-label="Driver">${item.root_driver}</td><td data-label="Cat">${item.impact_category}</td><td data-label="Metric">${item.impact_metric}</td><td data-label="Weight">${item.severity_weight}</td><td data-label="Status">${item.active ? 'Active' : 'Inactive'}</td><td data-label="Aksi"><button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">Toggle</button></td></tr>`).join('');
     }
     async function addImpactMapping() {
         if (currentUser.jabatan !== 'admin') return alert("Admin Only");
-        await db.from('master_impact_mapping').insert({
-            root_driver: document.getElementById('im-driver').value,
-            impact_category: document.getElementById('im-category').value,
-            impact_metric: document.getElementById('im-metric').value,
-            severity_weight: parseInt(document.getElementById('im-weight').value)
-        });
+        await db.from('master_impact_mapping').insert({ root_driver: document.getElementById('im-driver').value, impact_category: document.getElementById('im-category').value, impact_metric: document.getElementById('im-metric').value, severity_weight: parseInt(document.getElementById('im-weight').value) });
         loadImpactMapping();
     }
     async function toggleImpactStatus(id, status) {
@@ -1200,38 +1140,23 @@
         if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Lengkapi data!");
         const { data } = await db.from('visiting').insert(obj).select();
         currentVisitingId = data[0].id;
-        
         const { data: cl } = await db.from('master_4p').select('*');
         if(!cl) return alert("Data 4P kosong");
-
         const groupedData = cl.reduce((group, item) => {
             const category = item['kategori_4p'] || 'LAINNYA';
             if (!group[category]) group[category] = [];
             group[category].push(item);
             return group;
         }, {});
-
         const tabsEl = document.getElementById('tabs-4p-container'), containerEl = document.getElementById('tab-4p-content-container');
         tabsEl.innerHTML = ''; containerEl.innerHTML = '';
         let isFirst = true;
-
         for (const [category, items] of Object.entries(groupedData)) {
             const safeCatId = category.replace(/[^a-zA-Z0-9]/g, '-');
             tabsEl.innerHTML += `<button class="btn btn-sm ${isFirst ? 'btn-primary' : 'btn-warning'}" onclick="switchTab4P('tab4p-${safeCatId}', this)">${category}</button>`;
-            
             let htmlItems = '';
             items.forEach(c => {
-                htmlItems += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian_4p']}</small></div>
-                        <select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)">
-                            <option value="Pass">Pass</option><option value="Fail">Fail</option>
-                        </select>
-                    </div>
-                    <div class="fail-foto-area" style="display:none; margin-top:5px;">
-                        <input type="file" accept="image/*" class="fail-foto-input" style="font-size:11px;">
-                    </div>
-                </div>`;
+                htmlItems += `<div style="border-bottom:1px solid #eee; padding:10px 0;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian_4p']}</small></div><select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div><div class="fail-foto-area" style="display:none; margin-top:5px;"><input type="file" accept="image/*" class="fail-foto-input" style="font-size:11px;"></div></div>`;
             });
             containerEl.innerHTML += `<div id="tab4p-${safeCatId}" style="display:${isFirst?'block':'none'}">${htmlItems}</div>`;
             isFirst = false;
@@ -1250,19 +1175,11 @@
         area.style.display = selectEl.value === 'Fail' ? 'block' : 'none';
     }
 
-    // [FIX VALIDASI & STORAGE] Validasi checklist + Sanitasi nama file foto
     async function submitChecklist() {
         if(!currentVisitingId) return;
-        
         const selects = document.querySelectorAll('.status-cek');
-        
-        // Validasi: Blokir jika tidak ada item yang dicek
-        if(selects.length === 0) {
-            return alert("Tidak ada item checklist yang dimuat. Silakan refresh atau cek koneksi.");
-        }
-
+        if(selects.length === 0) return alert("Tidak ada item checklist yang dimuat.");
         const payloadsDetail = [], payloadsAction = [];
-        
         for(let sel of selects) {
             const status = sel.value, itemName = sel.dataset.item;
             let photoUrl = null;
@@ -1270,17 +1187,10 @@
                 const fileInput = sel.parentElement.nextElementSibling.querySelector('.fail-foto-input');
                 if(fileInput && fileInput.files.length > 0) {
                     const file = fileInput.files[0];
-                    
-                    // Sanitasi nama file: hanya alphanumeric, underscore, dot + timestamp unik
                     const sanitizedBaseName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
                     const fileName = `${currentVisitingId}_${Date.now()}_${sanitizedBaseName}`;
-                    
                     const { error: uploadErr } = await db.storage.from('visit-fotos').upload(fileName, file);
-                    if(uploadErr) {
-                        console.error("Upload gagal:", uploadErr);
-                        return alert(`Gagal upload foto untuk "${itemName}". Coba lagi.`);
-                    }
-                    
+                    if(uploadErr) return alert(`Gagal upload foto untuk "${itemName}".`);
                     const { data: urlData } = db.storage.from('visit-fotos').getPublicUrl(fileName);
                     photoUrl = urlData.publicUrl;
                 }
@@ -1288,10 +1198,8 @@
             }
             payloadsDetail.push({ visiting_id: currentVisitingId, item_name: itemName, status: status, foto_url: photoUrl||'' });
         }
-
         if(payloadsDetail.length) await db.from('visiting_detail').insert(payloadsDetail);
         if(payloadsAction.length) await db.from('visiting_action').insert(payloadsAction);
-        
         alert("✅ Tersimpan!");
         document.getElementById('visiting-form-card').style.display = 'block';
         document.getElementById('checklist-area').style.display = 'none';
@@ -1313,11 +1221,7 @@
     async function loadOpenActions() {
         const { data } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('id', { ascending: false });
         const tb = document.getElementById('tb-open');
-        tb.innerHTML = data && data.length ? data.map(d => `<tr>
-            <td data-label="Sumber">${d.sumber_masalah}</td>
-            <td data-label="Masalah">${d.masalah}</td>
-            <td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td>
-        </tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">Zonk</td></tr>';
+        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Sumber">${d.sumber_masalah}</td><td data-label="Masalah">${d.masalah}</td><td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">Zonk</td></tr>';
     }
     function openActionForm(id, masalah) {
         switchActionTab('tab-form', document.querySelectorAll('#page-action .tab-btn')[1]);
@@ -1339,12 +1243,7 @@
     async function loadValidasiActions() {
         const { data } = await db.from('visiting_action').select('*').eq('status_action', 'On-Progress');
         const tb = document.getElementById('tb-validasi');
-        tb.innerHTML = data && data.length ? data.map(d => `<tr>
-            <td data-label="Masalah">${d.masalah}</td>
-            <td data-label="Tindakan">${d.tindakan}</td>
-            <td data-label="Due">${d.due_date}</td>
-            <td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td>
-        </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
+        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Masalah">${d.masalah}</td><td data-label="Tindakan">${d.tindakan}</td><td data-label="Due">${d.due_date}</td><td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
     }
     async function closeAction(id) {
         await db.from('visiting_action').update({ status_action: 'Done' }).eq('id', id);
@@ -1363,87 +1262,54 @@
         alert("Request Diajukan!"); 
     }
 
-    // [FIX BUSINESS REVIEW] Kalkulasi real-time dari DB, bukan hardcoded
     async function generateBRAuto() {
         const start = document.getElementById('br-start').value;
         const end = document.getElementById('br-end').value;
         const picId = document.getElementById('br-pic').value;
         const counterId = document.getElementById('br-counter').value;
-
         if(!start || !end) return alert("Periode wajib diisi!");
-
         document.getElementById('br-output-area').style.display = 'block';
         document.getElementById('br-auto-narrative').innerHTML = '⏳ Menghitung dampak bisnis...';
         document.getElementById('br-top-drivers-list').innerHTML = '';
         document.getElementById('br-kpi-score').innerText = '-';
         document.getElementById('br-kpi-category').innerText = '-';
-
         try {
-            // 1. Ambil semua action dalam periode (via join ke visiting)
-            let actionQuery = db.from('visiting_action')
-                .select('*, visiting!inner(tanggal, pic_id, counter_id)')
-                .gte('visiting.tanggal', start)
-                .lte('visiting.tanggal', end);
-            
+            let actionQuery = db.from('visiting_action').select('*, visiting!inner(tanggal, pic_id, counter_id)').gte('visiting.tanggal', start).lte('visiting.tanggal', end);
             if (picId) actionQuery = actionQuery.eq('visiting.pic_id', picId);
             if (counterId) actionQuery = actionQuery.eq('visiting.counter_id', counterId);
-
             const { data: actions, error: actErr } = await actionQuery;
             if (actErr) throw actErr;
-
-            // 2. Ambil master impact mapping yang aktif
             const { data: mappings, error: mapErr } = await db.from('master_impact_mapping').select('*').eq('active', true);
             if (mapErr) throw mapErr;
-
             if (!actions || actions.length === 0) {
-                document.getElementById('br-auto-narrative').innerHTML = '✅ Tidak ditemukan issue pada periode ini. Performa sangat baik!';
+                document.getElementById('br-auto-narrative').innerHTML = '✅ Tidak ditemukan issue pada periode ini.';
                 document.getElementById('br-kpi-score').innerText = '0';
                 document.getElementById('br-kpi-category').innerText = 'Aman';
                 return;
             }
-
-            // 3. Hitung score per kategori berdasarkan root_driver matching
             const categoryScores = {};
             const driverCounts = {};
-
             actions.forEach(action => {
                 const masalahLower = (action.masalah || '').toLowerCase();
-                
                 mappings.forEach(mapping => {
                     const driverLower = (mapping.root_driver || '').toLowerCase();
                     if (driverLower && masalahLower.includes(driverLower)) {
                         const cat = mapping.impact_category || 'Uncategorized';
                         const weight = mapping.severity_weight || 1;
-                        
                         categoryScores[cat] = (categoryScores[cat] || 0) + weight;
                         driverCounts[mapping.root_driver] = (driverCounts[mapping.root_driver] || 0) + 1;
                     }
                 });
             });
-
-            // 4. Tentukan total score dan kategori dominan
             const totalScore = Object.values(categoryScores).reduce((a, b) => a + b, 0);
             const dominantCategory = Object.entries(categoryScores).sort((a, b) => b[1] - a[1])[0];
             const topDrivers = Object.entries(driverCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-            // 5. Render hasil
             document.getElementById('br-kpi-score').innerText = totalScore;
             document.getElementById('br-kpi-category').innerText = dominantCategory ? dominantCategory[0] : 'N/A';
-
-            const totalActions = actions.length;
-            const narrative = `Pada periode <b>${start}</b> s/d <b>${end}</b>, tercatat <b>${totalActions} issue</b> dengan total risk score <b>${totalScore}</b>. ` +
-                `Kategori paling terdampak adalah <b>${dominantCategory ? dominantCategory[0] : '-'}</b> dengan skor ${dominantCategory ? dominantCategory[1] : 0}. ` +
-                `Diperlukan fokus perbaikan pada root driver berikut:`;
-            
+            const narrative = `Pada periode <b>${start}</b> s/d <b>${end}</b>, tercatat <b>${actions.length} issue</b> dengan total risk score <b>${totalScore}</b>. Kategori dominan: <b>${dominantCategory ? dominantCategory[0] : '-'}</b>.`;
             document.getElementById('br-auto-narrative').innerHTML = narrative;
-
-            document.getElementById('br-top-drivers-list').innerHTML = topDrivers.length > 0
-                ? topDrivers.map((d, i) => `<div style="padding:6px 0; border-bottom:1px solid #eee;">${i + 1}. <b>${d[0]}</b> (${d[1]} kejadian)</div>`).join('')
-                : '<div style="color:var(--text-sec);">Tidak ada root driver yang cocok dengan Impact Mapping.</div>';
-
-            // Simpan untuk snapshot/export
-            currentBRData = { start, end, totalScore, dominantCategory: dominantCategory?.[0] || '-', narrative, topDrivers, totalActions };
-
+            document.getElementById('br-top-drivers-list').innerHTML = topDrivers.length > 0 ? topDrivers.map((d, i) => `<div style="padding:6px 0; border-bottom:1px solid #eee;">${i + 1}. <b>${d[0]}</b> (${d[1]} kejadian)</div>`).join('') : '<div>Tidak ada root driver cocok.</div>';
+            currentBRData = { start, end, totalScore, dominantCategory: dominantCategory?.[0] || '-', narrative, topDrivers, totalActions: actions.length };
         } catch (e) {
             console.error("BR Error:", e);
             document.getElementById('br-auto-narrative').innerHTML = `❌ Gagal menghitung: ${e.message}`;
@@ -1453,19 +1319,10 @@
     async function saveBRSnapshot() { 
         if (!currentBRData) return alert("Generate analisis terlebih dahulu!");
         try {
-            await db.from('br_snapshot').insert({
-                periode_start: currentBRData.start,
-                periode_end: currentBRData.end,
-                risk_score: currentBRData.totalScore,
-                dominant_category: currentBRData.dominantCategory,
-                narrative: currentBRData.narrative,
-                created_by: currentUser.username
-            });
+            await db.from('br_snapshot').insert({ periode_start: currentBRData.start, periode_end: currentBRData.end, risk_score: currentBRData.totalScore, dominant_category: currentBRData.dominantCategory, narrative: currentBRData.narrative, created_by: currentUser.username });
             alert("Snapshot tersimpan!");
             loadBRHistory();
-        } catch (e) {
-            alert("Gagal simpan snapshot: " + e.message);
-        }
+        } catch (e) { alert("Gagal simpan snapshot: " + e.message); }
     }
 
     async function loadBRHistory() {
@@ -1473,17 +1330,8 @@
         try {
             const { data, error } = await db.from('br_snapshot').select('*').order('id', { ascending: false }).limit(20);
             if (error) throw error;
-            
-            tbody.innerHTML = data && data.length ? data.map(d => `<tr>
-                <td data-label="Periode">${d.periode_start} s/d ${d.periode_end}</td>
-                <td data-label="Score">${d.risk_score}</td>
-                <td data-label="Dominan">${d.dominant_category}</td>
-                <td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="alert('Detail snapshot ID: ${d.id}')">View</button></td>
-            </tr>`).join('') : '<tr><td colspan="4" style="text-align:center; padding:20px;">Belum ada history</td></tr>';
-        } catch (e) {
-            console.error(e);
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat history</td></tr>';
-        }
+            tbody.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Periode">${d.periode_start} s/d ${d.periode_end}</td><td data-label="Score">${d.risk_score}</td><td data-label="Dominan">${d.dominant_category}</td><td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="alert('Detail snapshot ID: ${d.id}')">View</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center; padding:20px;">Belum ada history</td></tr>';
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat history</td></tr>'; }
     }
 
     function exportBRPDF() { 
@@ -1494,17 +1342,158 @@
     }
 
     function exportReviewJadwalWA(){
-        if (!reviewJadwalData || reviewJadwalData.length === 0){
-            return alert("Tidak ada data");
-        }
-
+        if (!reviewJadwalData || reviewJadwalData.length === 0) return alert("Tidak ada data");
         let text = `📋 *REVIEW JADWAL VISIT SOIS*\n\n`;
-        reviewJadwalData.forEach((d,i)=>{
-            text += `${i+1}. ${d.tanggal}\nPIC : ${d.pic?.username || '-'}\nCounter : ${d.counter?.nama_counter || '-'}\nStatus : ${d.status}\n\n`;
-        });
+        reviewJadwalData.forEach((d,i)=>{ text += `${i+1}. ${d.tanggal}\nPIC : ${d.pic?.username || '-'}\nCounter : ${d.counter?.nama_counter || '-'}\nStatus : ${d.status}\n\n`; });
+        window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+    }
 
-        const url = "https://wa.me/?text=" + encodeURIComponent(text);
-        window.open(url, "_blank");
+    // ============================================
+    // EXPORT PDCA / SEBAB-AKIBAT (NEW FUNCTIONS)
+    // ============================================
+    function switchPDCATab(tabId, btnEl) {
+        document.querySelectorAll('#page-export-pdca .tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('#page-export-pdca .tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btnEl.classList.add('active');
+    }
+
+    async function generatePDCAReport() {
+        const start = document.getElementById('pdca-start').value;
+        const end = document.getElementById('pdca-end').value;
+        const picId = document.getElementById('pdca-pic').value;
+
+        if (!start || !end) return alert("Periode wajib diisi!");
+
+        document.getElementById('pdca-preview-area').style.display = 'block';
+        document.getElementById('pdca-exec-summary').innerHTML = '⏳ Mengumpulkan data...';
+        document.getElementById('btn-pdca-excel').disabled = true;
+        document.getElementById('btn-pdca-pdf').disabled = true;
+
+        try {
+            // Parallel Queries
+            let jadwalQ = db.from('jadwal').select('*, pic:pic_id(username, nama_user), counter:counter_id(nama_counter)').eq('status', 'COMPLETED').gte('tanggal', start).lte('tanggal', end).order('tanggal', { ascending: true });
+            if (picId) jadwalQ = jadwalQ.eq('pic_id', picId);
+
+            let actionQ = db.from('visiting_action').select('*, visiting!inner(tanggal, pic_id, counter_id, pic:pic_id(username, nama_user), counter:counter_id(nama_counter))').gte('visiting.tanggal', start).lte('visiting.tanggal', end);
+            if (picId) actionQ = actionQ.eq('visiting.pic_id', picId);
+
+            const [jadwalRes, actionRes, mappingRes, historyRes] = await Promise.all([
+                jadwalQ, actionQ, 
+                db.from('master_impact_mapping').select('*').eq('active', true),
+                db.from('br_snapshot').select('*').order('created_at', { ascending: false }).limit(10)
+            ]);
+
+            const completedJadwal = jadwalRes.data || [];
+            const actions = actionRes.data || [];
+            const mappings = mappingRes.data || [];
+            const history = historyRes.data || [];
+
+            const openActions = actions.filter(a => a.status_action === 'Open');
+            const progressActions = actions.filter(a => a.status_action === 'On-Progress');
+            const doneActions = actions.filter(a => a.status_action === 'Done');
+
+            // Root Driver Analysis
+            const driverStats = {};
+            actions.forEach(action => {
+                const masalahLower = (action.masalah || '').toLowerCase();
+                mappings.forEach(m => {
+                    const driverLower = (m.root_driver || '').toLowerCase();
+                    if (driverLower && masalahLower.includes(driverLower)) {
+                        const key = m.root_driver;
+                        if (!driverStats[key]) driverStats[key] = { count: 0, weight: 0, category: m.impact_category };
+                        driverStats[key].count++;
+                        driverStats[key].weight += (m.severity_weight || 1);
+                    }
+                });
+            });
+            const topDrivers = Object.entries(driverStats).sort((a, b) => b[1].weight - a[1].weight).slice(0, 10);
+
+            // Render Summary
+            const totalVisit = new Set(actions.map(a => a.visiting?.id)).size || completedJadwal.length;
+            const completionRate = actions.length > 0 ? Math.round(doneActions.length / actions.length * 100) : 100;
+            
+            document.getElementById('pdca-period-label').innerText = `Periode: ${start} s/d ${end}${picId ? ' | PIC: ' + document.getElementById('pdca-pic').selectedOptions[0]?.text : ''}`;
+            document.getElementById('pdca-total-visit').innerText = totalVisit;
+            document.getElementById('pdca-open-action').innerText = openActions.length;
+            document.getElementById('pdca-done-action').innerText = doneActions.length;
+            document.getElementById('pdca-exec-summary').innerHTML = `Pada periode <b>${start}</b> s/d <b>${end}</b>:<br>• <b>${completedJadwal.length}</b> kunjungan selesai<br>• <b>${actions.length}</b> issue: ${openActions.length} Open, ${progressActions.length} Plan, ${doneActions.length} Done<br>• Completion Rate: <b>${completionRate}%</b><br>• Top Driver: <b>${topDrivers.length > 0 ? topDrivers[0][0] : 'N/A'}</b>`;
+
+            // Render Tables
+            const renderDriverRow = (d, i) => `<tr><td data-label="#">${i+1}</td><td data-label="Driver">${d[0]}</td><td data-label="Cat">${d[1].category}</td><td data-label="Jml">${d[1].count}</td><td data-label="Weight">${d[1].weight}</td></tr>`;
+            document.querySelector('#table-pdca-drivers tbody').innerHTML = topDrivers.length ? topDrivers.map(renderDriverRow).join('') : '<tr><td colspan="5" style="text-align:center;">Tidak ada data</td></tr>';
+
+            const renderActionRow = (a, showTindakan) => {
+                const v = a.visiting || {};
+                const pic = v.pic?.nama_user || v.pic?.username || '-';
+                const ctr = v.counter?.nama_counter || '-';
+                if(showTindakan) return `<tr><td data-label="Masalah">${a.masalah}</td><td data-label="Tindakan">${a.tindakan||'-'}</td><td data-label="Due">${a.due_date||'-'}</td><td data-label="PIC">${pic}</td><td data-label="Counter">${ctr}</td></tr>`;
+                return `<tr><td data-label="Sumber">${a.sumber_masalah}</td><td data-label="Masalah">${a.masalah}</td><td data-label="Tgl">${v.tanggal||'-'}</td><td data-label="PIC">${pic}</td><td data-label="Counter">${ctr}</td></tr>`;
+            };
+
+            document.getElementById('tb-pdca-open').innerHTML = openActions.length ? openActions.map(a => renderActionRow(a, false)).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
+            document.getElementById('tb-pdca-progress').innerHTML = progressActions.length ? progressActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
+            document.getElementById('tb-pdca-done').innerHTML = doneActions.length ? doneActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
+
+            document.querySelector('#table-pdca-jadwal tbody').innerHTML = completedJadwal.length ? completedJadwal.map((j,i) => `<tr><td data-label="No">${i+1}</td><td data-label="Tgl">${j.tanggal}</td><td data-label="PIC">${j.pic?.nama_user||j.pic?.username||'-'}</td><td data-label="Counter">${j.counter?.nama_counter||'-'}</td><td data-label="Cat">${j.catatan||'-'}</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;">Zonk</td></tr>';
+
+            document.querySelector('#table-pdca-history tbody').innerHTML = history.length ? history.map(h => `<tr><td data-label="Periode">${h.periode_start} s/d ${h.periode_end}</td><td data-label="Score">${h.risk_score}</td><td data-label="Dom">${h.dominant_category||'-'}</td><td data-label="Narrative">${(h.narrative||'').substring(0,60)}...</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
+
+            // Cache Data
+            pdcaData = { start, end, completedJadwal, openActions, progressActions, doneActions, topDrivers, history, totalVisit };
+            document.getElementById('btn-pdca-excel').disabled = false;
+            document.getElementById('btn-pdca-pdf').disabled = false;
+
+        } catch (e) {
+            console.error("PDCA Error:", e);
+            document.getElementById('pdca-exec-summary').innerHTML = `❌ Gagal: ${e.message}`;
+        }
+    }
+
+    function exportPDCAExcel() {
+        if (!pdcaData) return alert("Generate dulu!");
+        const wb = XLSX.utils.book_new();
+        
+        // Sheet 1: Summary
+        const sumSheet = XLSX.utils.json_to_sheet([
+            { Item: 'Periode', Value: `${pdcaData.start} s/d ${pdcaData.end}` },
+            { Item: 'Total Visit', Value: pdcaData.totalVisit },
+            { Item: 'Open', Value: pdcaData.openActions.length },
+            { Item: 'On-Progress', Value: pdcaData.progressActions.length },
+            { Item: 'Done', Value: pdcaData.doneActions.length },
+            ...pdcaData.topDrivers.map((d,i) => ({ Item: `Driver ${i+1}`, Value: `${d[0]} (${d[1].weight})` }))
+        ]);
+        XLSX.utils.book_append_sheet(wb, sumSheet, "Summary");
+
+        // Sheet 2: Jadwal
+        const jSheet = XLSX.utils.json_to_sheet(pdcaData.completedJadwal.map((j,i) => ({ No: i+1, Tanggal: j.tanggal, PIC: j.pic?.username, Counter: j.counter?.nama_counter, Catatan: j.catatan })));
+        XLSX.utils.book_append_sheet(wb, jSheet, "Jadwal Selesai");
+
+        // Sheet 3: Actions
+        const allActions = [
+            ...pdcaData.openActions.map(a => ({ Status: 'Open', Masalah: a.masalah, Tindakan: '', Due: '', PIC: a.visiting?.pic?.username, Counter: a.visiting?.counter?.nama_counter })),
+            ...pdcaData.progressActions.map(a => ({ Status: 'Plan', Masalah: a.masalah, Tindakan: a.tindakan, Due: a.due_date, PIC: a.visiting?.pic?.username, Counter: a.visiting?.counter?.nama_counter })),
+            ...pdcaData.doneActions.map(a => ({ Status: 'Done', Masalah: a.masalah, Tindakan: a.tindakan, Due: a.due_date, PIC: a.visiting?.pic?.username, Counter: a.visiting?.counter?.nama_counter }))
+        ];
+        const aSheet = XLSX.utils.json_to_sheet(allActions);
+        XLSX.utils.book_append_sheet(wb, aSheet, "Action Plan");
+
+        XLSX.writeFile(wb, `PDCA_${pdcaData.start}_${pdcaData.end}.xlsx`);
+    }
+
+    function exportPDCAPDF() {
+        if (!pdcaData) return alert("Generate dulu!");
+        // Show all tabs for PDF capture
+        document.querySelectorAll('#page-export-pdca .tab-content').forEach(c => c.style.display = 'block');
+        
+        const element = document.getElementById('pdca-preview-area');
+        const opt = { margin: 8, filename: `PDCA_${pdcaData.start}_${pdcaData.end}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Reset tabs
+            document.querySelectorAll('#page-export-pdca .tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById('pdca-tab-open').style.display = 'block';
+        });
     }
 </script>
 </body>
