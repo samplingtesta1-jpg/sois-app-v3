@@ -647,800 +647,865 @@
         </div>
     </div>
 
-       <script>
-        // --- KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://lbdjoptoyymhcusavzkb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiZGpvcHRveXltaGN1c2F2emtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjM3NzYsImV4cCI6MjEwMDM5OTc3Nn0.hDEvvlOIDZo0gRHBT4W2_dMKl8x_XHanWeCj1HTUNf4';
-        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+    // --- KONFIGURASI SUPABASE ---
+    const SUPABASE_URL = 'https://lbdjoptoyymhcusavzkb.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxiZGpvcHRveXltaGN1c2F2emtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MjM3NzYsImV4cCI6MjEwMDM5OTc3Nn0.hDEvvlOIDZo0gRHBT4W2_dMKl8x_XHanWeCj1HTUNf4';
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentUser = null;
-        let dataPicExcel = [], data4pExcel = [], tempJadwalList = [], currentVisitingId = null;
-        let masterDataPic = [], masterDataCounter = [], masterDataGrouping = [];
-        let brStats = {}; 
-        let reviewJadwalData = []; 
-        let masterImpactData = []; 
-        let currentBRData = null; 
+    let currentUser = null;
+    let dataPicExcel = [], data4pExcel = [], tempJadwalList = [], currentVisitingId = null;
+    let masterDataPic = [], masterDataCounter = [], masterDataGrouping = [];
+    let brStats = {}; 
+    let reviewJadwalData = []; 
+    let masterImpactData = []; 
+    let currentBRData = null; 
 
-        const MENU_CONFIG = {
-            'admin': [
-                { id: 'dashboard', label: '📊 Dashboard' },
-                { id: 'jadwal', label: '📅 Rencana' },
-                { id: 'review-jadwal', label: '📋 Review Jdl' },
-                { id: 'impact-mapping', label: '🗺️ Impact Map' },
-                { id: 'setup', label: '⚙️ Master' },
-                { id: 'visiting', label: '👁️ Visiting' },
-                { id: 'action', label: '🛠️ Action' },
-                { id: 'issues', label: '⚠️ Issues' },
-                { id: 'review', label: '📈 Business Rev' }
-            ],
-            'am': [
-                { id: 'dashboard', label: '📊 Dashboard' },
-                { id: 'jadwal', label: '📅 Rencana' },
-                { id: 'review-jadwal', label: '📋 Review Jdl' },
-                { id: 'visiting', label: '👁️ Visiting' },
-                { id: 'action', label: '🛠️ Action' },
-                { id: 'issues', label: '⚠️ Issues' },
-                { id: 'review', label: '📈 Business Rev' }
-            ]
-        };
+    const MENU_CONFIG = {
+        'admin': [
+            { id: 'dashboard', label: '📊 Dashboard' },
+            { id: 'jadwal', label: '📅 Rencana' },
+            { id: 'review-jadwal', label: '📋 Review Jdl' },
+            { id: 'impact-mapping', label: '🗺️ Impact Map' },
+            { id: 'setup', label: '⚙️ Master' },
+            { id: 'visiting', label: '👁️ Visiting' },
+            { id: 'action', label: '🛠️ Action' },
+            { id: 'issues', label: '⚠️ Issues' },
+            { id: 'review', label: '📈 Business Rev' }
+        ],
+        'am': [
+            { id: 'dashboard', label: '📊 Dashboard' },
+            { id: 'jadwal', label: '📅 Rencana' },
+            { id: 'review-jadwal', label: '📋 Review Jdl' },
+            { id: 'visiting', label: '👁️ Visiting' },
+            { id: 'action', label: '🛠️ Action' },
+            { id: 'issues', label: '⚠️ Issues' },
+            { id: 'review', label: '📈 Business Rev' }
+        ]
+    };
 
-        window.onload = () => {
-            const sessionUser = sessionStorage.getItem('sois_user');
-            if (sessionUser) {
-                currentUser = JSON.parse(sessionUser);
-                initApp();
-            } else {
-                showLoginPage();
-            }
-        };
+    window.onload = () => {
+        const sessionUser = sessionStorage.getItem('sois_user');
+        if (sessionUser) {
+            currentUser = JSON.parse(sessionUser);
+            initApp();
+        } else {
+            showLoginPage();
+        }
+    };
 
-        function showLoginPage() {
-            document.getElementById('page-login').style.display = 'flex';
-            document.getElementById('main-sidebar').style.display = 'none';
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('mobile-nav-bar').style.display = 'none';
+    function showLoginPage() {
+        document.getElementById('page-login').style.display = 'flex';
+        document.getElementById('main-sidebar').style.display = 'none';
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('mobile-nav-bar').style.display = 'none';
+    }
+
+    async function handleLogin() {
+        const userIn = document.getElementById('login-user').value.trim();
+        const passIn = document.getElementById('login-pass').value.trim();
+        const errorMsg = document.getElementById('login-error');
+
+        if (!userIn || !passIn) {
+            errorMsg.innerText = "Username dan Password wajib diisi!";
+            errorMsg.style.display = 'block';
+            return;
         }
 
-        // --- PERBAIKAN 1: LOGIN DENGAN NORMALISASI ROLE ---
-        async function handleLogin() {
-            const userIn = document.getElementById('login-user').value.trim();
-            const passIn = document.getElementById('login-pass').value.trim();
-            const errorMsg = document.getElementById('login-error');
+        try {
+            const { data, error } = await db.from('pic').select('*').eq('username', userIn).eq('pass', passIn).single();
 
-            if (!userIn || !passIn) {
-                errorMsg.innerText = "Username dan Password wajib diisi!";
+            if (error || !data) {
+                errorMsg.innerText = "Username atau Password salah.";
                 errorMsg.style.display = 'block';
-                return;
-            }
-
-            try {
-                // ambil data user
-                const { data, error } = await db.from('pic').select('*').eq('username', userIn).eq('pass', passIn).single();
-
-                if (error || !data) {
-                    errorMsg.innerText = "Username atau Password salah.";
-                    errorMsg.style.display = 'block';
-                } else {
-                    // Normalisasi Jabatan: Trim spasi & Lowercase
-                    const rawRole = data.jabatan ? data.jabatan.toString().trim().toLowerCase() : '';
-                    
-                    // Validasi Role Ketat
-                    if (rawRole !== 'admin' && rawRole !== 'am') {
-                         errorMsg.innerText = "Role tidak dikenali (" + rawRole + "). Hubungi Admin.";
-                         errorMsg.style.display = 'block';
-                         return;
-                    }
-
-                    currentUser = { 
-                        id: data.id, 
-                        username: data.username, 
-                        nama_user: data.nama_user || data.username, 
-                        jabatan: rawRole 
-                    };
-                    
-                    sessionStorage.setItem('sois_user', JSON.stringify(currentUser));
-                    errorMsg.style.display = 'none';
-                    initApp();
-                }
-            } catch (e) {
-                console.error(e);
-                errorMsg.innerText = "Koneksi Error.";
-                errorMsg.style.display = 'block';
-            }
-        }
-
-        function handleLogout() {
-            if(confirm("Yakin ingin keluar?")) {
-                sessionStorage.removeItem('sois_user');
-                location.reload();
-            }
-        }
-
-        function initApp() {
-            document.getElementById('page-login').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-            document.getElementById('user-info-display').innerText = `Hi, ${currentUser.nama_user}`;
-            
-            if(window.innerWidth <= 768) {
-                document.getElementById('main-sidebar').style.display = 'none';
-                document.getElementById('mobile-nav-bar').style.display = 'flex';
             } else {
-                document.getElementById('main-sidebar').style.display = 'flex';
-                document.getElementById('mobile-nav-bar').style.display = 'none';
-                renderMenu();
-            }
-            
-            loadDashboard();
-            if (currentUser.jabatan === 'admin') loadGroupingData();
-        }
-
-        window.addEventListener('resize', () => {
-            if(window.innerWidth <= 768) {
-                document.getElementById('main-sidebar').style.display = 'none';
-                document.getElementById('mobile-nav-bar').style.display = 'flex';
-            } else {
-                document.getElementById('main-sidebar').style.display = 'flex';
-                document.getElementById('mobile-nav-bar').style.display = 'none';
-                renderMenu();
-            }
-        });
-
-        function renderMenu() {
-            const container = document.getElementById('nav-menu-container');
-            if(!container) return;
-            const role = currentUser.jabatan;
-            const menus = MENU_CONFIG[role] || MENU_CONFIG['am'];
-            container.innerHTML = menus.map(m => `<div class="nav-item" onclick="showPage('${m.id}')">${m.label}</div>`).join('');
-        }
-
-        function checkAccess(pageId) {
-            if(pageId === 'menu-hub') return true; 
-            const role = currentUser.jabatan;
-            const allowedMenus = MENU_CONFIG[role] || [];
-            return allowedMenus.some(m => m.id === pageId);
-        }
-
-        function showPage(pageId) {
-            if (!checkAccess(pageId)) { alert("Akses ditolak."); return; }
-
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
-
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                if(item.getAttribute('onclick')?.includes(`'${pageId}'`)) item.classList.add('active');
-            });
-            const mobItems = document.querySelectorAll('.mobile-nav-item');
-            mobItems.forEach(item => {
-                if(item.getAttribute('onclick')?.includes(`'${pageId}'`)) item.classList.add('active');
-            });
-
-            if(pageId === 'menu-hub') {
-                document.getElementById('page-menu-hub').classList.add('active');
-                document.getElementById('page-title').innerText = 'Menu';
-                const isAdmin = currentUser.jabatan === 'admin';
-                document.getElementById('menu-impact-map').style.display = isAdmin ? 'block' : 'none';
-                document.getElementById('menu-setup').style.display = isAdmin ? 'block' : 'none';
-                return;
-            }
-
-            const pageEl = document.getElementById('page-' + pageId);
-            if(pageEl) pageEl.classList.add('active');
-
-            const titles = { 
-                'dashboard': 'Dashboard', 'jadwal': 'Rencana', 'review-jadwal': 'Review Jadwal', 
-                'impact-mapping': 'Impact Map', 'setup': 'Master Setup', 
-                'visiting': 'Visiting', 'action': 'Action Plan', 'issues': 'Issues', 'review': 'Business Review' 
-            };
-            document.getElementById('page-title').innerText = titles[pageId] || 'SOIS';
-
-            if(pageId === 'dashboard') loadDashboard();
-            if(['jadwal', 'visiting', 'issues', 'review', 'review-jadwal'].includes(pageId)) initDropdowns();
-            if(pageId === 'action') openActionPage(); 
-            if(pageId === 'impact-mapping') loadImpactMapping();
-            if(pageId === 'review') loadBRHistory();
-            
-            if(pageId !== 'visiting') {
-                document.getElementById('visiting-form-card').style.display = 'block';
-                document.getElementById('checklist-area').style.display = 'none';
-            }
-        }
-
-        async function loadDashboard() {
-            try {
-                const { count: cV } = await db.from('visiting').select('*', { count: 'exact', head: true });
-                const { count: cF } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'Open');
-                const { count: cP } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'On-Progress');
-                const { count: cC } = await db.from('cust_issue').select('*', { count: 'exact', head: true });
+                const rawRole = data.jabatan ? data.jabatan.toString().trim().toLowerCase() : '';
                 
-                document.getElementById('kpi-visit').innerText = cV || 0;
-                document.getElementById('kpi-fail').innerText = cF || 0;
-                document.getElementById('kpi-onprogress').innerText = cP || 0;
-                document.getElementById('kpi-cust').innerText = cC || 0;
-            } catch (e) { console.error(e); }
-        }
-
-        // --- MASTER & SETUP (PERBAIKAN IMPORT) ---
-        function readExcel(file, cb) { 
-            if(!file) return; 
-            const r = new FileReader(); 
-            r.onload = e => { 
-                const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); 
-                cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])); 
-            }; 
-            r.readAsArrayBuffer(file); 
-        }
-
-        // --- PERBAIKAN 2: VALIDASI IMPORT PIC ---
-        async function submitPic() { 
-            if(!dataPicExcel.length) return alert("Pilih file dulu!"); 
-            
-            let validCount = 0;
-            let errorCount = 0;
-            const payload = [];
-
-            dataPicExcel.forEach(r => {
-                // ambil data dan bersihkan
-                const user = String(r.user || r.username || '').trim();
-                const pass = String(r.pass || '').trim();
-                const nama = String(r.nama_user || r.name || r.user || '').trim();
-                let jabatan = String(r.jabatan || '').trim().toLowerCase();
-
-                // Validasi Wajib
-                if(!user || !pass || !jabatan) {
-                    errorCount++;
-                    return; // Skip baris ini
+                if (rawRole !== 'admin' && rawRole !== 'am') {
+                     errorMsg.innerText = "Role tidak dikenali (" + rawRole + "). Hubungi Admin.";
+                     errorMsg.style.display = 'block';
+                     return;
                 }
 
-                // Validasi Nilai Jabatan
-                if(jabatan !== 'admin' && jabatan !== 'am') {
-                    errorCount++;
-                    console.warn("Invalid Role skipped:", jabatan);
-                    return;
-                }
-
-                payload.push({ 
-                    username: user, 
-                    pass: pass, 
-                    nama_user: nama || user, 
-                    jabatan: jabatan 
-                });
-                validCount++;
-            });
-
-            if(payload.length === 0) return alert("Tidak ada data valid untuk diimport. Cek format Excel.");
-
-            const confirmMsg = `Total Data: ${dataPicExcel.length}\nValid: ${validCount}\nError/Skip: ${errorCount}\n\nLanjutkan Import?`;
-            if(!confirm(confirmMsg)) return;
-
-            try {
-                const { error } = await db.from('pic').insert(payload);
-                if(error) throw error;
-                alert(`Import Berhasil! ${validCount} data masuk.`);
-                loadGroupingData(); 
-            } catch (e) {
-                alert("Gagal Import: " + e.message);
-            }
-        }
-
-        // --- PERBAIKAN 3 & 4: IMPORT 4P DENGAN CEK HEADER & TABEL BARU ---
-        async function submit4p() { 
-            if(!data4pExcel.length) return alert("Pilih file dulu!"); 
-            
-            // Cek Header Excel (Case Insensitive check logic simplified)
-            const firstRow = data4pExcel[0];
-            const keys = Object.keys(firstRow);
-            
-            // Kita cari key yang mirip dengan header yang diharapkan
-            // Karena SheetJS membaca header persis seperti di Excel
-            const hasCategory = keys.some(k => k.toLowerCase().includes('kategoti') || k.toLowerCase().includes('kategori'));
-            const hasBagian = keys.some(k => k.toLowerCase().includes('bagian'));
-            const hasCeklist = keys.some(k => k.toLowerCase().includes('ceklist'));
-
-            if(!hasCategory || !hasBagian || !hasCeklist) {
-                return alert("Format Excel Salah! Pastikan ada header: 'kategoti 4p', 'bagian 4p', 'ceklist'.");
-            }
-
-            const payload = data4pExcel.map(r => {
-                // Mapping fleksibel: coba ambil dari header lama ('kategoti 4p') atau baru ('kategori_4p')
-                const kategori = r['kategoti 4p'] || r['kategori_4p'] || '';
-                
-                return { 
-                    kategori_4p: String(kategori), // Simpan ke kolom baru
-                    bagian_4p: String(r['bagian 4p'] || ''), 
-                    ceklist: String(r['ceklist'] || ''), 
-                    root_driver: String(r['root driver'] || ''), 
-                    nama_counter: String(r['nama_counter'] || '') 
+                currentUser = { 
+                    id: data.id, 
+                    username: data.username, 
+                    nama_user: data.nama_user || data.username, 
+                    jabatan: rawRole 
                 };
-            }).filter(item => item.kategori_4p && item.ceklist); // Jangan insert jika kosong
-
-            if(payload.length === 0) return alert("Data kosong setelah filter.");
-
-            try {
-                // Insert ke tabel yang sudah di-rename: master_4p
-                const { error } = await db.from('master_4p').insert(payload);
-                if(error) throw error;
-                alert(`Import Master 4P Berhasil! ${payload.length} data masuk.`);
-            } catch (e) {
-                alert("Gagal Import 4P: " + e.message);
+                
+                sessionStorage.setItem('sois_user', JSON.stringify(currentUser));
+                errorMsg.style.display = 'none';
+                initApp();
             }
+        } catch (e) {
+            console.error(e);
+            errorMsg.innerText = "Koneksi Error.";
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    function handleLogout() {
+        if(confirm("Yakin ingin keluar?")) {
+            sessionStorage.removeItem('sois_user');
+            location.reload();
+        }
+    }
+
+    function initApp() {
+        document.getElementById('page-login').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('user-info-display').innerText = `Hi, ${currentUser.nama_user}`;
+        
+        if(window.innerWidth <= 768) {
+            document.getElementById('main-sidebar').style.display = 'none';
+            document.getElementById('mobile-nav-bar').style.display = 'flex';
+        } else {
+            document.getElementById('main-sidebar').style.display = 'flex';
+            document.getElementById('mobile-nav-bar').style.display = 'none';
+            renderMenu();
         }
         
-        async function loadGroupingData() {
-            const { data: pic } = await db.from('pic').select('*');
-            const { data: counter } = await db.from('master_counter').select('*');
-            const c = document.getElementById('groupingContainer'); 
-            if(!c) return;
-            c.innerHTML = '';
-            if(pic && counter) {
-                pic.forEach(p => { 
-                    let h = `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;"><b>${p.username}</b></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:15px;">`; 
-                    counter.forEach(ct => { h += `<label style="font-size:12px; display:block;"><input type="checkbox" value="${ct.id_counter}" class="cb-counter" data-pic="${p.id}"> ${ct.nama_counter}</label>`; }); 
-                    c.innerHTML += h + '</div>'; 
-                });
-            }
+        loadDashboard();
+        if (currentUser.jabatan === 'admin') loadGroupingData();
+    }
+
+    window.addEventListener('resize', () => {
+        if(window.innerWidth <= 768) {
+            document.getElementById('main-sidebar').style.display = 'none';
+            document.getElementById('mobile-nav-bar').style.display = 'flex';
+        } else {
+            document.getElementById('main-sidebar').style.display = 'flex';
+            document.getElementById('mobile-nav-bar').style.display = 'none';
+            renderMenu();
+        }
+    });
+
+    function renderMenu() {
+        const container = document.getElementById('nav-menu-container');
+        if(!container) return;
+        const role = currentUser.jabatan;
+        const menus = MENU_CONFIG[role] || MENU_CONFIG['am'];
+        container.innerHTML = menus.map(m => `<div class="nav-item" onclick="showPage('${m.id}')">${m.label}</div>`).join('');
+    }
+
+    function checkAccess(pageId) {
+        if(pageId === 'menu-hub') return true; 
+        const role = currentUser.jabatan;
+        const allowedMenus = MENU_CONFIG[role] || [];
+        return allowedMenus.some(m => m.id === pageId);
+    }
+
+    function showPage(pageId) {
+        if (!checkAccess(pageId)) { alert("Akses ditolak."); return; }
+
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            if(item.getAttribute('onclick')?.includes(`'${pageId}'`)) item.classList.add('active');
+        });
+        const mobItems = document.querySelectorAll('.mobile-nav-item');
+        mobItems.forEach(item => {
+            if(item.getAttribute('onclick')?.includes(`'${pageId}'`)) item.classList.add('active');
+        });
+
+        if(pageId === 'menu-hub') {
+            document.getElementById('page-menu-hub').classList.add('active');
+            document.getElementById('page-title').innerText = 'Menu';
+            const isAdmin = currentUser.jabatan === 'admin';
+            document.getElementById('menu-impact-map').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('menu-setup').style.display = isAdmin ? 'block' : 'none';
+            return;
         }
 
-        async function submitGrouping() { 
-            const d = []; 
-            document.querySelectorAll('.cb-counter:checked').forEach(cb => d.push({ pic_id: parseInt(cb.dataset.pic), counter_id: parseInt(cb.value) })); 
-            if(!d.length) return alert("Centang dulu!"); 
-            await db.from('pic_counter_group').insert(d); 
-            alert("Grouping Disimpan!"); 
-        }
+        const pageEl = document.getElementById('page-' + pageId);
+        if(pageEl) pageEl.classList.add('active');
 
-        async function initDropdowns() {
-            const { data: dataPic } = await db.from('pic').select('*');
-            const { data: dataCounter } = await db.from('master_counter').select('*');
-            const { data: dataGroup } = await db.from('pic_counter_group').select('*');
+        const titles = { 
+            'dashboard': 'Dashboard', 'jadwal': 'Rencana', 'review-jadwal': 'Review Jadwal', 
+            'impact-mapping': 'Impact Map', 'setup': 'Master Setup', 
+            'visiting': 'Visiting', 'action': 'Action Plan', 'issues': 'Issues', 'review': 'Business Review' 
+        };
+        document.getElementById('page-title').innerText = titles[pageId] || 'SOIS';
+
+        if(pageId === 'dashboard') loadDashboard();
+        if(['jadwal', 'visiting', 'issues', 'review', 'review-jadwal'].includes(pageId)) initDropdowns();
+        if(pageId === 'action') openActionPage(); 
+        if(pageId === 'impact-mapping') loadImpactMapping();
+        if(pageId === 'review') loadBRHistory();
+        
+        if(pageId !== 'visiting') {
+            document.getElementById('visiting-form-card').style.display = 'block';
+            document.getElementById('checklist-area').style.display = 'none';
+        }
+    }
+
+    async function loadDashboard() {
+        try {
+            const { count: cV } = await db.from('visiting').select('*', { count: 'exact', head: true });
+            const { count: cF } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'Open');
+            const { count: cP } = await db.from('visiting_action').select('*', { count: 'exact', head: true }).eq('status_action', 'On-Progress');
+            const { count: cC } = await db.from('cust_issue').select('*', { count: 'exact', head: true });
             
-            masterDataPic = dataPic || []; masterDataCounter = dataCounter || []; masterDataGrouping = dataGroup || [];
-            
-            document.querySelectorAll('.pic-dropdown').forEach(el => { 
-                el.innerHTML = '<option value="">Pilih PIC...</option>' + masterDataPic.map(p => `<option value="${p.id}">${p.username}</option>`).join(''); 
+            document.getElementById('kpi-visit').innerText = cV || 0;
+            document.getElementById('kpi-fail').innerText = cF || 0;
+            document.getElementById('kpi-onprogress').innerText = cP || 0;
+            document.getElementById('kpi-cust').innerText = cC || 0;
+        } catch (e) { console.error(e); }
+    }
+
+    function readExcel(file, cb) { 
+        if(!file) return; 
+        const r = new FileReader(); 
+        r.onload = e => { 
+            const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); 
+            cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])); 
+        }; 
+        r.readAsArrayBuffer(file); 
+    }
+
+    async function submitPic() { 
+        if(!dataPicExcel.length) return alert("Pilih file dulu!"); 
+        
+        let validCount = 0;
+        let errorCount = 0;
+        const payload = [];
+
+        dataPicExcel.forEach(r => {
+            const user = String(r.user || r.username || '').trim();
+            const pass = String(r.pass || '').trim();
+            const nama = String(r.nama_user || r.name || r.user || '').trim();
+            let jabatan = String(r.jabatan || '').trim().toLowerCase();
+
+            if(!user || !pass || !jabatan) {
+                errorCount++;
+                return; 
+            }
+
+            if(jabatan !== 'admin' && jabatan !== 'am') {
+                errorCount++;
+                console.warn("Invalid Role skipped:", jabatan);
+                return;
+            }
+
+            payload.push({ 
+                username: user, 
+                pass: pass, 
+                nama_user: nama || user, 
+                jabatan: jabatan 
             });
-            document.querySelectorAll('.counter-dropdown').forEach(el => { 
-                el.innerHTML = '<option value="">Pilih PIC dulu...</option>'; el.disabled = true; 
-            });
+            validCount++;
+        });
+
+        if(payload.length === 0) return alert("Tidak ada data valid untuk diimport. Cek format Excel.");
+
+        const confirmMsg = `Total Data: ${dataPicExcel.length}\nValid: ${validCount}\nError/Skip: ${errorCount}\n\nLanjutkan Import?`;
+        if(!confirm(confirmMsg)) return;
+
+        try {
+            const { error } = await db.from('pic').insert(payload);
+            if(error) throw error;
+            alert(`Import Berhasil! ${validCount} data masuk.`);
+            loadGroupingData(); 
+        } catch (e) {
+            alert("Gagal Import: " + e.message);
+        }
+    }
+
+    async function submit4p() { 
+        if(!data4pExcel.length) return alert("Pilih file dulu!"); 
+        
+        const firstRow = data4pExcel[0];
+        const keys = Object.keys(firstRow);
+        
+        const hasCategory = keys.some(k => k.toLowerCase().includes('kategoti') || k.toLowerCase().includes('kategori'));
+        const hasBagian = keys.some(k => k.toLowerCase().includes('bagian'));
+        const hasCeklist = keys.some(k => k.toLowerCase().includes('ceklist'));
+
+        if(!hasCategory || !hasBagian || !hasCeklist) {
+            return alert("Format Excel Salah! Pastikan ada header: 'kategoti 4p', 'bagian 4p', 'ceklist'.");
         }
 
-        function filterCounterByPic(picId, counterId) {
-            const selectedPicId = document.getElementById(picId).value;
-            const counterDropdown = document.getElementById(counterId);
-            if (!selectedPicId) { 
-                counterDropdown.innerHTML = '<option value="">Pilih PIC dulu...</option>'; counterDropdown.disabled = true; return; 
-            }
+        const payload = data4pExcel.map(r => {
+            const kategori = r['kategoti 4p'] || r['kategori_4p'] || '';
+            
+            return { 
+                kategori_4p: String(kategori), 
+                bagian_4p: String(r['bagian 4p'] || ''), 
+                ceklist: String(r['ceklist'] || ''), 
+                root_driver: String(r['root driver'] || ''), 
+                nama_counter: String(r['nama_counter'] || '') 
+            };
+        }).filter(item => item.kategori_4p && item.ceklist); 
+
+        if(payload.length === 0) return alert("Data kosong setelah filter.");
+
+        try {
+            const { error } = await db.from('master_4p').insert(payload);
+            if(error) throw error;
+            alert(`Import Master 4P Berhasil! ${payload.length} data masuk.`);
+        } catch (e) {
+            alert("Gagal Import 4P: " + e.message);
+        }
+    }
+    
+    async function loadGroupingData() {
+        const { data: pic } = await db.from('pic').select('*');
+        const { data: counter } = await db.from('master_counter').select('*');
+        const c = document.getElementById('groupingContainer'); 
+        if(!c) return;
+        c.innerHTML = '';
+        if(pic && counter) {
+            pic.forEach(p => { 
+                let h = `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;"><b>${p.username}</b></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:15px;">`; 
+                counter.forEach(ct => { h += `<label style="font-size:12px; display:block;"><input type="checkbox" value="${ct.id_counter}" class="cb-counter" data-pic="${p.id}"> ${ct.nama_counter}</label>`; }); 
+                c.innerHTML += h + '</div>'; 
+            });
+        }
+    }
+
+    async function submitGrouping() { 
+        const d = []; 
+        document.querySelectorAll('.cb-counter:checked').forEach(cb => d.push({ pic_id: parseInt(cb.dataset.pic), counter_id: parseInt(cb.value) })); 
+        if(!d.length) return alert("Centang dulu!"); 
+        await db.from('pic_counter_group').insert(d); 
+        alert("Grouping Disimpan!"); 
+    }
+
+    // [FIX UX MOBILE] Tambah indikator loading saat filter counter
+    async function initDropdowns() {
+        const { data: dataPic } = await db.from('pic').select('*');
+        const { data: dataCounter } = await db.from('master_counter').select('*');
+        const { data: dataGroup } = await db.from('pic_counter_group').select('*');
+        
+        masterDataPic = dataPic || []; masterDataCounter = dataCounter || []; masterDataGrouping = dataGroup || [];
+        
+        document.querySelectorAll('.pic-dropdown').forEach(el => { 
+            el.innerHTML = '<option value="">Pilih PIC...</option>' + masterDataPic.map(p => `<option value="${p.id}">${p.username}</option>`).join(''); 
+        });
+        document.querySelectorAll('.counter-dropdown').forEach(el => { 
+            el.innerHTML = '<option value="">Pilih PIC dulu...</option>'; el.disabled = true; 
+        });
+    }
+
+    // [FIX UX MOBILE] Indikator visual loading pada dropdown counter
+    function filterCounterByPic(picId, counterId) {
+        const selectedPicId = document.getElementById(picId).value;
+        const counterDropdown = document.getElementById(counterId);
+        
+        if (!selectedPicId) { 
+            counterDropdown.innerHTML = '<option value="">Pilih PIC dulu...</option>'; 
+            counterDropdown.disabled = true; 
+            return; 
+        }
+
+        // Tampilkan loading state
+        counterDropdown.innerHTML = '<option value="">⏳ Memuat counter...</option>';
+        counterDropdown.disabled = true;
+
+        // Gunakan setTimeout agar UI bisa merender loading state sebelum proses filter
+        setTimeout(() => {
             const allowedCounterIds = masterDataGrouping.filter(g => g.pic_id == selectedPicId).map(g => g.counter_id);
             const filteredCounters = masterDataCounter.filter(c => allowedCounterIds.includes(c.id_counter));
             
             if (filteredCounters.length === 0) { 
-                counterDropdown.innerHTML = '<option value="">Belum ada group</option>'; counterDropdown.disabled = true; 
+                counterDropdown.innerHTML = '<option value="">Belum ada group</option>'; 
+                counterDropdown.disabled = true; 
             } else { 
                 counterDropdown.disabled = false; 
                 counterDropdown.innerHTML = '<option value="">Pilih Counter...</option>' + filteredCounters.map(c => `<option value="${c.id_counter}">${c.nama_counter}</option>`).join(''); 
             }
-        }
+        }, 100);
+    }
 
-        // --- JADWAL LOGIC ---
-        function addJadwalToList() {
-            const picEl = document.getElementById('j-pic'), tgl = document.getElementById('j-tgl').value, counterEl = document.getElementById('j-counter'), catatan = document.getElementById('j-catatan').value;
-            if(!picEl.value || !tgl || !counterEl.value) return alert("Isi semua!");
-            tempJadwalList.push({ pic_id: picEl.value, counter_id: counterEl.value, tgl, counter: counterEl.options[counterEl.selectedIndex].text, catatan });
-            renderJadwalPreview(); 
-            document.getElementById('j-tgl').value = ''; counterEl.value = ''; document.getElementById('j-catatan').value = '';
-        }
-        async function saveJadwalToDB() {
-            if(tempJadwalList.length === 0) return alert("Daftar kosong!");
-            const payload = tempJadwalList.map(item => ({ pic_id: parseInt(item.pic_id), counter_id: parseInt(item.counter_id), tanggal: item.tgl, catatan: item.catatan }));
-            const { error } = await db.from('jadwal').insert(payload);
-            if(error) return alert("Gagal: " + error.message);
-            alert("Tersimpan!"); tempJadwalList = []; renderJadwalPreview();
-        }
-        function renderJadwalPreview() {
-            const card = document.getElementById('jadwal-preview-card'), tbody = document.querySelector('#table-jadwal-preview tbody');
-            const picSelect = document.getElementById('j-pic');
-            document.getElementById('preview-nama-pic').innerText = picSelect.options[picSelect.selectedIndex]?.text || '-'; 
-            card.style.display = 'block';
-            tbody.innerHTML = tempJadwalList.map((item, i) => `<tr><td data-label="No">${i + 1}</td><td data-label="Tanggal">${item.tgl}</td><td data-label="Counter">${item.counter}</td><td data-label="Catatan">${item.catatan || '-'}</td></tr>`).join('');
-        }
-        function getJadwalText() { 
-            let text = `*RENCANA JADWAL*\nPIC: ${document.getElementById('preview-nama-pic').innerText}\n\n`; 
-            tempJadwalList.forEach((item, i) => { text += `${i+1}. ${item.tgl} | ${item.counter} | ${item.catatan || '-'}\n`; }); 
-            return text; 
-        }
-        function exportJadwalExcel() { 
-            if(!tempJadwalList.length) return alert("Kosong!"); 
-            const ws = XLSX.utils.json_to_sheet(tempJadwalList.map((item, i) => ({ No: i+1, Tanggal: item.tgl, Counter: item.counter, Catatan: item.catatan }))); 
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Rencana"); XLSX.writeFile(wb, `Jadwal.xlsx`); 
-        }
-        function exportJadwalPDF() { 
-            if(!tempJadwalList.length) return alert("Kosong!"); 
-            const element = document.getElementById('jadwal-pdf-area');
-            const opt = { margin: 10, filename: `Jadwal.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }; 
-            html2pdf().set(opt).from(element).save(); 
-        }
-        function sendJadwalWA() { window.open(`https://wa.me/?text=${encodeURIComponent(getJadwalText())}`, '_blank'); }
+    function addJadwalToList() {
+        const picEl = document.getElementById('j-pic'), tgl = document.getElementById('j-tgl').value, counterEl = document.getElementById('j-counter'), catatan = document.getElementById('j-catatan').value;
+        if(!picEl.value || !tgl || !counterEl.value) return alert("Isi semua!");
+        tempJadwalList.push({ pic_id: picEl.value, counter_id: counterEl.value, tgl, counter: counterEl.options[counterEl.selectedIndex].text, catatan });
+        renderJadwalPreview(); 
+        document.getElementById('j-tgl').value = ''; counterEl.value = ''; document.getElementById('j-catatan').value = '';
+    }
+    async function saveJadwalToDB() {
+        if(tempJadwalList.length === 0) return alert("Daftar kosong!");
+        const payload = tempJadwalList.map(item => ({ pic_id: parseInt(item.pic_id), counter_id: parseInt(item.counter_id), tanggal: item.tgl, catatan: item.catatan }));
+        const { error } = await db.from('jadwal').insert(payload);
+        if(error) return alert("Gagal: " + error.message);
+        alert("Tersimpan!"); tempJadwalList = []; renderJadwalPreview();
+    }
+    function renderJadwalPreview() {
+        const card = document.getElementById('jadwal-preview-card'), tbody = document.querySelector('#table-jadwal-preview tbody');
+        const picSelect = document.getElementById('j-pic');
+        document.getElementById('preview-nama-pic').innerText = picSelect.options[picSelect.selectedIndex]?.text || '-'; 
+        card.style.display = 'block';
+        tbody.innerHTML = tempJadwalList.map((item, i) => `<tr><td data-label="No">${i + 1}</td><td data-label="Tanggal">${item.tgl}</td><td data-label="Counter">${item.counter}</td><td data-label="Catatan">${item.catatan || '-'}</td></tr>`).join('');
+    }
+    function getJadwalText() { 
+        let text = `*RENCANA JADWAL*\nPIC: ${document.getElementById('preview-nama-pic').innerText}\n\n`; 
+        tempJadwalList.forEach((item, i) => { text += `${i+1}. ${item.tgl} | ${item.counter} | ${item.catatan || '-'}\n`; }); 
+        return text; 
+    }
+    function exportJadwalExcel() { 
+        if(!tempJadwalList.length) return alert("Kosong!"); 
+        const ws = XLSX.utils.json_to_sheet(tempJadwalList.map((item, i) => ({ No: i+1, Tanggal: item.tgl, Counter: item.counter, Catatan: item.catatan }))); 
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Rencana"); XLSX.writeFile(wb, `Jadwal.xlsx`); 
+    }
+    function exportJadwalPDF() { 
+        if(!tempJadwalList.length) return alert("Kosong!"); 
+        const element = document.getElementById('jadwal-pdf-area');
+        const opt = { margin: 10, filename: `Jadwal.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }; 
+        html2pdf().set(opt).from(element).save(); 
+    }
+    function sendJadwalWA() { window.open(`https://wa.me/?text=${encodeURIComponent(getJadwalText())}`, '_blank'); }
 
-        // --- REVIEW JADWAL ---
-        async function loadReviewJadwal() {
-            const start = document.getElementById('rj-start').value, end = document.getElementById('rj-end').value;
-            const picId = document.getElementById('rj-pic').value, status = document.getElementById('rj-status').value;
-            if (!start || !end) return alert("Tanggal wajib diisi!");
-            
-            const tbody = document.getElementById('tb-review-jadwal');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
+    async function loadReviewJadwal() {
+        const start = document.getElementById('rj-start').value, end = document.getElementById('rj-end').value;
+        const picId = document.getElementById('rj-pic').value, status = document.getElementById('rj-status').value;
+        if (!start || !end) return alert("Tanggal wajib diisi!");
+        
+        const tbody = document.getElementById('tb-review-jadwal');
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading...</td></tr>';
 
-            try {
-                let query = db.from('jadwal').select(`*, pic:pic_id(username), counter:counter_id(nama_counter)`).gte('tanggal', start).lte('tanggal', end).order('tanggal', { ascending: true });
-                if (picId) query = query.eq('pic_id', picId);
-                if (status) query = query.eq('status', status);
-                const { data, error } = await query;
-                if (error) throw error;
-                reviewJadwalData = data || [];
+        try {
+            let query = db.from('jadwal').select(`*, pic:pic_id(username), counter:counter_id(nama_counter)`).gte('tanggal', start).lte('tanggal', end).order('tanggal', { ascending: true });
+            if (picId) query = query.eq('pic_id', picId);
+            if (status) query = query.eq('status', status);
+            const { data, error } = await query;
+            if (error) throw error;
+            reviewJadwalData = data || [];
 
-                document.getElementById('rj-summary').style.display = 'grid';
-                document.getElementById('rj-kpi-total').innerText = reviewJadwalData.length;
-                document.getElementById('rj-kpi-planned').innerText = reviewJadwalData.filter(d => d.status === 'PLANNED').length;
-                document.getElementById('rj-kpi-confirmed').innerText = reviewJadwalData.filter(d => d.status === 'CONFIRMED').length;
-                document.getElementById('rj-table-card').style.display = 'block';
+            document.getElementById('rj-summary').style.display = 'grid';
+            document.getElementById('rj-kpi-total').innerText = reviewJadwalData.length;
+            document.getElementById('rj-kpi-planned').innerText = reviewJadwalData.filter(d => d.status === 'PLANNED').length;
+            document.getElementById('rj-kpi-confirmed').innerText = reviewJadwalData.filter(d => d.status === 'CONFIRMED').length;
+            document.getElementById('rj-table-card').style.display = 'block';
 
-                if (reviewJadwalData.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = reviewJadwalData.map(d => {
-                    const statusClass = `status-${d.status.toLowerCase()}`;
-                    let actionButtons = '';
-                    if (d.status === 'PLANNED') actionButtons = `<button class="btn btn-sm btn-success" onclick="openModalJadwal(${d.id}, 'CONFIRMED')">✓</button> <button class="btn btn-sm btn-danger" onclick="openModalJadwal(${d.id}, 'CANCELLED')">✗</button>`;
-                    else if (d.status === 'CONFIRMED') actionButtons = `<button class="btn btn-sm btn-primary" onclick="markAsCompleted(${d.id})">Done</button>`;
-                    
-                    return `<tr>
-                        <td data-label="Tanggal">${d.tanggal}</td>
-                        <td data-label="PIC">${d.pic?.username || '-'}</td>
-                        <td data-label="Counter">${d.counter?.nama_counter || '-'}</td>
-                        <td data-label="Tujuan">${d.catatan || '-'}</td>
-                        <td data-label="Status"><span class="status-badge ${statusClass}">${d.status}</span></td>
-                        <td data-label="Aksi">${actionButtons}</td>
-                    </tr>`;
-                }).join('');
-            } catch (e) { console.error(e); }
-        }
-        function openModalJadwal(id, action) {
-            document.getElementById('modal-jadwal').style.display = 'flex';
-            document.getElementById('modal-jadwal-id').value = id;
-            document.getElementById('modal-jadwal-action').value = action;
-            document.getElementById('modal-jadwal-confirm-fields').style.display = action === 'CONFIRMED' ? 'block' : 'none';
-            document.getElementById('modal-jadwal-cancel-fields').style.display = action === 'CANCELLED' ? 'block' : 'none';
-        }
-        function closeModalJadwal() { document.getElementById('modal-jadwal').style.display = 'none'; }
-        async function submitModalJadwal() {
-            const id = document.getElementById('modal-jadwal-id').value, action = document.getElementById('modal-jadwal-action').value;
-            let payload = { status: action };
-            if (action === 'CONFIRMED') payload.confirmed_by = document.getElementById('modal-jadwal-confirmed-by').value;
-            if (action === 'CANCELLED') {
-                const reason = document.getElementById('modal-jadwal-cancel-reason').value;
-                if(!reason) return alert("Alasan wajib!");
-                payload.cancel_reason = reason;
+            if (reviewJadwalData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>';
+                return;
             }
-            await db.from('jadwal').update(payload).eq('id', id);
-            closeModalJadwal(); loadReviewJadwal();
-        }
-        async function markAsCompleted(id) {
-            if(!confirm("Selesai?")) return;
-            await db.from('jadwal').update({ status: 'COMPLETED' }).eq('id', id);
-            loadReviewJadwal();
-        }
-        function exportReviewJadwalExcel() {
 
-    if (!reviewJadwalData || reviewJadwalData.length === 0) {
-        return alert("Tidak ada data untuk export");
-    }
-
-    const dataExcel = reviewJadwalData.map(d => ({
-        Tanggal: d.tanggal,
-        PIC: d.pic?.username || "",
-        Counter: d.counter?.nama_counter || "",
-        Tujuan: d.catatan || "",
-        Status: d.status
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataExcel);
-
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Review Jadwal"
-    );
-
-    XLSX.writeFile(
-        wb,
-        "Review_Jadwal.xlsx"
-    );
-}
-        function exportReviewJadwalPDF() {
-
-    if(reviewJadwalData.length === 0){
-        return alert("Tidak ada data");
-    }
-
-    const area = document.getElementById('rj-table-card');
-
-    const opt = {
-        margin:10,
-        filename:'Review_Jadwal.pdf',
-        image:{type:'jpeg', quality:0.98},
-        html2canvas:{scale:2},
-        jsPDF:{
-            unit:'mm',
-            format:'a4',
-            orientation:'landscape'
-        }
-    };
-
-    html2pdf()
-        .set(opt)
-        .from(area)
-        .save();
-}
-        function exportReviewJadwalExcel() {
-
-    if (!reviewJadwalData || reviewJadwalData.length === 0) {
-        return alert("Tidak ada data untuk export");
-    }
-
-    const dataExcel = reviewJadwalData.map(d => ({
-        Tanggal: d.tanggal,
-        PIC: d.pic?.username || "",
-        Counter: d.counter?.nama_counter || "",
-        Tujuan: d.catatan || "",
-        Status: d.status
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(dataExcel);
-
-    const wb = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Review Jadwal"
-    );
-
-    XLSX.writeFile(
-        wb,
-        "Review_Jadwal.xlsx"
-    );
-}
-
-        // --- IMPACT MAPPING ---
-        async function loadImpactMapping() {
-            if (currentUser.jabatan !== 'admin') return alert("Admin Only");
-            const { data } = await db.from('master_impact_mapping').select('*').order('id', {ascending: false});
-            masterImpactData = data || [];
-            const tbody = document.getElementById('tb-impact-mapping');
-            tbody.innerHTML = masterImpactData.map(item => `<tr>
-                <td data-label="Driver">${item.root_driver}</td>
-                <td data-label="Cat">${item.impact_category}</td>
-                <td data-label="Metric">${item.impact_metric}</td>
-                <td data-label="Weight">${item.severity_weight}</td>
-                <td data-label="Status">${item.active ? 'Active' : 'Inactive'}</td>
-                <td data-label="Aksi"><button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">Toggle</button></td>
-            </tr>`).join('');
-        }
-        async function addImpactMapping() {
-            if (currentUser.jabatan !== 'admin') return alert("Admin Only");
-            await db.from('master_impact_mapping').insert({
-                root_driver: document.getElementById('im-driver').value,
-                impact_category: document.getElementById('im-category').value,
-                impact_metric: document.getElementById('im-metric').value,
-                severity_weight: parseInt(document.getElementById('im-weight').value)
-            });
-            loadImpactMapping();
-        }
-        async function toggleImpactStatus(id, status) {
-            await db.from('master_impact_mapping').update({ active: status }).eq('id', id);
-            loadImpactMapping();
-        }
-
-        // --- VISITING (PERBAIKAN: amBIL DARI TABEL BARU) ---
-        async function startVisiting() {
-            const obj = { tanggal: document.getElementById('v-tgl').value, jam_mulai: document.getElementById('v-jam').value, pic_id: document.getElementById('v-pic').value, counter_id: document.getElementById('v-counter').value };
-            if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Lengkapi data!");
-            const { data } = await db.from('visiting').insert(obj).select();
-            currentVisitingId = data[0].id;
-            
-            // PERBAIKAN: Mengambil dari tabel 'master_4p' (hasil rename)
-            const { data: cl } = await db.from('master_4p').select('*');
-            if(!cl) return alert("Data 4P kosong");
-
-            const groupedData = cl.reduce((group, item) => {
-                // PERBAIKAN: Mengambil dari kolom 'kategori_4p' (hasil rename)
-                const category = item['kategori_4p'] || 'LAINNYA';
-                if (!group[category]) group[category] = [];
-                group[category].push(item);
-                return group;
-            }, {});
-
-            const tabsEl = document.getElementById('tabs-4p-container'), containerEl = document.getElementById('tab-4p-content-container');
-            tabsEl.innerHTML = ''; containerEl.innerHTML = '';
-            let isFirst = true;
-
-            for (const [category, items] of Object.entries(groupedData)) {
-                const safeCatId = category.replace(/[^a-zA-Z0-9]/g, '-');
-                tabsEl.innerHTML += `<button class="btn btn-sm ${isFirst ? 'btn-primary' : 'btn-warning'}" onclick="switchTab4P('tab4p-${safeCatId}', this)">${category}</button>`;
+            tbody.innerHTML = reviewJadwalData.map(d => {
+                const statusClass = `status-${d.status.toLowerCase()}`;
+                let actionButtons = '';
+                if (d.status === 'PLANNED') actionButtons = `<button class="btn btn-sm btn-success" onclick="openModalJadwal(${d.id}, 'CONFIRMED')">✓</button> <button class="btn btn-sm btn-danger" onclick="openModalJadwal(${d.id}, 'CANCELLED')">✗</button>`;
+                else if (d.status === 'CONFIRMED') actionButtons = `<button class="btn btn-sm btn-primary" onclick="markAsCompleted(${d.id})">Done</button>`;
                 
-                let htmlItems = '';
-                items.forEach(c => {
-                    htmlItems += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian_4p']}</small></div>
-                            <select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)">
-                                <option value="Pass">Pass</option><option value="Fail">Fail</option>
-                            </select>
-                        </div>
-                        <div class="fail-foto-area" style="display:none; margin-top:5px;">
-                            <input type="file" accept="image/*" class="fail-foto-input" style="font-size:11px;">
-                        </div>
-                    </div>`;
-                });
-                containerEl.innerHTML += `<div id="tab4p-${safeCatId}" style="display:${isFirst?'block':'none'}">${htmlItems}</div>`;
-                isFirst = false;
-            }
-            document.getElementById('visiting-form-card').style.display = 'none';
-            document.getElementById('checklist-area').style.display = 'block';
+                return `<tr>
+                    <td data-label="Tanggal">${d.tanggal}</td>
+                    <td data-label="PIC">${d.pic?.username || '-'}</td>
+                    <td data-label="Counter">${d.counter?.nama_counter || '-'}</td>
+                    <td data-label="Tujuan">${d.catatan || '-'}</td>
+                    <td data-label="Status"><span class="status-badge ${statusClass}">${d.status}</span></td>
+                    <td data-label="Aksi">${actionButtons}</td>
+                </tr>`;
+            }).join('');
+        } catch (e) { console.error(e); }
+    }
+    function openModalJadwal(id, action) {
+        document.getElementById('modal-jadwal').style.display = 'flex';
+        document.getElementById('modal-jadwal-id').value = id;
+        document.getElementById('modal-jadwal-action').value = action;
+        document.getElementById('modal-jadwal-confirm-fields').style.display = action === 'CONFIRMED' ? 'block' : 'none';
+        document.getElementById('modal-jadwal-cancel-fields').style.display = action === 'CANCELLED' ? 'block' : 'none';
+    }
+    function closeModalJadwal() { document.getElementById('modal-jadwal').style.display = 'none'; }
+    async function submitModalJadwal() {
+        const id = document.getElementById('modal-jadwal-id').value, action = document.getElementById('modal-jadwal-action').value;
+        let payload = { status: action };
+        if (action === 'CONFIRMED') payload.confirmed_by = document.getElementById('modal-jadwal-confirmed-by').value;
+        if (action === 'CANCELLED') {
+            const reason = document.getElementById('modal-jadwal-cancel-reason').value;
+            if(!reason) return alert("Alasan wajib!");
+            payload.cancel_reason = reason;
         }
-        function switchTab4P(tabId, el) {
-            document.querySelectorAll('#tab-4p-content-container > div').forEach(c => c.style.display = 'none');
-            document.getElementById(tabId).style.display = 'block';
-            Array.from(el.parentElement.children).forEach(b => b.className = 'btn btn-sm btn-warning');
-            el.className = 'btn btn-sm btn-primary';
-        }
-        function toggleFailFoto(selectEl) {
-            const area = selectEl.parentElement.nextElementSibling;
-            area.style.display = selectEl.value === 'Fail' ? 'block' : 'none';
-        }
-        async function submitChecklist() {
-            if(!currentVisitingId) return;
-            const selects = document.querySelectorAll('.status-cek');
-            const payloadsDetail = [], payloadsAction = [];
-            
-            for(let sel of selects) {
-                const status = sel.value, itemName = sel.dataset.item;
-                let photoUrl = null;
-                if(status === 'Fail') {
-                    const fileInput = sel.parentElement.nextElementSibling.querySelector('.fail-foto-input');
-                    if(fileInput && fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        const fileName = `${currentVisitingId}_${Date.now()}_${file.name}`;
-                        await db.storage.from('visit-fotos').upload(fileName, file);
-                        const { data: urlData } = db.storage.from('visit-fotos').getPublicUrl(fileName);
-                        photoUrl = urlData.publicUrl;
-                    }
-                    payloadsAction.push({ visiting_id: currentVisitingId, sumber_masalah: 'Visiting 4P', masalah: `FAIL: ${itemName}`, foto_before: photoUrl||'', status_action: 'Open', tindakan: '-' });
-                }
-                // Insert ke tabel visiting_detail yang baru dibuat
-                payloadsDetail.push({ visiting_id: currentVisitingId, item_name: itemName, status: status, foto_url: photoUrl||'' });
-            }
-
-            if(payloadsDetail.length) await db.from('visiting_detail').insert(payloadsDetail);
-            if(payloadsAction.length) await db.from('visiting_action').insert(payloadsAction);
-            
-            alert("✅ Tersimpan!");
-            document.getElementById('visiting-form-card').style.display = 'block';
-            document.getElementById('checklist-area').style.display = 'none';
-            loadDashboard();
-        }
-
-        // --- ACTION PLAN ---
-        function switchActionTab(tabId, btnEl) {
-            document.querySelectorAll('#page-action .tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('#page-action .tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            btnEl.classList.add('active');
-        }
-        async function openActionPage() {
-            document.getElementById('action-form-card').style.display = 'none';
-            document.getElementById('action-form-empty').style.display = 'block';
-            await loadOpenActions();
-            await loadValidasiActions();
-        }
-        async function loadOpenActions() {
-            const { data } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('id', { ascending: false });
-            const tb = document.getElementById('tb-open');
-            tb.innerHTML = data && data.length ? data.map(d => `<tr>
-                <td data-label="Sumber">${d.sumber_masalah}</td>
-                <td data-label="Masalah">${d.masalah}</td>
-                <td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td>
-            </tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">Zonk</td></tr>';
-        }
-        function openActionForm(id, masalah) {
-            switchActionTab('tab-form', document.querySelectorAll('#page-action .tab-btn')[1]);
-            document.getElementById('action-form-card').style.display = 'block';
-            document.getElementById('action-form-empty').style.display = 'none';
-            document.getElementById('action-id-target').value = id;
-            document.getElementById('action-masalah-text').innerText = masalah;
-        }
-        function cancelActionForm() {
-            document.getElementById('action-form-card').style.display = 'none';
-            document.getElementById('action-form-empty').style.display = 'block';
-            switchActionTab('tab-open', document.querySelectorAll('#page-action .tab-btn')[0]);
-        }
-        async function submitActionPlan() {
-            const id = document.getElementById('action-id-target').value;
-            await db.from('visiting_action').update({ tindakan: document.getElementById('action-tindakan').value, due_date: document.getElementById('action-due').value, status_action: 'On-Progress' }).eq('id', id);
-            alert("Saved!"); cancelActionForm(); loadOpenActions(); loadValidasiActions();
-        }
-        async function loadValidasiActions() {
-            const { data } = await db.from('visiting_action').select('*').eq('status_action', 'On-Progress');
-            const tb = document.getElementById('tb-validasi');
-            tb.innerHTML = data && data.length ? data.map(d => `<tr>
-                <td data-label="Masalah">${d.masalah}</td>
-                <td data-label="Tindakan">${d.tindakan}</td>
-                <td data-label="Due">${d.due_date}</td>
-                <td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td>
-            </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
-        }
-        async function closeAction(id) {
-            await db.from('visiting_action').update({ status_action: 'Done' }).eq('id', id);
-            loadValidasiActions();
-        }
-
-        // --- ISSUES & BR ---
-        async function submitCustIssue() {
-            const obj = { tanggal: new Date().toISOString().split('T')[0], pic_id: document.getElementById('ci-pic').value, counter_id: document.getElementById('ci-counter').value, keluhan: document.getElementById('ci-keluhan').value };
-            if(!obj.pic_id || !obj.keluhan) return alert("Isi semua!");
-            await db.from('cust_issue').insert(obj);
-            await db.from('visiting_action').insert({ sumber_masalah: 'Cust Issue', masalah: "Keluhan: " + obj.keluhan, tindakan: '-', status_action: 'Open' });
-            alert("Issue Tersimpan!"); document.getElementById('ci-keluhan').value = '';
-        }
-        async function submitPendingReq() { 
-            await db.from('pending_request').insert({ tanggal_req: new Date().toISOString().split('T')[0], kategori_req: document.getElementById('pr-kat').value, detail_req: document.getElementById('pr-detail').value, due_date: document.getElementById('pr-due').value }); 
-            alert("Request Diajukan!"); 
-        }
-
-        async function generateBRAuto() {
-            const start = document.getElementById('br-start').value, end = document.getElementById('br-end').value;
-            if(!start || !end) return alert("Periode wajib!");
-            document.getElementById('br-output-area').style.display = 'block';
-            
-            document.getElementById('br-kpi-score').innerText = "120";
-            document.getElementById('br-kpi-category').innerText = "Sales";
-            document.getElementById('br-auto-narrative').innerHTML = "Analisis menunjukkan dampak tinggi pada kategori Sales. Root driver utama adalah Stock Kosong.";
-            document.getElementById('br-top-drivers-list').innerHTML = `<div>1. Stock Kosong (Score: 50)</div><div>2. Display Buruk (Score: 30)</div>`;
-        }
-        async function saveBRSnapshot() { alert("Snapshot Saved!"); }
-        async function loadBRHistory() {
-             const tbody = document.getElementById('tb-br-history');
-             tbody.innerHTML = `<tr><td data-label="Periode">Agustus 2026</td><td data-label="Score">120</td><td data-label="Dominan">Sales</td><td data-label="Aksi"><button class="btn btn-sm btn-primary">View</button></td></tr>`;
-        }
-        function exportBRPDF() { alert("Exporting PDF..."); }
-        function exportReviewJadwalWA(){
-
-    if (!reviewJadwalData || reviewJadwalData.length === 0){
-        return alert("Tidak ada data");
+        await db.from('jadwal').update(payload).eq('id', id);
+        closeModalJadwal(); loadReviewJadwal();
+    }
+    async function markAsCompleted(id) {
+        if(!confirm("Selesai?")) return;
+        await db.from('jadwal').update({ status: 'COMPLETED' }).eq('id', id);
+        loadReviewJadwal();
     }
 
-    let text = `📋 *REVIEW JADWAL VISIT SOIS*\n\n`;
+    // [FIX KODE DUPLIKAT] Hanya satu definisi exportReviewJadwalExcel
+    function exportReviewJadwalExcel() {
+        if (!reviewJadwalData || reviewJadwalData.length === 0) {
+            return alert("Tidak ada data untuk export");
+        }
 
-    reviewJadwalData.forEach((d,i)=>{
-        text += `${i+1}. ${d.tanggal}
-PIC : ${d.pic?.username || '-'}
-Counter : ${d.counter?.nama_counter || '-'}
-Status : ${d.status}
+        const dataExcel = reviewJadwalData.map(d => ({
+            Tanggal: d.tanggal,
+            PIC: d.pic?.username || "",
+            Counter: d.counter?.nama_counter || "",
+            Tujuan: d.catatan || "",
+            Status: d.status
+        }));
 
-`;
-    });
+        const ws = XLSX.utils.json_to_sheet(dataExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Review Jadwal");
+        XLSX.writeFile(wb, "Review_Jadwal.xlsx");
+    }
 
-    const url =
-    "https://wa.me/?text=" + encodeURIComponent(text);
+    function exportReviewJadwalPDF() {
+        if(reviewJadwalData.length === 0){
+            return alert("Tidak ada data");
+        }
 
-    window.open(url, "_blank");
-}
+        const area = document.getElementById('rj-table-card');
+        const opt = {
+            margin:10,
+            filename:'Review_Jadwal.pdf',
+            image:{type:'jpeg', quality:0.98},
+            html2canvas:{scale:2},
+            jsPDF:{unit:'mm', format:'a4', orientation:'landscape'}
+        };
+        html2pdf().set(opt).from(area).save();
+    }
 
-    </script>
+    async function loadImpactMapping() {
+        if (currentUser.jabatan !== 'admin') return alert("Admin Only");
+        const { data } = await db.from('master_impact_mapping').select('*').order('id', {ascending: false});
+        masterImpactData = data || [];
+        const tbody = document.getElementById('tb-impact-mapping');
+        tbody.innerHTML = masterImpactData.map(item => `<tr>
+            <td data-label="Driver">${item.root_driver}</td>
+            <td data-label="Cat">${item.impact_category}</td>
+            <td data-label="Metric">${item.impact_metric}</td>
+            <td data-label="Weight">${item.severity_weight}</td>
+            <td data-label="Status">${item.active ? 'Active' : 'Inactive'}</td>
+            <td data-label="Aksi"><button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">Toggle</button></td>
+        </tr>`).join('');
+    }
+    async function addImpactMapping() {
+        if (currentUser.jabatan !== 'admin') return alert("Admin Only");
+        await db.from('master_impact_mapping').insert({
+            root_driver: document.getElementById('im-driver').value,
+            impact_category: document.getElementById('im-category').value,
+            impact_metric: document.getElementById('im-metric').value,
+            severity_weight: parseInt(document.getElementById('im-weight').value)
+        });
+        loadImpactMapping();
+    }
+    async function toggleImpactStatus(id, status) {
+        await db.from('master_impact_mapping').update({ active: status }).eq('id', id);
+        loadImpactMapping();
+    }
+
+    async function startVisiting() {
+        const obj = { tanggal: document.getElementById('v-tgl').value, jam_mulai: document.getElementById('v-jam').value, pic_id: document.getElementById('v-pic').value, counter_id: document.getElementById('v-counter').value };
+        if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Lengkapi data!");
+        const { data } = await db.from('visiting').insert(obj).select();
+        currentVisitingId = data[0].id;
+        
+        const { data: cl } = await db.from('master_4p').select('*');
+        if(!cl) return alert("Data 4P kosong");
+
+        const groupedData = cl.reduce((group, item) => {
+            const category = item['kategori_4p'] || 'LAINNYA';
+            if (!group[category]) group[category] = [];
+            group[category].push(item);
+            return group;
+        }, {});
+
+        const tabsEl = document.getElementById('tabs-4p-container'), containerEl = document.getElementById('tab-4p-content-container');
+        tabsEl.innerHTML = ''; containerEl.innerHTML = '';
+        let isFirst = true;
+
+        for (const [category, items] of Object.entries(groupedData)) {
+            const safeCatId = category.replace(/[^a-zA-Z0-9]/g, '-');
+            tabsEl.innerHTML += `<button class="btn btn-sm ${isFirst ? 'btn-primary' : 'btn-warning'}" onclick="switchTab4P('tab4p-${safeCatId}', this)">${category}</button>`;
+            
+            let htmlItems = '';
+            items.forEach(c => {
+                htmlItems += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian_4p']}</small></div>
+                        <select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)">
+                            <option value="Pass">Pass</option><option value="Fail">Fail</option>
+                        </select>
+                    </div>
+                    <div class="fail-foto-area" style="display:none; margin-top:5px;">
+                        <input type="file" accept="image/*" class="fail-foto-input" style="font-size:11px;">
+                    </div>
+                </div>`;
+            });
+            containerEl.innerHTML += `<div id="tab4p-${safeCatId}" style="display:${isFirst?'block':'none'}">${htmlItems}</div>`;
+            isFirst = false;
+        }
+        document.getElementById('visiting-form-card').style.display = 'none';
+        document.getElementById('checklist-area').style.display = 'block';
+    }
+    function switchTab4P(tabId, el) {
+        document.querySelectorAll('#tab-4p-content-container > div').forEach(c => c.style.display = 'none');
+        document.getElementById(tabId).style.display = 'block';
+        Array.from(el.parentElement.children).forEach(b => b.className = 'btn btn-sm btn-warning');
+        el.className = 'btn btn-sm btn-primary';
+    }
+    function toggleFailFoto(selectEl) {
+        const area = selectEl.parentElement.nextElementSibling;
+        area.style.display = selectEl.value === 'Fail' ? 'block' : 'none';
+    }
+
+    // [FIX VALIDASI & STORAGE] Validasi checklist + Sanitasi nama file foto
+    async function submitChecklist() {
+        if(!currentVisitingId) return;
+        
+        const selects = document.querySelectorAll('.status-cek');
+        
+        // Validasi: Blokir jika tidak ada item yang dicek
+        if(selects.length === 0) {
+            return alert("Tidak ada item checklist yang dimuat. Silakan refresh atau cek koneksi.");
+        }
+
+        const payloadsDetail = [], payloadsAction = [];
+        
+        for(let sel of selects) {
+            const status = sel.value, itemName = sel.dataset.item;
+            let photoUrl = null;
+            if(status === 'Fail') {
+                const fileInput = sel.parentElement.nextElementSibling.querySelector('.fail-foto-input');
+                if(fileInput && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    
+                    // Sanitasi nama file: hanya alphanumeric, underscore, dot + timestamp unik
+                    const sanitizedBaseName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const fileName = `${currentVisitingId}_${Date.now()}_${sanitizedBaseName}`;
+                    
+                    const { error: uploadErr } = await db.storage.from('visit-fotos').upload(fileName, file);
+                    if(uploadErr) {
+                        console.error("Upload gagal:", uploadErr);
+                        return alert(`Gagal upload foto untuk "${itemName}". Coba lagi.`);
+                    }
+                    
+                    const { data: urlData } = db.storage.from('visit-fotos').getPublicUrl(fileName);
+                    photoUrl = urlData.publicUrl;
+                }
+                payloadsAction.push({ visiting_id: currentVisitingId, sumber_masalah: 'Visiting 4P', masalah: `FAIL: ${itemName}`, foto_before: photoUrl||'', status_action: 'Open', tindakan: '-' });
+            }
+            payloadsDetail.push({ visiting_id: currentVisitingId, item_name: itemName, status: status, foto_url: photoUrl||'' });
+        }
+
+        if(payloadsDetail.length) await db.from('visiting_detail').insert(payloadsDetail);
+        if(payloadsAction.length) await db.from('visiting_action').insert(payloadsAction);
+        
+        alert("✅ Tersimpan!");
+        document.getElementById('visiting-form-card').style.display = 'block';
+        document.getElementById('checklist-area').style.display = 'none';
+        loadDashboard();
+    }
+
+    function switchActionTab(tabId, btnEl) {
+        document.querySelectorAll('#page-action .tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('#page-action .tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btnEl.classList.add('active');
+    }
+    async function openActionPage() {
+        document.getElementById('action-form-card').style.display = 'none';
+        document.getElementById('action-form-empty').style.display = 'block';
+        await loadOpenActions();
+        await loadValidasiActions();
+    }
+    async function loadOpenActions() {
+        const { data } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('id', { ascending: false });
+        const tb = document.getElementById('tb-open');
+        tb.innerHTML = data && data.length ? data.map(d => `<tr>
+            <td data-label="Sumber">${d.sumber_masalah}</td>
+            <td data-label="Masalah">${d.masalah}</td>
+            <td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td>
+        </tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">Zonk</td></tr>';
+    }
+    function openActionForm(id, masalah) {
+        switchActionTab('tab-form', document.querySelectorAll('#page-action .tab-btn')[1]);
+        document.getElementById('action-form-card').style.display = 'block';
+        document.getElementById('action-form-empty').style.display = 'none';
+        document.getElementById('action-id-target').value = id;
+        document.getElementById('action-masalah-text').innerText = masalah;
+    }
+    function cancelActionForm() {
+        document.getElementById('action-form-card').style.display = 'none';
+        document.getElementById('action-form-empty').style.display = 'block';
+        switchActionTab('tab-open', document.querySelectorAll('#page-action .tab-btn')[0]);
+    }
+    async function submitActionPlan() {
+        const id = document.getElementById('action-id-target').value;
+        await db.from('visiting_action').update({ tindakan: document.getElementById('action-tindakan').value, due_date: document.getElementById('action-due').value, status_action: 'On-Progress' }).eq('id', id);
+        alert("Saved!"); cancelActionForm(); loadOpenActions(); loadValidasiActions();
+    }
+    async function loadValidasiActions() {
+        const { data } = await db.from('visiting_action').select('*').eq('status_action', 'On-Progress');
+        const tb = document.getElementById('tb-validasi');
+        tb.innerHTML = data && data.length ? data.map(d => `<tr>
+            <td data-label="Masalah">${d.masalah}</td>
+            <td data-label="Tindakan">${d.tindakan}</td>
+            <td data-label="Due">${d.due_date}</td>
+            <td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td>
+        </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">Zonk</td></tr>';
+    }
+    async function closeAction(id) {
+        await db.from('visiting_action').update({ status_action: 'Done' }).eq('id', id);
+        loadValidasiActions();
+    }
+
+    async function submitCustIssue() {
+        const obj = { tanggal: new Date().toISOString().split('T')[0], pic_id: document.getElementById('ci-pic').value, counter_id: document.getElementById('ci-counter').value, keluhan: document.getElementById('ci-keluhan').value };
+        if(!obj.pic_id || !obj.keluhan) return alert("Isi semua!");
+        await db.from('cust_issue').insert(obj);
+        await db.from('visiting_action').insert({ sumber_masalah: 'Cust Issue', masalah: "Keluhan: " + obj.keluhan, tindakan: '-', status_action: 'Open' });
+        alert("Issue Tersimpan!"); document.getElementById('ci-keluhan').value = '';
+    }
+    async function submitPendingReq() { 
+        await db.from('pending_request').insert({ tanggal_req: new Date().toISOString().split('T')[0], kategori_req: document.getElementById('pr-kat').value, detail_req: document.getElementById('pr-detail').value, due_date: document.getElementById('pr-due').value }); 
+        alert("Request Diajukan!"); 
+    }
+
+    // [FIX BUSINESS REVIEW] Kalkulasi real-time dari DB, bukan hardcoded
+    async function generateBRAuto() {
+        const start = document.getElementById('br-start').value;
+        const end = document.getElementById('br-end').value;
+        const picId = document.getElementById('br-pic').value;
+        const counterId = document.getElementById('br-counter').value;
+
+        if(!start || !end) return alert("Periode wajib diisi!");
+
+        document.getElementById('br-output-area').style.display = 'block';
+        document.getElementById('br-auto-narrative').innerHTML = '⏳ Menghitung dampak bisnis...';
+        document.getElementById('br-top-drivers-list').innerHTML = '';
+        document.getElementById('br-kpi-score').innerText = '-';
+        document.getElementById('br-kpi-category').innerText = '-';
+
+        try {
+            // 1. Ambil semua action dalam periode (via join ke visiting)
+            let actionQuery = db.from('visiting_action')
+                .select('*, visiting!inner(tanggal, pic_id, counter_id)')
+                .gte('visiting.tanggal', start)
+                .lte('visiting.tanggal', end);
+            
+            if (picId) actionQuery = actionQuery.eq('visiting.pic_id', picId);
+            if (counterId) actionQuery = actionQuery.eq('visiting.counter_id', counterId);
+
+            const { data: actions, error: actErr } = await actionQuery;
+            if (actErr) throw actErr;
+
+            // 2. Ambil master impact mapping yang aktif
+            const { data: mappings, error: mapErr } = await db.from('master_impact_mapping').select('*').eq('active', true);
+            if (mapErr) throw mapErr;
+
+            if (!actions || actions.length === 0) {
+                document.getElementById('br-auto-narrative').innerHTML = '✅ Tidak ditemukan issue pada periode ini. Performa sangat baik!';
+                document.getElementById('br-kpi-score').innerText = '0';
+                document.getElementById('br-kpi-category').innerText = 'Aman';
+                return;
+            }
+
+            // 3. Hitung score per kategori berdasarkan root_driver matching
+            const categoryScores = {};
+            const driverCounts = {};
+
+            actions.forEach(action => {
+                const masalahLower = (action.masalah || '').toLowerCase();
+                
+                mappings.forEach(mapping => {
+                    const driverLower = (mapping.root_driver || '').toLowerCase();
+                    if (driverLower && masalahLower.includes(driverLower)) {
+                        const cat = mapping.impact_category || 'Uncategorized';
+                        const weight = mapping.severity_weight || 1;
+                        
+                        categoryScores[cat] = (categoryScores[cat] || 0) + weight;
+                        driverCounts[mapping.root_driver] = (driverCounts[mapping.root_driver] || 0) + 1;
+                    }
+                });
+            });
+
+            // 4. Tentukan total score dan kategori dominan
+            const totalScore = Object.values(categoryScores).reduce((a, b) => a + b, 0);
+            const dominantCategory = Object.entries(categoryScores).sort((a, b) => b[1] - a[1])[0];
+            const topDrivers = Object.entries(driverCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            // 5. Render hasil
+            document.getElementById('br-kpi-score').innerText = totalScore;
+            document.getElementById('br-kpi-category').innerText = dominantCategory ? dominantCategory[0] : 'N/A';
+
+            const totalActions = actions.length;
+            const narrative = `Pada periode <b>${start}</b> s/d <b>${end}</b>, tercatat <b>${totalActions} issue</b> dengan total risk score <b>${totalScore}</b>. ` +
+                `Kategori paling terdampak adalah <b>${dominantCategory ? dominantCategory[0] : '-'}</b> dengan skor ${dominantCategory ? dominantCategory[1] : 0}. ` +
+                `Diperlukan fokus perbaikan pada root driver berikut:`;
+            
+            document.getElementById('br-auto-narrative').innerHTML = narrative;
+
+            document.getElementById('br-top-drivers-list').innerHTML = topDrivers.length > 0
+                ? topDrivers.map((d, i) => `<div style="padding:6px 0; border-bottom:1px solid #eee;">${i + 1}. <b>${d[0]}</b> (${d[1]} kejadian)</div>`).join('')
+                : '<div style="color:var(--text-sec);">Tidak ada root driver yang cocok dengan Impact Mapping.</div>';
+
+            // Simpan untuk snapshot/export
+            currentBRData = { start, end, totalScore, dominantCategory: dominantCategory?.[0] || '-', narrative, topDrivers, totalActions };
+
+        } catch (e) {
+            console.error("BR Error:", e);
+            document.getElementById('br-auto-narrative').innerHTML = `❌ Gagal menghitung: ${e.message}`;
+        }
+    }
+
+    async function saveBRSnapshot() { 
+        if (!currentBRData) return alert("Generate analisis terlebih dahulu!");
+        try {
+            await db.from('br_snapshot').insert({
+                periode_start: currentBRData.start,
+                periode_end: currentBRData.end,
+                risk_score: currentBRData.totalScore,
+                dominant_category: currentBRData.dominantCategory,
+                narrative: currentBRData.narrative,
+                created_by: currentUser.username
+            });
+            alert("Snapshot tersimpan!");
+            loadBRHistory();
+        } catch (e) {
+            alert("Gagal simpan snapshot: " + e.message);
+        }
+    }
+
+    async function loadBRHistory() {
+        const tbody = document.getElementById('tb-br-history');
+        try {
+            const { data, error } = await db.from('br_snapshot').select('*').order('id', { ascending: false }).limit(20);
+            if (error) throw error;
+            
+            tbody.innerHTML = data && data.length ? data.map(d => `<tr>
+                <td data-label="Periode">${d.periode_start} s/d ${d.periode_end}</td>
+                <td data-label="Score">${d.risk_score}</td>
+                <td data-label="Dominan">${d.dominant_category}</td>
+                <td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="alert('Detail snapshot ID: ${d.id}')">View</button></td>
+            </tr>`).join('') : '<tr><td colspan="4" style="text-align:center; padding:20px;">Belum ada history</td></tr>';
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat history</td></tr>';
+        }
+    }
+
+    function exportBRPDF() { 
+        if (!currentBRData) return alert("Generate analisis terlebih dahulu!");
+        const element = document.getElementById('br-narrative-content');
+        const opt = { margin: 10, filename: `BR_${currentBRData.start}_${currentBRData.end}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }; 
+        html2pdf().set(opt).from(element).save(); 
+    }
+
+    function exportReviewJadwalWA(){
+        if (!reviewJadwalData || reviewJadwalData.length === 0){
+            return alert("Tidak ada data");
+        }
+
+        let text = `📋 *REVIEW JADWAL VISIT SOIS*\n\n`;
+        reviewJadwalData.forEach((d,i)=>{
+            text += `${i+1}. ${d.tanggal}\nPIC : ${d.pic?.username || '-'}\nCounter : ${d.counter?.nama_counter || '-'}\nStatus : ${d.status}\n\n`;
+        });
+
+        const url = "https://wa.me/?text=" + encodeURIComponent(text);
+        window.open(url, "_blank");
+    }
+</script>
 </body>
 </html>
