@@ -10,230 +10,265 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
+    <!-- Modern Font 2026 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
+        /* =========================================
+           MODERN 2026 THEME SYSTEM — WIREFRAME MATCH
+           ========================================= */
         :root {
-            --primary: #4f46e5; --primary-dark: #4338ca; --bg-main: #f8fafc;
-            --white: #ffffff; --text-main: #1e293b; --text-sec: #64748b;
-            --border: #e2e8f0; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --primary: #4F46E5;       /* Muted Indigo (wireframe match) */
+            --primary-dark: #3730A3;  /* Deep Indigo */
+            --accent: #84cc16;        /* Bio-Lime */
+            
+            --bg-main: #F5F5F7;       /* Warm Gray (wireframe match) */
+            --surface: #ffffff;
+            --text-main: #1F2937;     /* Soft Charcoal (wireframe match) */
+            --text-sec: #6B7280;      /* Gray 500 */
+            --border: #E5E7EB;        /* Thin Gray 200 */
+            
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            
+            /* Diffused Shadow System — muted indigo tint */
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-sm: 0 2px 8px -2px rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px -8px rgba(79, 70, 229, 0.15);
+            
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-pill: 999px;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif; 
             background-color: var(--bg-main); 
             color: var(--text-main); 
             display: flex; 
             height: 100vh; 
             overflow: hidden; 
             font-size: 14px;
+            letter-spacing: -0.01em;
         }
         
+        /* SIDEBAR DESKTOP */
         .sidebar { 
-            width: 240px; 
-            background: var(--white); 
+            width: 260px; 
+            background: var(--surface); 
             border-right: 1px solid var(--border); 
             display: flex; 
             flex-direction: column; 
             transition: all 0.3s ease;
         }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
-        .sidebar-header h2 { color: var(--primary); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-        .sidebar-header p { font-size: 12px; color: var(--text-sec); margin-top: 4px; }
+        .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border); }
+        .sidebar-header h2 { color: var(--primary); font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+        .sidebar-header p { font-size: 12px; color: var(--text-sec); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;}
         
-        .nav-menu { flex: 1; padding: 15px; overflow-y: auto; }
+        .nav-menu { flex: 1; padding: 16px; overflow-y: auto; }
         .nav-item { 
-            padding: 10px 12px; 
+            padding: 12px 16px; 
             margin-bottom: 4px; 
-            border-radius: 8px; 
+            border-radius: var(--radius-sm); 
             color: var(--text-sec); 
             cursor: pointer; 
             font-size: 14px; 
-            font-weight: 500; 
+            font-weight: 600; 
             display: flex; 
             align-items: center; 
             gap: 12px; 
-            transition: 0.2s; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        .nav-item:hover, .nav-item.active { background: #eef2ff; color: var(--primary); }
+        .nav-item:hover { background: #EEF2FF; color: var(--primary); transform: translateX(4px); }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: var(--shadow-md); }
         
+        /* MAIN CONTENT AREA */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .topbar { 
-            background: var(--white); 
-            padding: 15px 20px; 
+            background: rgba(255,255,255,0.85); 
+            backdrop-filter: blur(12px);
+            padding: 16px 24px; 
             border-bottom: 1px solid var(--border); 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            height: 60px;
+            height: 70px;
+            z-index: 10;
         }
-        .topbar h1 { font-size: 18px; font-weight: 600; }
-        .content-area { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 80px; }
+        .topbar h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+        .content-area { flex: 1; padding: 24px; overflow-y: auto; padding-bottom: 100px; scroll-behavior: smooth; }
         
-        .page { display: none; animation: fadeIn 0.2s ease-in-out; } 
+        .page { display: none; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); } 
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* CARDS & CONTAINERS */
         .card { 
-            background: var(--white); 
-            border-radius: 12px; 
-            padding: 20px; 
+            background: var(--surface); 
+            border-radius: var(--radius-md); 
+            padding: 24px; 
             box-shadow: var(--shadow-sm); 
-            margin-bottom: 16px; 
-            border: 1px solid var(--border); 
+            margin-bottom: 20px; 
+            border: 1px solid rgba(229, 231, 235, 0.6); 
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        .card:hover { box-shadow: var(--shadow-md); }
         .card-title { 
             font-size: 16px; 
-            font-weight: 600; 
-            margin-bottom: 16px; 
-            padding-bottom: 10px; 
-            border-bottom: 1px solid var(--bg-main); 
+            font-weight: 700; 
+            margin-bottom: 20px; 
+            padding-bottom: 12px; 
+            border-bottom: 1px solid var(--border); 
             color: var(--text-main);
+            letter-spacing: -0.01em;
         }
         
+        /* KPI GRID */
         .grid-kpi { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 12px; 
-            margin-bottom: 20px; 
+            gap: 16px; 
+            margin-bottom: 24px; 
         }
         .kpi-card { 
-            background: var(--white); 
-            padding: 16px; 
-            border-radius: 10px; 
-            border-left: 4px solid var(--primary); 
-            box-shadow: var(--shadow-sm); 
+            background: var(--surface); 
+            padding: 20px; 
+            border-radius: var(--radius-md); 
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-xs); 
+            position: relative;
+            overflow: hidden;
         }
-        .kpi-card h3 { font-size: 24px; margin-bottom: 4px; font-weight: 700; }
-        .kpi-card p { font-size: 11px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--primary);
+        }
+        .kpi-card h3 { 
+            font-size: 32px; 
+            margin-bottom: 4px; 
+            font-weight: 800; 
+            letter-spacing: -0.03em; 
+            line-height: 1;
+        }
+        .kpi-card p { font-size: 11px; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
         
-        .kpi-success { border-left-color: var(--success); } .kpi-success h3 { color: var(--success); }
-        .kpi-danger { border-left-color: var(--danger); } .kpi-danger h3 { color: var(--danger); }
-        .kpi-warning { border-left-color: var(--warning); } .kpi-warning h3 { color: var(--warning); }
+        .kpi-success::before { background: var(--success); } .kpi-success h3 { color: var(--success); }
+        .kpi-danger::before { background: var(--danger); } .kpi-danger h3 { color: var(--danger); }
+        .kpi-warning::before { background: var(--warning); } .kpi-warning h3 { color: var(--warning); }
         
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-sec); }
+        /* FORMS */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.05em; }
         .form-control { 
             width: 100%; 
-            padding: 10px 12px; 
+            padding: 12px 16px; 
             border: 1px solid var(--border); 
-            border-radius: 8px; 
+            border-radius: var(--radius-sm); 
             font-size: 14px; 
             outline: none; 
-            transition: 0.2s;
-            background: #fff;
+            transition: all 0.2s;
+            background: var(--surface);
+            font-family: inherit;
         }
-        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12); }
         
+        /* BUTTONS 2026 STYLE */
         .btn { 
-            padding: 10px 16px; 
+            padding: 12px 24px; 
             border: none; 
-            border-radius: 8px; 
-            font-weight: 600; 
+            border-radius: var(--radius-pill); 
+            font-weight: 700; 
             cursor: pointer; 
-            font-size: 13px; 
-            transition: 0.2s; 
+            font-size: 11px; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
         }
-        .btn-primary { background: var(--primary); color: var(--white); } 
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-success { background: var(--success); color: var(--white); }
-        .btn-danger { background: var(--danger); color: var(--white); }
-        .btn-warning { background: var(--warning); color: var(--white); }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); } 
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35); }
+        .btn-primary:active { transform: scale(0.96); box-shadow: none; }
         
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+        .btn-danger { background: var(--danger); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25); }
+        .btn-warning { background: var(--warning); color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25); }
+        .btn-sm { padding: 8px 16px; font-size: 10px; }
+        
+        /* TABLES & MOBILE STACKED CARDS OPTIMIZATION */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); border: 1px solid var(--border); }
         .table-preview { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
-        .table-preview th, .table-preview td { border-bottom: 1px solid var(--border); padding: 12px 10px; text-align: left; }
-        .table-preview th { background-color: #f8fafc; font-weight: 600; color: var(--text-sec); font-size: 12px; text-transform: uppercase; }
+        .table-preview th, .table-preview td { border-bottom: 1px solid var(--border); padding: 14px 16px; text-align: left; }
+        .table-preview th { background-color: #F3F4F6; font-weight: 700; color: var(--text-sec); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .table-preview tr:last-child td { border-bottom: none; }
         
-        .tabs { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border); overflow-x: auto; padding-bottom: 1px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
         .tab-btn { 
-            padding: 10px 0; 
-            background: none; 
-            border: none; 
-            border-bottom: 2px solid transparent; 
-            font-weight: 600; 
+            padding: 10px 20px; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-pill); 
+            font-weight: 700; 
             color: var(--text-sec); 
             cursor: pointer; 
             white-space: nowrap; 
-            font-size: 14px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            transition: all 0.2s;
         }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-        .tab-content { display: none; } 
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
+        .tab-content { display: none; animation: fadeIn 0.2s ease; } 
         .tab-content.active { display: block; } 
         
-        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+        .status-badge { padding: 6px 12px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 800; text-transform: uppercase; display: inline-block; letter-spacing: 0.05em; }
         .status-planned { background: #fef3c7; color: #92400e; }
         .status-confirmed { background: #dbeafe; color: #1e40af; }
         .status-completed { background: #d1fae5; color: #065f46; }
         .status-cancelled { background: #fee2e2; color: #991b1b; }
 
-        @media (max-width: 768px) {
-            body { flex-direction: column; font-size: 13px; }
-            .sidebar { display: none; }
-            .mobile-nav { display: flex !important; }
-            .main-content { margin-bottom: 60px; height: calc(100vh - 60px); }
-            .content-area { padding: 12px; padding-bottom: 110px; }
-            .topbar { padding: 12px 16px; height: 50px; }
-            .topbar h1 { font-size: 16px; }
-            .grid-kpi { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .kpi-card { padding: 12px; border-radius: 8px; }
-            .kpi-card h3 { font-size: 20px; }
-            .card { padding: 16px; margin-bottom: 12px; border-radius: 10px; }
-            .card-title { font-size: 15px; margin-bottom: 12px; }
-            .form-grid-desktop { display: block !important; }
-            .form-group { margin-bottom: 10px; }
-            .btn { padding: 10px 14px; font-size: 13px; width: 100%; margin-bottom: 8px; }
-            .btn-sm { width: auto; margin-bottom: 0; }
-            .table-wrapper { overflow: visible; }
-            .table-preview { display: block; min-width: 100%; }
-            .table-preview thead { display: none; }
-            .table-preview tbody { display: block; }
-            .table-preview tr { 
-                display: block; 
-                background: white; 
-                border: 1px solid var(--border); 
-                border-radius: 8px; 
-                margin-bottom: 10px; 
-                padding: 12px;
-                box-shadow: var(--shadow-sm);
-            }
-            .table-preview td { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                border: none; 
-                padding: 6px 0; 
-                font-size: 13px;
-                text-align: right;
-            }
-            .table-preview td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: var(--text-sec);
-                text-align: left;
-                margin-right: 10px;
-            }
-            .table-preview td:last-child { justify-content: flex-end; margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 10px; }
-        }
+        /* ====== BEFORE-AFTER GALLERY ====== */
+        .ba-gallery { display: flex; gap: 12px; margin: 8px 0; }
+        .ba-item { flex: 1; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: #F9FAFB; }
+        .ba-item img { width: 100%; height: 140px; object-fit: cover; display: block; cursor: pointer; transition: opacity 0.2s; }
+        .ba-item img:hover { opacity: 0.85; }
+        .ba-label { padding: 5px 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+        .ba-label.before { background: #fee2e2; color: #991b1b; }
+        .ba-label.after { background: #d1fae5; color: #065f46; }
+        .ba-empty { height: 140px; display: flex; align-items: center; justify-content: center; color: var(--text-sec); font-size: 11px; font-weight: 600; }
 
+        /* LIGHTBOX */
+        .lightbox-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 5000;
+            display: none; justify-content: center; align-items: center;
+            cursor: zoom-out;
+        }
+        .lightbox-overlay img { max-width: 95%; max-height: 95%; border-radius: 8px; }
+
+        /* MOBILE NAV BOTTOM */
         .mobile-nav {
             display: none;
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: var(--white);
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
             border-top: 1px solid var(--border);
             z-index: 1000;
             justify-content: space-around;
-            padding: 8px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            padding: 12px 0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
         }
         .mobile-nav-item {
             display: flex;
@@ -244,45 +279,113 @@
             text-decoration: none;
             padding: 4px;
             flex: 1;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            transition: color 0.2s;
         }
-        .mobile-nav-item span { font-size: 18px; margin-bottom: 2px; }
-        .mobile-nav-item.active { color: var(--primary); font-weight: 600; }
+        .mobile-nav-item span { font-size: 20px; margin-bottom: 4px; }
+        .mobile-nav-item.active { color: var(--primary); }
         
+        /* MODAL */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 2000;
+            background: rgba(17, 24, 39, 0.6); z-index: 2000;
             display: flex; justify-content: center; align-items: center;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px);
+        }
+
+        /* RESPONSIVE & MOBILE TABLE STACKING */
+        @media (max-width: 768px) {
+            body { flex-direction: column; font-size: 13px; }
+            .sidebar { display: none !important; }
+            .mobile-nav { display: flex !important; }
+            .main-content { margin-bottom: 70px; height: calc(100vh - 70px); }
+            .content-area { padding: 16px; padding-bottom: 120px; }
+            .topbar { padding: 12px 16px; height: 60px; }
+            .topbar h1 { font-size: 18px; }
+            .grid-kpi { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .kpi-card { padding: 16px; }
+            .kpi-card h3 { font-size: 24px; }
+            .card { padding: 20px; margin-bottom: 16px; }
+            .btn { width: 100%; margin-bottom: 8px; }
+            .btn-sm { width: auto; margin-bottom: 0; }
+            
+            .table-wrapper { border: none; overflow: visible; }
+            .table-preview { min-width: 100%; }
+            .table-preview thead { display: none; }
+            .table-preview tbody { display: block; }
+            .table-preview tr { 
+                display: flex; 
+                flex-direction: column; 
+                background: var(--surface); 
+                border: 1px solid var(--border); 
+                border-radius: var(--radius-sm); 
+                margin-bottom: 12px; 
+                padding: 16px;
+                box-shadow: var(--shadow-xs);
+            }
+            .table-preview td { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                border-bottom: 1px dashed var(--border); 
+                padding: 10px 0; 
+                font-size: 13px;
+                text-align: right;
+            }
+            .table-preview td:last-child { border-bottom: none; padding-top: 12px; margin-top: 4px; }
+            .table-preview td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--text-sec);
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-right: 12px;
+                flex-shrink: 0;
+                text-align: left;
+            }
+            .table-preview td[data-label="Aksi"] button,
+            .table-preview td[data-label="Action"] button { width: 100%; margin-top: 4px; }
+
+            .ba-gallery { flex-direction: column; gap: 8px; }
+            .ba-item img { height: 180px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- LIGHTBOX OVERLAY -->
+    <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Preview">
+    </div>
+
     <!-- HALAMAN LOGIN -->
     <div id="page-login" class="page active" style="display:flex; justify-content:center; align-items:center; height:100vh; background:var(--bg-main); z-index:9999; position:absolute; width:100%;">
-        <div class="card" style="width:90%; max-width:350px; padding:24px; text-align:center;">
-            <h2 style="color:var(--primary); margin-bottom:8px; font-size:22px;">SOIS Login</h2>
-            <p style="color:var(--text-sec); margin-bottom:24px; font-size:13px;">Sales Operation Improvement System</p>
+        <div class="card" style="width:90%; max-width:380px; padding:32px; text-align:center;">
+            <h2 style="color:var(--primary); margin-bottom:8px; font-size:28px; font-weight:800; letter-spacing:-0.03em;">SOIS</h2>
+            <p style="color:var(--text-sec); margin-bottom:32px; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Sales Operation Improvement System</p>
             
             <div class="form-group">
-                <label style="text-align:left;">Username</label>
+                <label>Username</label>
                 <input type="text" id="login-user" class="form-control" placeholder="Masukkan username">
             </div>
             <div class="form-group">
-                <label style="text-align:left;">Password</label>
+                <label>Password</label>
                 <input type="password" id="login-pass" class="form-control" placeholder="Masukkan password">
             </div>
             
-            <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="handleLogin()">Masuk Sistem</button>
-            <p id="login-error" style="color:var(--danger); font-size:12px; margin-top:12px; display:none;">Username atau Password salah.</p>
+            <button class="btn btn-primary" style="width:100%; margin-top:16px;" onclick="handleLogin()">Masuk Sistem</button>
+            <p id="login-error" style="color:var(--danger); font-size:12px; margin-top:16px; display:none; font-weight:600;">Username atau Password salah.</p>
         </div>
     </div>
 
     <!-- SIDEBAR (DESKTOP) -->
     <div class="sidebar" id="main-sidebar" style="display:none;">
-        <div class="sidebar-header"><h2>SOIS</h2><p>Sales Operation Improvement</p></div>
+        <div class="sidebar-header"><h2>SOIS</h2><p>Sales Operation Improvement System</p></div>
         <div class="nav-menu" id="nav-menu-container"></div>
-        <div style="padding:15px; border-top:1px solid var(--border);">
+        <div style="padding:16px; border-top:1px solid var(--border);">
             <div class="nav-item" onclick="handleLogout()" style="color:var(--danger);">🚪 Logout</div>
         </div>
     </div>
@@ -291,7 +394,7 @@
     <div class="main-content" id="main-app" style="display:none;">
         <div class="topbar">
             <h1 id="page-title">Dashboard KPI</h1>
-            <div style="font-size: 12px; color: var(--text-sec); font-weight:600;" id="user-info-display">Selamat datang</div>
+            <div style="font-size: 12px; color: var(--text-sec); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;" id="user-info-display">Selamat datang</div>
         </div>
 
         <div class="content-area">
@@ -304,7 +407,7 @@
                     <div class="kpi-card kpi-warning"><h3 id="kpi-onprogress">0</h3><p>On Progress</p></div>
                     <div class="kpi-card"><h3 id="kpi-cust">0</h3><p>Cust Issue</p></div>
                 </div>
-                <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                     <button class="btn btn-primary" onclick="showPage('visiting')">📷 Mulai Visit</button>
                     <button class="btn btn-warning" onclick="showPage('issues')">⚠️ Input Issue</button>
                 </div>
@@ -314,20 +417,19 @@
             <div id="page-menu-hub" class="page">
                 <div class="card">
                     <div class="card-title">Semua Menu</div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <button class="btn btn-primary" onclick="showPage('dashboard')">📊 Dashboard</button>
                         <button class="btn btn-primary" onclick="showPage('visiting')">👁️ Visiting</button>
                         <button class="btn btn-warning" onclick="showPage('jadwal')">📅 Rencana Jadwal</button>
                         <button class="btn btn-warning" onclick="showPage('review-jadwal')">📋 Review Jadwal</button>
                         <button class="btn btn-warning" onclick="showPage('issues')">⚠️ Issues & Req</button>
-                        <!-- NEW: Export PDCA Menu -->
                         <button class="btn btn-success" onclick="showPage('export-pdca')">📤 Export PDCA</button>
                         
                         <button class="btn btn-danger" id="menu-impact-map" style="display:none;" onclick="showPage('impact-mapping')">🗺️ Impact Map</button>
                         <button class="btn btn-danger" id="menu-setup" style="display:none;" onclick="showPage('setup')">⚙️ Master Setup</button>
                     </div>
                 </div>
-                <div class="card" style="margin-top:15px;">
+                <div class="card" style="margin-top:16px;">
                     <button class="btn btn-danger" style="width:100%;" onclick="handleLogout()">🚪 Logout</button>
                 </div>
             </div>
@@ -337,18 +439,18 @@
                 <div class="card">
                     <div class="card-title">Buat Rencana Kunjungan</div>
                     <div class="form-group"><label>PIC</label><select id="j-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('j-pic', 'j-counter')"><option value="">Pilih Nama...</option></select></div>
-                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
+                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 2fr; gap:16px;">
                         <div class="form-group"><label>Tanggal</label><input type="date" id="j-tgl" class="form-control"></div>
                         <div class="form-group"><label>Counter</label><select id="j-counter" class="form-control counter-dropdown" disabled><option value="">Pilih PIC dulu...</option></select></div>
                     </div>
                     <div class="form-group"><label>Catatan</label><input type="text" id="j-catatan" class="form-control"></div>
                     <button class="btn btn-primary" onclick="addJadwalToList()">+ Tambah ke Daftar</button>
-                    <button class="btn btn-success" onclick="saveJadwalToDB()" style="margin-top:10px;">💾 Simpan Rencana</button>
+                    <button class="btn btn-success" onclick="saveJadwalToDB()" style="margin-top:12px;">💾 Simpan Rencana</button>
                 </div>
                 <div class="card" id="jadwal-preview-card" style="display: none;">
                     <div class="card-title">Preview Jadwal</div>
                     <div id="jadwal-pdf-area">
-                        <h3 style="margin-bottom:10px; font-size:16px;">PIC: <span id="preview-nama-pic" style="color:var(--primary);"></span></h3>
+                        <h3 style="margin-bottom:12px; font-size:16px; font-weight:700;">PIC: <span id="preview-nama-pic" style="color:var(--primary);"></span></h3>
                         <div class="table-wrapper">
                             <table class="table-preview" id="table-jadwal-preview"><thead><tr><th>No</th><th>Tanggal</th><th>Counter</th><th>Catatan</th></tr></thead><tbody></tbody></table>
                         </div>
@@ -365,13 +467,13 @@
             <div id="page-review-jadwal" class="page">
                 <div class="card">
                     <div class="card-title">Filter Rencana</div>
-                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px;">
+                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:16px;">
                         <div class="form-group"><label>Mulai</label><input type="date" id="rj-start" class="form-control"></div>
                         <div class="form-group"><label>Akhir</label><input type="date" id="rj-end" class="form-control"></div>
                         <div class="form-group"><label>PIC</label><select id="rj-pic" class="form-control pic-dropdown"><option value="">Semua</option></select></div>
                         <div class="form-group"><label>Status</label><select id="rj-status" class="form-control"><option value="">Semua</option><option value="PLANNED">Planned</option><option value="CONFIRMED">Confirmed</option><option value="COMPLETED">Completed</option></select></div>
                     </div>
-                    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
                         <button class="btn btn-primary" onclick="loadReviewJadwal()">🔍 Cari</button>
                         <button class="btn btn-success" onclick="exportReviewJadwalExcel()">📥 Excel</button>
                         <button class="btn btn-danger" onclick="exportReviewJadwalPDF()">📄 PDF</button>
@@ -398,8 +500,8 @@
             <div id="page-impact-mapping" class="page">
                 <div class="card">
                     <div class="card-title">Master Impact Mapping</div>
-                    <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:15px;">
-                        <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
+                    <div style="background:#F3F4F6; padding:16px; border-radius:var(--radius-sm); margin-bottom:16px;">
+                        <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap:12px; align-items:end;">
                             <div class="form-group" style="margin:0;"><label>Driver</label><input type="text" id="im-driver" class="form-control" placeholder="Root Driver"></div>
                             <div class="form-group" style="margin:0;"><label>Kategori</label><select id="im-category" class="form-control"><option value="Sales">Sales</option><option value="CSAT">CSAT</option></select></div>
                             <div class="form-group" style="margin:0;"><label>Metric</label><input type="text" id="im-metric" class="form-control" placeholder="Metric"></div>
@@ -420,25 +522,25 @@
             <div id="page-setup" class="page">
                 <div class="card">
                     <div class="card-title">MASTER CENTER</div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:15px;">
-                        <div class="card" style="text-align:center; cursor:pointer; border:1px dashed var(--primary);" onclick="document.getElementById('filePic').click()">
-                            <div style="font-size:24px; margin-bottom:5px;">👤</div>
-                            <div style="font-weight:600;">Import PIC</div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:16px;">
+                        <div class="card" style="text-align:center; cursor:pointer; border:2px dashed var(--primary);" onclick="document.getElementById('filePic').click()">
+                            <div style="font-size:24px; margin-bottom:8px;">👤</div>
+                            <div style="font-weight:700;">Import PIC</div>
                         </div>
-                        <div class="card" style="text-align:center; cursor:pointer; border:1px dashed var(--primary);" onclick="document.getElementById('file4p').click()">
-                            <div style="font-size:24px; margin-bottom:5px;">📋</div>
-                            <div style="font-weight:600;">Import Master 4P</div>
+                        <div class="card" style="text-align:center; cursor:pointer; border:2px dashed var(--primary);" onclick="document.getElementById('file4p').click()">
+                            <div style="font-size:24px; margin-bottom:8px;">📋</div>
+                            <div style="font-weight:700;">Import Master 4P</div>
                         </div>
                     </div>
                     <input type="file" id="filePic" style="display:none" accept=".xlsx, .xls" onchange="readExcel(this.files[0], d => dataPicExcel = d)">
                     <input type="file" id="file4p" style="display:none" accept=".xlsx, .xls" onchange="readExcel(this.files[0], d => data4pExcel = d)">
-                    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="submitPic()">Submit Data PIC</button>
-                    <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="submit4p()">Submit Master 4P</button>
+                    <button class="btn btn-primary" style="width:100%; margin-top:12px;" onclick="submitPic()">Submit Data PIC</button>
+                    <button class="btn btn-primary" style="width:100%; margin-top:12px;" onclick="submit4p()">Submit Master 4P</button>
                 </div>
                 <div class="card">
                     <div class="card-title">Grouping Counter</div>
                     <div id="groupingContainer"></div>
-                    <button class="btn btn-success" onclick="submitGrouping()" style="margin-top:15px; width:100%;">Simpan Grouping</button>
+                    <button class="btn btn-success" onclick="submitGrouping()" style="margin-top:16px; width:100%;">Simpan Grouping</button>
                 </div>
             </div>
 
@@ -453,9 +555,9 @@
                     <button class="btn btn-primary" style="width:100%;" onclick="startVisiting()">Mulai Visiting</button>
                 </div>
                 <div id="checklist-area" style="display:none;">
-                    <div class="tabs-4p" id="tabs-4p-container" style="display:flex; gap:5px; overflow-x:auto; margin-bottom:15px;"></div>
+                    <div class="tabs-4p" id="tabs-4p-container" style="display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; scrollbar-width:none;"></div>
                     <div id="tab-4p-content-container"></div>
-                    <button class="btn btn-success" style="margin-top:20px; width:100%;" onclick="submitChecklist()">✓ Simpan Hasil Ceklist</button>
+                    <button class="btn btn-success" style="margin-top:24px; width:100%;" onclick="submitChecklist()">✓ Simpan Hasil Ceklist</button>
                 </div>
             </div>
 
@@ -477,22 +579,22 @@
                     </div>
                 </div>
                 <div id="tab-form" class="tab-content">
-                    <div class="card" id="action-form-card" style="display:none; border-left: 5px solid var(--warning);">
+                    <div class="card" id="action-form-card" style="display:none; border-left: 4px solid var(--warning);">
                         <div class="card-title">Rencana Tindakan</div>
-                        <p id="action-masalah-text" style="background:var(--bg-main); padding:10px; border-radius:8px; margin-bottom:15px; font-size:13px;"></p>
+                        <p id="action-masalah-text" style="background:#F3F4F6; padding:12px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:13px; font-weight:600;"></p>
                         <input type="hidden" id="action-id-target">
                         <div class="form-group"><label>Tindakan</label><textarea id="action-tindakan" class="form-control" rows="3"></textarea></div>
                         <div class="form-group"><label>Due Date</label><input type="date" id="action-due" class="form-control"></div>
                         <button class="btn btn-primary" onclick="submitActionPlan()">Simpan</button>
                         <button class="btn btn-danger" onclick="cancelActionForm()">Batal</button>
                     </div>
-                    <div id="action-form-empty" style="text-align:center; padding:40px; color:var(--text-sec);">&lt;- Pilih masalah dari tab "Open"</div>
+                    <div id="action-form-empty" style="text-align:center; padding:40px; color:var(--text-sec); font-weight:600;">&lt;- Pilih masalah dari tab "Open"</div>
                 </div>
                 <div id="tab-validasi" class="tab-content">
                     <div class="card">
                         <div class="table-wrapper">
                             <table class="table-preview">
-                                <thead><tr><th>Masalah</th><th>Tindakan</th><th>Due Date</th><th>Aksi</th></tr></thead>
+                                <thead><tr><th>Masalah & Foto</th><th>Tindakan</th><th>Due Date</th><th>Aksi</th></tr></thead>
                                 <tbody id="tb-validasi"><tr><td colspan="4" style="padding:20px; text-align:center;">Memuat...</td></tr></tbody>
                             </table>
                         </div>
@@ -522,7 +624,7 @@
             <div id="page-review" class="page">
                 <div class="card">
                     <div class="card-title">Business Impact Analysis</div>
-                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:15px;">
+                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:16px;">
                         <div class="form-group"><label>Mulai</label><input type="date" id="br-start" class="form-control"></div>
                         <div class="form-group"><label>Akhir</label><input type="date" id="br-end" class="form-control"></div>
                         <div class="form-group"><label>PIC</label><select id="br-pic" class="form-control pic-dropdown" onchange="filterCounterByPic('br-pic', 'br-counter')"><option value="">Semua</option></select></div>
@@ -538,11 +640,11 @@
                     <div class="card" id="br-narrative-content">
                         <div class="card-title" style="text-align:center;">BUSINESS IMPACT REPORT</div>
                         <div class="br-section">
-                            <h3 style="color:var(--primary); margin-bottom:10px; font-size:15px;">📊 Executive Summary</h3>
-                            <div id="br-auto-narrative" style="font-size:13px; line-height:1.5; background:#f0f9ff; padding:15px; border-left:4px solid var(--primary);"></div>
+                            <h3 style="color:var(--primary); margin-bottom:12px; font-size:15px; font-weight:800;">📊 Executive Summary</h3>
+                            <div id="br-auto-narrative" style="font-size:13px; line-height:1.6; background:#EEF2FF; padding:16px; border-left:4px solid var(--primary); border-radius:0 var(--radius-sm) var(--radius-sm) 0;"></div>
                         </div>
                         <div class="br-section">
-                            <h3 style="color:var(--primary); margin-bottom:10px; font-size:15px;">🔥 Top Root Drivers</h3>
+                            <h3 style="color:var(--primary); margin-bottom:12px; font-size:15px; font-weight:800;">🔥 Top Root Drivers</h3>
                             <div id="br-top-drivers-list"></div>
                         </div>
                     </div>
@@ -563,16 +665,16 @@
                 </div>
             </div>
 
-            <!-- 10. EXPORT PDCA / SEBAB AKIBAT (NEW) -->
+            <!-- 10. EXPORT PDCA / SEBAB AKIBAT -->
             <div id="page-export-pdca" class="page">
                 <div class="card">
                     <div class="card-title">📤 Export Laporan PDCA / Sebab-Akibat</div>
-                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+                    <div class="form-grid-desktop" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
                         <div class="form-group"><label>Mulai</label><input type="date" id="pdca-start" class="form-control"></div>
                         <div class="form-group"><label>Akhir</label><input type="date" id="pdca-end" class="form-control"></div>
                         <div class="form-group"><label>PIC</label><select id="pdca-pic" class="form-control pic-dropdown"><option value="">Semua</option></select></div>
                     </div>
-                    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
                         <button class="btn btn-primary" onclick="generatePDCAReport()">⚡ Generate Laporan</button>
                         <button class="btn btn-success" id="btn-pdca-excel" onclick="exportPDCAExcel()" disabled>📥 Excel</button>
                         <button class="btn btn-danger" id="btn-pdca-pdf" onclick="exportPDCAPDF()" disabled>📄 PDF</button>
@@ -580,19 +682,17 @@
                 </div>
 
                 <div id="pdca-preview-area" style="display:none;">
-                    <!-- SECTION 1: EXECUTIVE SUMMARY -->
                     <div class="card pdca-section">
-                        <div class="card-title" style="text-align:center; font-size:18px;">LAPORAN PDCA / SEBAB-AKIBAT</div>
-                        <p id="pdca-period-label" style="text-align:center; color:var(--text-sec); margin-bottom:15px; font-size:13px;"></p>
+                        <div class="card-title" style="text-align:center; font-size:20px; font-weight:800;">LAPORAN PDCA / SEBAB-AKIBAT</div>
+                        <p id="pdca-period-label" style="text-align:center; color:var(--text-sec); margin-bottom:16px; font-size:13px; font-weight:600;"></p>
                         <div class="grid-kpi" style="grid-template-columns: repeat(3,1fr);">
                             <div class="kpi-card"><h3 id="pdca-total-visit">0</h3><p>Total Visit</p></div>
                             <div class="kpi-card kpi-warning"><h3 id="pdca-open-action">0</h3><p>Open Action</p></div>
                             <div class="kpi-card kpi-success"><h3 id="pdca-done-action">0</h3><p>Completed Action</p></div>
                         </div>
-                        <div id="pdca-exec-summary" style="font-size:13px; line-height:1.6; background:#f0f9ff; padding:15px; border-left:4px solid var(--primary); border-radius:8px; margin-top:10px;"></div>
+                        <div id="pdca-exec-summary" style="font-size:13px; line-height:1.6; background:#EEF2FF; padding:16px; border-left:4px solid var(--primary); border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-top:12px;"></div>
                     </div>
 
-                    <!-- SECTION 2: TOP ROOT DRIVERS -->
                     <div class="card pdca-section">
                         <div class="card-title">🔥 Top Root Drivers (Sebab)</div>
                         <div class="table-wrapper">
@@ -603,13 +703,12 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 3: ACTION PLAN STATUS -->
                     <div class="card pdca-section">
                         <div class="card-title">🛠️ Action Plan (PDCA Status)</div>
-                        <div class="tabs" style="margin-bottom:10px;">
+                        <div class="tabs" style="margin-bottom:12px;">
                             <button class="tab-btn active" onclick="switchPDCATab('pdca-tab-open',this)">Open</button>
-                            <button class="tab-btn" onclick="switchPDCATab('pdca-tab-progress',this)">On Progress (Plan)</button>
-                            <button class="tab-btn" onclick="switchPDCATab('pdca-tab-done',this)">Validasi (Done)</button>
+                            <button class="tab-btn" onclick="switchPDCATab('pdca-tab-progress',this)">On Progress</button>
+                            <button class="tab-btn" onclick="switchPDCATab('pdca-tab-done',this)">Validasi</button>
                         </div>
                         <div id="pdca-tab-open" class="tab-content active">
                             <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Sumber</th><th>Masalah (Akibat)</th><th>Tanggal</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-open"></tbody></table></div>
@@ -618,11 +717,10 @@
                             <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Masalah</th><th>Tindakan (Do)</th><th>Due Date</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-progress"></tbody></table></div>
                         </div>
                         <div id="pdca-tab-done" class="tab-content">
-                            <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Masalah</th><th>Tindakan</th><th>Due Date</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-done"></tbody></table></div>
+                            <div class="table-wrapper"><table class="table-preview"><thead><tr><th>Masalah</th><th>Tindakan</th><th>Foto Before-After</th><th>PIC</th><th>Counter</th></tr></thead><tbody id="tb-pdca-done"></tbody></table></div>
                         </div>
                     </div>
 
-                    <!-- SECTION 4: COMPLETE JADWAL -->
                     <div class="card pdca-section">
                         <div class="card-title">📋 Daftar Jadwal Selesai (Check)</div>
                         <div class="table-wrapper">
@@ -633,7 +731,6 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 5: HISTORY REVIEW -->
                     <div class="card pdca-section">
                         <div class="card-title">📈 History Business Review (Act)</div>
                         <div class="table-wrapper">
@@ -659,7 +756,7 @@
     </div>
 
     <!-- MODAL JADWAL -->
-    <div id="modal-jadwal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+    <div id="modal-jadwal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(17,24,39,0.6); z-index:2000; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
         <div class="card" style="width:90%; max-width:400px;">
             <div class="card-title" id="modal-jadwal-title">Update Status</div>
             <input type="hidden" id="modal-jadwal-id">
@@ -670,7 +767,7 @@
             <div id="modal-jadwal-cancel-fields" style="display:none;">
                 <div class="form-group"><label>Alasan Batal <span style="color:red">*</span></label><textarea id="modal-jadwal-cancel-reason" class="form-control" rows="3"></textarea></div>
             </div>
-            <div style="margin-top:15px; display:flex; gap:10px;">
+            <div style="margin-top:16px; display:flex; gap:10px;">
                 <button class="btn btn-danger" style="flex:1;" onclick="closeModalJadwal()">Batal</button>
                 <button class="btn btn-primary" style="flex:1;" onclick="submitModalJadwal()">Simpan</button>
             </div>
@@ -690,9 +787,8 @@
     let reviewJadwalData = []; 
     let masterImpactData = []; 
     let currentBRData = null; 
-    let pdcaData = null; // Cache untuk export PDCA
+    let pdcaData = null;
 
-    // [FIX] Tambah koma setelah 'review' dan tambahkan menu export-pdca
     const MENU_CONFIG = {
         'admin': [
             { id: 'dashboard', label: '📊 Dashboard' },
@@ -867,7 +963,6 @@
         document.getElementById('page-title').innerText = titles[pageId] || 'SOIS';
 
         if(pageId === 'dashboard') loadDashboard();
-        // [UPDATE] Tambah export-pdca ke list initDropdowns
         if(['jadwal', 'visiting', 'issues', 'review', 'review-jadwal', 'export-pdca'].includes(pageId)) initDropdowns();
         if(pageId === 'action') openActionPage(); 
         if(pageId === 'impact-mapping') loadImpactMapping();
@@ -914,7 +1009,7 @@
             let jabatan = String(r.jabatan || '').trim().toLowerCase();
             if(!user || !pass || !jabatan) { errorCount++; return; }
             if(jabatan !== 'admin' && jabatan !== 'am') { errorCount++; return; }
-            payload.push({ username: user, pass: pass, nama_user: nama || user, jabatan: jabatan });
+            payload.push({ username: user, pass: pass, nama_user: nama || user, jabatan: jabatan, created_by: currentUser.username });
             validCount++;
         });
         if(payload.length === 0) return alert("Tidak ada data valid.");
@@ -940,7 +1035,8 @@
             bagian_4p: String(r['bagian 4p'] || ''), 
             ceklist: String(r['ceklist'] || ''), 
             root_driver: String(r['root driver'] || ''), 
-            nama_counter: String(r['nama_counter'] || '') 
+            nama_counter: String(r['nama_counter'] || ''),
+            created_by: currentUser.username
         })).filter(item => item.kategori_4p && item.ceklist); 
         if(payload.length === 0) return alert("Data kosong.");
         try {
@@ -958,8 +1054,8 @@
         c.innerHTML = '';
         if(pic && counter) {
             pic.forEach(p => { 
-                let h = `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;"><b>${p.username}</b></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:15px;">`; 
-                counter.forEach(ct => { h += `<label style="font-size:12px; display:block;"><input type="checkbox" value="${ct.id_counter}" class="cb-counter" data-pic="${p.id}"> ${ct.nama_counter}</label>`; }); 
+                let h = `<div style="margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;"><b>${p.username}</b></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">`; 
+                counter.forEach(ct => { h += `<label style="font-size:12px; display:block; font-weight:600;"><input type="checkbox" value="${ct.id_counter}" class="cb-counter" data-pic="${p.id}"> ${ct.nama_counter}</label>`; }); 
                 c.innerHTML += h + '</div>'; 
             });
         }
@@ -967,7 +1063,7 @@
 
     async function submitGrouping() { 
         const d = []; 
-        document.querySelectorAll('.cb-counter:checked').forEach(cb => d.push({ pic_id: parseInt(cb.dataset.pic), counter_id: parseInt(cb.value) })); 
+        document.querySelectorAll('.cb-counter:checked').forEach(cb => d.push({ pic_id: parseInt(cb.dataset.pic), counter_id: parseInt(cb.value), created_by: currentUser.username })); 
         if(!d.length) return alert("Centang dulu!"); 
         await db.from('pic_counter_group').insert(d); 
         alert("Grouping Disimpan!"); 
@@ -996,17 +1092,16 @@
         }
         counterDropdown.innerHTML = '<option value="">⏳ Memuat counter...</option>';
         counterDropdown.disabled = true;
-        setTimeout(() => {
-            const allowedCounterIds = masterDataGrouping.filter(g => g.pic_id == selectedPicId).map(g => g.counter_id);
-            const filteredCounters = masterDataCounter.filter(c => allowedCounterIds.includes(c.id_counter));
-            if (filteredCounters.length === 0) { 
-                counterDropdown.innerHTML = '<option value="">Belum ada group</option>'; 
-                counterDropdown.disabled = true; 
-            } else { 
-                counterDropdown.disabled = false; 
-                counterDropdown.innerHTML = '<option value="">Pilih Counter...</option>' + filteredCounters.map(c => `<option value="${c.id_counter}">${c.nama_counter}</option>`).join(''); 
-            }
-        }, 100);
+        
+        const allowedCounterIds = masterDataGrouping.filter(g => g.pic_id == selectedPicId).map(g => g.counter_id);
+        const filteredCounters = masterDataCounter.filter(c => allowedCounterIds.includes(c.id_counter));
+        if (filteredCounters.length === 0) { 
+            counterDropdown.innerHTML = '<option value="">Belum ada group</option>'; 
+            counterDropdown.disabled = true; 
+        } else { 
+            counterDropdown.disabled = false; 
+            counterDropdown.innerHTML = '<option value="">Pilih Counter...</option>' + filteredCounters.map(c => `<option value="${c.id_counter}">${c.nama_counter}</option>`).join(''); 
+        }
     }
 
     function addJadwalToList() {
@@ -1016,13 +1111,21 @@
         renderJadwalPreview(); 
         document.getElementById('j-tgl').value = ''; counterEl.value = ''; document.getElementById('j-catatan').value = '';
     }
+
     async function saveJadwalToDB() {
         if(tempJadwalList.length === 0) return alert("Daftar kosong!");
-        const payload = tempJadwalList.map(item => ({ pic_id: parseInt(item.pic_id), counter_id: parseInt(item.counter_id), tanggal: item.tgl, catatan: item.catatan }));
+        const payload = tempJadwalList.map(item => ({ 
+            pic_id: parseInt(item.pic_id), 
+            counter_id: parseInt(item.counter_id), 
+            tanggal: item.tgl, 
+            catatan: item.catatan,
+            created_by: currentUser.username
+        }));
         const { error } = await db.from('jadwal').insert(payload);
         if(error) return alert("Gagal: " + error.message);
         alert("Tersimpan!"); tempJadwalList = []; renderJadwalPreview();
     }
+
     function renderJadwalPreview() {
         const card = document.getElementById('jadwal-preview-card'), tbody = document.querySelector('#table-jadwal-preview tbody');
         const picSelect = document.getElementById('j-pic');
@@ -1030,22 +1133,26 @@
         card.style.display = 'block';
         tbody.innerHTML = tempJadwalList.map((item, i) => `<tr><td data-label="No">${i + 1}</td><td data-label="Tanggal">${item.tgl}</td><td data-label="Counter">${item.counter}</td><td data-label="Catatan">${item.catatan || '-'}</td></tr>`).join('');
     }
+
     function getJadwalText() { 
         let text = `*RENCANA JADWAL*\nPIC: ${document.getElementById('preview-nama-pic').innerText}\n\n`; 
         tempJadwalList.forEach((item, i) => { text += `${i+1}. ${item.tgl} | ${item.counter} | ${item.catatan || '-'}\n`; }); 
         return text; 
     }
+
     function exportJadwalExcel() { 
         if(!tempJadwalList.length) return alert("Kosong!"); 
         const ws = XLSX.utils.json_to_sheet(tempJadwalList.map((item, i) => ({ No: i+1, Tanggal: item.tgl, Counter: item.counter, Catatan: item.catatan }))); 
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Rencana"); XLSX.writeFile(wb, `Jadwal.xlsx`); 
     }
+
     function exportJadwalPDF() { 
         if(!tempJadwalList.length) return alert("Kosong!"); 
         const element = document.getElementById('jadwal-pdf-area');
         const opt = { margin: 10, filename: `Jadwal.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }; 
         html2pdf().set(opt).from(element).save(); 
     }
+
     function sendJadwalWA() { window.open(`https://wa.me/?text=${encodeURIComponent(getJadwalText())}`, '_blank'); }
 
     async function loadReviewJadwal() {
@@ -1072,10 +1179,11 @@
                 let actionButtons = '';
                 if (d.status === 'PLANNED') actionButtons = `<button class="btn btn-sm btn-success" onclick="openModalJadwal(${d.id}, 'CONFIRMED')">✓</button> <button class="btn btn-sm btn-danger" onclick="openModalJadwal(${d.id}, 'CANCELLED')">✗</button>`;
                 else if (d.status === 'CONFIRMED') actionButtons = `<button class="btn btn-sm btn-primary" onclick="markAsCompleted(${d.id})">Done</button>`;
-                return `<tr><td data-label="Tanggal">${d.tanggal}</td><td data-label="PIC">${d.pic?.username || '-'}</td><td data-label="Counter">${d.counter?.nama_counter || '-'}</td><td data-label="Tujuan">${d.catatan || '-'}</td><td data-label="Status"><span class="status-badge ${statusClass}">${d.status}</span></td><td data-label="Aksi">${actionButtons}</td></tr>`;
+                return `<tr><td data-label="Tanggal">${d.tanggal}</td><td data-label="PIC">${d.pic?.username || '-'}</td><td data-label="Counter">${d.counter?.nama_counter || '-'}</td><td data-label="Tujuan">${d.catatan || '-'}</td><td data-label="Status"><span class="status-badge ${statusClass}">${d.status}</span></td><td data-label="Action">${actionButtons}</td></tr>`;
             }).join('');
         } catch (e) { console.error(e); }
     }
+
     function openModalJadwal(id, action) {
         document.getElementById('modal-jadwal').style.display = 'flex';
         document.getElementById('modal-jadwal-id').value = id;
@@ -1083,10 +1191,12 @@
         document.getElementById('modal-jadwal-confirm-fields').style.display = action === 'CONFIRMED' ? 'block' : 'none';
         document.getElementById('modal-jadwal-cancel-fields').style.display = action === 'CANCELLED' ? 'block' : 'none';
     }
+
     function closeModalJadwal() { document.getElementById('modal-jadwal').style.display = 'none'; }
+
     async function submitModalJadwal() {
         const id = document.getElementById('modal-jadwal-id').value, action = document.getElementById('modal-jadwal-action').value;
-        let payload = { status: action };
+        let payload = { status: action, updated_by: currentUser.username };
         if (action === 'CONFIRMED') payload.confirmed_by = document.getElementById('modal-jadwal-confirmed-by').value;
         if (action === 'CANCELLED') {
             const reason = document.getElementById('modal-jadwal-cancel-reason').value;
@@ -1096,9 +1206,10 @@
         await db.from('jadwal').update(payload).eq('id', id);
         closeModalJadwal(); loadReviewJadwal();
     }
+
     async function markAsCompleted(id) {
         if(!confirm("Selesai?")) return;
-        await db.from('jadwal').update({ status: 'COMPLETED' }).eq('id', id);
+        await db.from('jadwal').update({ status: 'COMPLETED', updated_by: currentUser.username }).eq('id', id);
         loadReviewJadwal();
     }
 
@@ -1123,20 +1234,34 @@
         const { data } = await db.from('master_impact_mapping').select('*').order('id', {ascending: false});
         masterImpactData = data || [];
         const tbody = document.getElementById('tb-impact-mapping');
-        tbody.innerHTML = masterImpactData.map(item => `<tr><td data-label="Driver">${item.root_driver}</td><td data-label="Cat">${item.impact_category}</td><td data-label="Metric">${item.impact_metric}</td><td data-label="Weight">${item.severity_weight}</td><td data-label="Status">${item.active ? 'Active' : 'Inactive'}</td><td data-label="Aksi"><button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">Toggle</button></td></tr>`).join('');
+        tbody.innerHTML = masterImpactData.map(item => `<tr><td data-label="Driver">${item.root_driver}</td><td data-label="Cat">${item.impact_category}</td><td data-label="Metric">${item.impact_metric}</td><td data-label="Weight">${item.severity_weight}</td><td data-label="Status">${item.active ? 'Active' : 'Inactive'}</td><td data-label="Action"><button class="btn btn-sm btn-danger" onclick="toggleImpactStatus(${item.id}, ${!item.active})">Toggle</button></td></tr>`).join('');
     }
+
     async function addImpactMapping() {
         if (currentUser.jabatan !== 'admin') return alert("Admin Only");
-        await db.from('master_impact_mapping').insert({ root_driver: document.getElementById('im-driver').value, impact_category: document.getElementById('im-category').value, impact_metric: document.getElementById('im-metric').value, severity_weight: parseInt(document.getElementById('im-weight').value) });
+        await db.from('master_impact_mapping').insert({ 
+            root_driver: document.getElementById('im-driver').value, 
+            impact_category: document.getElementById('im-category').value, 
+            impact_metric: document.getElementById('im-metric').value, 
+            severity_weight: parseInt(document.getElementById('im-weight').value),
+            created_by: currentUser.username
+        });
         loadImpactMapping();
     }
+
     async function toggleImpactStatus(id, status) {
-        await db.from('master_impact_mapping').update({ active: status }).eq('id', id);
+        await db.from('master_impact_mapping').update({ active: status, updated_by: currentUser.username }).eq('id', id);
         loadImpactMapping();
     }
 
     async function startVisiting() {
-        const obj = { tanggal: document.getElementById('v-tgl').value, jam_mulai: document.getElementById('v-jam').value, pic_id: document.getElementById('v-pic').value, counter_id: document.getElementById('v-counter').value };
+        const obj = { 
+            tanggal: document.getElementById('v-tgl').value, 
+            jam_mulai: document.getElementById('v-jam').value, 
+            pic_id: document.getElementById('v-pic').value, 
+            counter_id: document.getElementById('v-counter').value,
+            created_by: currentUser.username
+        };
         if(!obj.tanggal || !obj.pic_id || !obj.counter_id) return alert("Lengkapi data!");
         const { data } = await db.from('visiting').insert(obj).select();
         currentVisitingId = data[0].id;
@@ -1156,7 +1281,7 @@
             tabsEl.innerHTML += `<button class="btn btn-sm ${isFirst ? 'btn-primary' : 'btn-warning'}" onclick="switchTab4P('tab4p-${safeCatId}', this)">${category}</button>`;
             let htmlItems = '';
             items.forEach(c => {
-                htmlItems += `<div style="border-bottom:1px solid #eee; padding:10px 0;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:13px;"><b>${c.ceklist}</b><br><small style="color:gray">${c['bagian_4p']}</small></div><select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div><div class="fail-foto-area" style="display:none; margin-top:5px;"><input type="file" accept="image/*" class="fail-foto-input" style="font-size:11px;"></div></div>`;
+                htmlItems += `<div style="border-bottom:1px solid var(--border); padding:12px 0;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:13px; font-weight:600;"><b>${c.ceklist}</b><br><small style="color:var(--text-sec); font-weight:500">${c['bagian_4p']}</small></div><select class="form-control status-cek" data-item="${c.ceklist}" style="width:100px;" onchange="toggleFailFoto(this)"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div><div class="fail-foto-area" style="display:none; margin-top:8px;"><input type="file" accept="image/*" class="fail-foto-input" style="font-size:11px;"></div></div>`;
             });
             containerEl.innerHTML += `<div id="tab4p-${safeCatId}" style="display:${isFirst?'block':'none'}">${htmlItems}</div>`;
             isFirst = false;
@@ -1164,15 +1289,57 @@
         document.getElementById('visiting-form-card').style.display = 'none';
         document.getElementById('checklist-area').style.display = 'block';
     }
+
     function switchTab4P(tabId, el) {
         document.querySelectorAll('#tab-4p-content-container > div').forEach(c => c.style.display = 'none');
         document.getElementById(tabId).style.display = 'block';
         Array.from(el.parentElement.children).forEach(b => b.className = 'btn btn-sm btn-warning');
         el.className = 'btn btn-sm btn-primary';
     }
+
     function toggleFailFoto(selectEl) {
         const area = selectEl.parentElement.nextElementSibling;
         area.style.display = selectEl.value === 'Fail' ? 'block' : 'none';
+    }
+
+    // ====== SAFE UPLOAD HELPER ======
+    async function safeUploadFile(file, prefix) {
+        try {
+            const sanitizedBaseName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const fileName = `${prefix}_${Date.now()}_${sanitizedBaseName}`;
+            const { error: uploadErr } = await db.storage.from('visit-fotos').upload(fileName, file);
+            if(uploadErr) { console.warn('Upload failed:', uploadErr.message); return null; }
+            const { data: urlData } = db.storage.from('visit-fotos').getPublicUrl(fileName);
+            return urlData.publicUrl;
+        } catch(e) { console.warn('Upload exception:', e); return null; }
+    }
+
+    // ====== LIGHTBOX FUNCTIONS ======
+    function openLightbox(url) {
+        if(!url) return;
+        document.getElementById('lightbox-img').src = url;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+        document.getElementById('lightbox-img').src = '';
+    }
+
+    // ====== BA GALLERY BUILDER ======
+    function buildBAGalleryHTML(beforeSrc, afterSrc) {
+        let html = '<div class="ba-gallery">';
+        if (beforeSrc) {
+            html += `<div class="ba-item"><img src="${beforeSrc}" onclick="openLightbox('${beforeSrc}')"><div class="ba-label before">BEFORE</div></div>`;
+        } else {
+            html += `<div class="ba-item"><div class="ba-empty">No Before</div><div class="ba-label before">BEFORE</div></div>`;
+        }
+        if (afterSrc) {
+            html += `<div class="ba-item"><img src="${afterSrc}" onclick="openLightbox('${afterSrc}')"><div class="ba-label after">AFTER</div></div>`;
+        } else {
+            html += `<div class="ba-item"><div class="ba-empty">No After</div><div class="ba-label after">AFTER</div></div>`;
+        }
+        html += '</div>';
+        return html;
     }
 
     async function submitChecklist() {
@@ -1186,17 +1353,25 @@
             if(status === 'Fail') {
                 const fileInput = sel.parentElement.nextElementSibling.querySelector('.fail-foto-input');
                 if(fileInput && fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const sanitizedBaseName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                    const fileName = `${currentVisitingId}_${Date.now()}_${sanitizedBaseName}`;
-                    const { error: uploadErr } = await db.storage.from('visit-fotos').upload(fileName, file);
-                    if(uploadErr) return alert(`Gagal upload foto untuk "${itemName}".`);
-                    const { data: urlData } = db.storage.from('visit-fotos').getPublicUrl(fileName);
-                    photoUrl = urlData.publicUrl;
+                    photoUrl = await safeUploadFile(fileInput.files[0], currentVisitingId.toString());
                 }
-                payloadsAction.push({ visiting_id: currentVisitingId, sumber_masalah: 'Visiting 4P', masalah: `FAIL: ${itemName}`, foto_before: photoUrl||'', status_action: 'Open', tindakan: '-' });
+                payloadsAction.push({ 
+                    visiting_id: currentVisitingId, 
+                    sumber_masalah: 'Visiting 4P', 
+                    masalah: `FAIL: ${itemName}`, 
+                    foto_before: photoUrl||'', 
+                    status_action: 'Open', 
+                    tindakan: '-',
+                    created_by: currentUser.username
+                });
             }
-            payloadsDetail.push({ visiting_id: currentVisitingId, item_name: itemName, status: status, foto_url: photoUrl||'' });
+            payloadsDetail.push({ 
+                visiting_id: currentVisitingId, 
+                item_name: itemName, 
+                status: status, 
+                foto_url: photoUrl||'',
+                created_by: currentUser.username
+            });
         }
         if(payloadsDetail.length) await db.from('visiting_detail').insert(payloadsDetail);
         if(payloadsAction.length) await db.from('visiting_action').insert(payloadsAction);
@@ -1212,17 +1387,20 @@
         document.getElementById(tabId).classList.add('active');
         btnEl.classList.add('active');
     }
+
     async function openActionPage() {
         document.getElementById('action-form-card').style.display = 'none';
         document.getElementById('action-form-empty').style.display = 'block';
         await loadOpenActions();
         await loadValidasiActions();
     }
+
     async function loadOpenActions() {
         const { data } = await db.from('visiting_action').select('*').eq('status_action', 'Open').order('id', { ascending: false });
         const tb = document.getElementById('tb-open');
         tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Sumber">${d.sumber_masalah}</td><td data-label="Masalah">${d.masalah}</td><td data-label="Aksi"><button class="btn btn-sm btn-primary" onclick="openActionForm(${d.id}, '${d.masalah.replace(/'/g, "\\'")}')">Plan</button></td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;">____</td></tr>';
     }
+
     function openActionForm(id, masalah) {
         switchActionTab('tab-form', document.querySelectorAll('#page-action .tab-btn')[1]);
         document.getElementById('action-form-card').style.display = 'block';
@@ -1230,35 +1408,88 @@
         document.getElementById('action-id-target').value = id;
         document.getElementById('action-masalah-text').innerText = masalah;
     }
+
     function cancelActionForm() {
         document.getElementById('action-form-card').style.display = 'none';
         document.getElementById('action-form-empty').style.display = 'block';
         switchActionTab('tab-open', document.querySelectorAll('#page-action .tab-btn')[0]);
     }
+
     async function submitActionPlan() {
         const id = document.getElementById('action-id-target').value;
-        await db.from('visiting_action').update({ tindakan: document.getElementById('action-tindakan').value, due_date: document.getElementById('action-due').value, status_action: 'On-Progress' }).eq('id', id);
+        await db.from('visiting_action').update({ 
+            tindakan: document.getElementById('action-tindakan').value, 
+            due_date: document.getElementById('action-due').value, 
+            status_action: 'On-Progress',
+            updated_by: currentUser.username
+        }).eq('id', id);
         alert("Saved!"); cancelActionForm(); loadOpenActions(); loadValidasiActions();
     }
+
     async function loadValidasiActions() {
         const { data } = await db.from('visiting_action').select('*').eq('status_action', 'On-Progress');
         const tb = document.getElementById('tb-validasi');
-        tb.innerHTML = data && data.length ? data.map(d => `<tr><td data-label="Masalah">${d.masalah}</td><td data-label="Tindakan">${d.tindakan}</td><td data-label="Due">${d.due_date}</td><td data-label="Aksi"><button class="btn btn-sm btn-success" onclick="closeAction(${d.id})">✓</button></td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">____</td></tr>';
+        tb.innerHTML = data && data.length ? data.map(d => {
+            const beforeImg = d.foto_before 
+                ? `<img src="${d.foto_before}" onclick="openLightbox('${d.foto_before}')" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;margin-top:4px;">` 
+                : '<span style="font-size:10px;color:var(--text-sec);">No Photo</span>';
+            return `<tr><td data-label="Masalah & Foto"><div style="font-weight:600;">${d.masalah}</div><div style="margin-top:4px;"><small style="color:var(--text-sec);">Before:</small><br>${beforeImg}</div></td><td data-label="Tindakan">${d.tindakan}</td><td data-label="Due">${d.due_date}</td><td data-label="Aksi"><div style="margin-bottom:8px;"><label style="font-size:10px;font-weight:700;color:var(--success);text-transform:uppercase;">Upload After:</label><input type="file" accept="image/*" id="after-file-${d.id}" class="form-control" style="padding:6px;font-size:10px;"></div><button class="btn btn-sm btn-success" onclick="closeActionWithPhoto(${d.id})">✓ Close</button></td></tr>`;
+        }).join('') : '<tr><td colspan="4" style="text-align:center;">____</td></tr>';
     }
-    async function closeAction(id) {
-        await db.from('visiting_action').update({ status_action: 'Done' }).eq('id', id);
+
+    async function closeActionWithPhoto(id) {
+        const fileInput = document.getElementById(`after-file-${id}`);
+        let fotoAfterUrl = null;
+
+        if (fileInput && fileInput.files.length > 0) {
+            fotoAfterUrl = await safeUploadFile(fileInput.files[0], `after_${id}`);
+        }
+
+        if (!fotoAfterUrl) {
+            if (!confirm("Tidak ada foto After yang diupload. Tetap tutup action ini?")) return;
+        }
+
+        try {
+            const updatePayload = { status_action: 'Done', updated_by: currentUser.username };
+            if (fotoAfterUrl) updatePayload.foto_after = fotoAfterUrl;
+            await db.from('visiting_action').update(updatePayload).eq('id', id);
+        } catch(e) {
+            console.warn('Update with foto_after failed, trying without:', e.message);
+            await db.from('visiting_action').update({ status_action: 'Done', updated_by: currentUser.username }).eq('id', id);
+        }
         loadValidasiActions();
     }
 
+    async function closeAction(id) { await closeActionWithPhoto(id); }
+
     async function submitCustIssue() {
-        const obj = { tanggal: new Date().toISOString().split('T')[0], pic_id: document.getElementById('ci-pic').value, counter_id: document.getElementById('ci-counter').value, keluhan: document.getElementById('ci-keluhan').value };
+        const obj = { 
+            tanggal: new Date().toISOString().split('T')[0], 
+            pic_id: document.getElementById('ci-pic').value, 
+            counter_id: document.getElementById('ci-counter').value, 
+            keluhan: document.getElementById('ci-keluhan').value,
+            created_by: currentUser.username
+        };
         if(!obj.pic_id || !obj.keluhan) return alert("Isi semua!");
         await db.from('cust_issue').insert(obj);
-        await db.from('visiting_action').insert({ sumber_masalah: 'Cust Issue', masalah: "Keluhan: " + obj.keluhan, tindakan: '-', status_action: 'Open' });
+        await db.from('visiting_action').insert({ 
+            sumber_masalah: 'Cust Issue', 
+            masalah: "Keluhan: " + obj.keluhan, 
+            tindakan: '-', 
+            status_action: 'Open',
+            created_by: currentUser.username
+        });
         alert("Issue Tersimpan!"); document.getElementById('ci-keluhan').value = '';
     }
+
     async function submitPendingReq() { 
-        await db.from('pending_request').insert({ tanggal_req: new Date().toISOString().split('T')[0], kategori_req: document.getElementById('pr-kat').value, detail_req: document.getElementById('pr-detail').value, due_date: document.getElementById('pr-due').value }); 
+        await db.from('pending_request').insert({ 
+            tanggal_req: new Date().toISOString().split('T')[0], 
+            kategori_req: document.getElementById('pr-kat').value, 
+            detail_req: document.getElementById('pr-detail').value, 
+            due_date: document.getElementById('pr-due').value,
+            created_by: currentUser.username
+        }); 
         alert("Request Diajukan!"); 
     }
 
@@ -1308,7 +1539,7 @@
             document.getElementById('br-kpi-category').innerText = dominantCategory ? dominantCategory[0] : 'N/A';
             const narrative = `Pada periode <b>${start}</b> s/d <b>${end}</b>, tercatat <b>${actions.length} issue</b> dengan total risk score <b>${totalScore}</b>. Kategori dominan: <b>${dominantCategory ? dominantCategory[0] : '-'}</b>.`;
             document.getElementById('br-auto-narrative').innerHTML = narrative;
-            document.getElementById('br-top-drivers-list').innerHTML = topDrivers.length > 0 ? topDrivers.map((d, i) => `<div style="padding:6px 0; border-bottom:1px solid #eee;">${i + 1}. <b>${d[0]}</b> (${d[1]} kejadian)</div>`).join('') : '<div>Tidak ada root driver cocok.</div>';
+            document.getElementById('br-top-drivers-list').innerHTML = topDrivers.length > 0 ? topDrivers.map((d, i) => `<div style="padding:8px 0; border-bottom:1px solid var(--border); font-weight:600;">${i + 1}. <b>${d[0]}</b> (${d[1]} kejadian)</div>`).join('') : '<div>Tidak ada root driver cocok.</div>';
             currentBRData = { start, end, totalScore, dominantCategory: dominantCategory?.[0] || '-', narrative, topDrivers, totalActions: actions.length };
         } catch (e) {
             console.error("BR Error:", e);
@@ -1319,7 +1550,14 @@
     async function saveBRSnapshot() { 
         if (!currentBRData) return alert("Generate analisis terlebih dahulu!");
         try {
-            await db.from('br_snapshot').insert({ periode_start: currentBRData.start, periode_end: currentBRData.end, risk_score: currentBRData.totalScore, dominant_category: currentBRData.dominantCategory, narrative: currentBRData.narrative, created_by: currentUser.username });
+            await db.from('br_snapshot').insert({ 
+                periode_start: currentBRData.start, 
+                periode_end: currentBRData.end, 
+                risk_score: currentBRData.totalScore, 
+                dominant_category: currentBRData.dominantCategory, 
+                narrative: currentBRData.narrative, 
+                created_by: currentUser.username 
+            });
             alert("Snapshot tersimpan!");
             loadBRHistory();
         } catch (e) { alert("Gagal simpan snapshot: " + e.message); }
@@ -1349,7 +1587,7 @@
     }
 
     // ============================================
-    // EXPORT PDCA / SEBAB-AKIBAT (NEW FUNCTIONS)
+    // EXPORT PDCA / SEBAB-AKIBAT FUNCTIONS
     // ============================================
     function switchPDCATab(tabId, btnEl) {
         document.querySelectorAll('#page-export-pdca .tab-content').forEach(c => c.classList.remove('active'));
@@ -1371,7 +1609,6 @@
         document.getElementById('btn-pdca-pdf').disabled = true;
 
         try {
-            // Parallel Queries
             let jadwalQ = db.from('jadwal').select('*, pic:pic_id(username, nama_user), counter:counter_id(nama_counter)').eq('status', 'COMPLETED').gte('tanggal', start).lte('tanggal', end).order('tanggal', { ascending: true });
             if (picId) jadwalQ = jadwalQ.eq('pic_id', picId);
 
@@ -1393,7 +1630,6 @@
             const progressActions = actions.filter(a => a.status_action === 'On-Progress');
             const doneActions = actions.filter(a => a.status_action === 'Done');
 
-            // Root Driver Analysis
             const driverStats = {};
             actions.forEach(action => {
                 const masalahLower = (action.masalah || '').toLowerCase();
@@ -1409,7 +1645,6 @@
             });
             const topDrivers = Object.entries(driverStats).sort((a, b) => b[1].weight - a[1].weight).slice(0, 10);
 
-            // Render Summary
             const totalVisit = new Set(actions.map(a => a.visiting?.id)).size || completedJadwal.length;
             const completionRate = actions.length > 0 ? Math.round(doneActions.length / actions.length * 100) : 100;
             
@@ -1419,7 +1654,6 @@
             document.getElementById('pdca-done-action').innerText = doneActions.length;
             document.getElementById('pdca-exec-summary').innerHTML = `Pada periode <b>${start}</b> s/d <b>${end}</b>:<br>• <b>${completedJadwal.length}</b> kunjungan selesai<br>• <b>${actions.length}</b> issue: ${openActions.length} Open, ${progressActions.length} Plan, ${doneActions.length} Done<br>• Completion Rate: <b>${completionRate}%</b><br>• Top Driver: <b>${topDrivers.length > 0 ? topDrivers[0][0] : 'N/A'}</b>`;
 
-            // Render Tables
             const renderDriverRow = (d, i) => `<tr><td data-label="#">${i+1}</td><td data-label="Driver">${d[0]}</td><td data-label="Cat">${d[1].category}</td><td data-label="Jml">${d[1].count}</td><td data-label="Weight">${d[1].weight}</td></tr>`;
             document.querySelector('#table-pdca-drivers tbody').innerHTML = topDrivers.length ? topDrivers.map(renderDriverRow).join('') : '<tr><td colspan="5" style="text-align:center;">Tidak ada data</td></tr>';
 
@@ -1433,13 +1667,19 @@
 
             document.getElementById('tb-pdca-open').innerHTML = openActions.length ? openActions.map(a => renderActionRow(a, false)).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
             document.getElementById('tb-pdca-progress').innerHTML = progressActions.length ? progressActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
-            document.getElementById('tb-pdca-done').innerHTML = doneActions.length ? doneActions.map(a => renderActionRow(a, true)).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
+            
+            document.getElementById('tb-pdca-done').innerHTML = doneActions.length ? doneActions.map(a => {
+                const v = a.visiting || {};
+                const pic = v.pic?.nama_user || v.pic?.username || '-';
+                const ctr = v.counter?.nama_counter || '-';
+                const galleryHtml = buildBAGalleryHTML(a.foto_before || '', a.foto_after || '');
+                return `<tr><td data-label="Masalah">${a.masalah}</td><td data-label="Tindakan">${a.tindakan||'-'}</td><td data-label="Foto Before-After">${galleryHtml}</td><td data-label="PIC">${pic}</td><td data-label="Counter">${ctr}</td></tr>`;
+            }).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
 
             document.querySelector('#table-pdca-jadwal tbody').innerHTML = completedJadwal.length ? completedJadwal.map((j,i) => `<tr><td data-label="No">${i+1}</td><td data-label="Tgl">${j.tanggal}</td><td data-label="PIC">${j.pic?.nama_user||j.pic?.username||'-'}</td><td data-label="Counter">${j.counter?.nama_counter||'-'}</td><td data-label="Cat">${j.catatan||'-'}</td></tr>`).join('') : '<tr><td colspan="5" style="text-align:center;">____</td></tr>';
 
             document.querySelector('#table-pdca-history tbody').innerHTML = history.length ? history.map(h => `<tr><td data-label="Periode">${h.periode_start} s/d ${h.periode_end}</td><td data-label="Score">${h.risk_score}</td><td data-label="Dom">${h.dominant_category||'-'}</td><td data-label="Narrative">${(h.narrative||'').substring(0,60)}...</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;">____</td></tr>';
 
-            // Cache Data
             pdcaData = { start, end, completedJadwal, openActions, progressActions, doneActions, topDrivers, history, totalVisit };
             document.getElementById('btn-pdca-excel').disabled = false;
             document.getElementById('btn-pdca-pdf').disabled = false;
@@ -1454,7 +1694,6 @@
         if (!pdcaData) return alert("Generate dulu!");
         const wb = XLSX.utils.book_new();
         
-        // Sheet 1: Summary
         const sumSheet = XLSX.utils.json_to_sheet([
             { Item: 'Periode', Value: `${pdcaData.start} s/d ${pdcaData.end}` },
             { Item: 'Total Visit', Value: pdcaData.totalVisit },
@@ -1465,11 +1704,9 @@
         ]);
         XLSX.utils.book_append_sheet(wb, sumSheet, "Summary");
 
-        // Sheet 2: Jadwal
         const jSheet = XLSX.utils.json_to_sheet(pdcaData.completedJadwal.map((j,i) => ({ No: i+1, Tanggal: j.tanggal, PIC: j.pic?.username, Counter: j.counter?.nama_counter, Catatan: j.catatan })));
         XLSX.utils.book_append_sheet(wb, jSheet, "Jadwal Selesai");
 
-        // Sheet 3: Actions
         const allActions = [
             ...pdcaData.openActions.map(a => ({ Status: 'Open', Masalah: a.masalah, Tindakan: '', Due: '', PIC: a.visiting?.pic?.username, Counter: a.visiting?.counter?.nama_counter })),
             ...pdcaData.progressActions.map(a => ({ Status: 'Plan', Masalah: a.masalah, Tindakan: a.tindakan, Due: a.due_date, PIC: a.visiting?.pic?.username, Counter: a.visiting?.counter?.nama_counter })),
@@ -1483,14 +1720,12 @@
 
     function exportPDCAPDF() {
         if (!pdcaData) return alert("Generate dulu!");
-        // Show all tabs for PDF capture
         document.querySelectorAll('#page-export-pdca .tab-content').forEach(c => c.style.display = 'block');
         
         const element = document.getElementById('pdca-preview-area');
         const opt = { margin: 8, filename: `PDCA_${pdcaData.start}_${pdcaData.end}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } };
         
         html2pdf().set(opt).from(element).save().then(() => {
-            // Reset tabs
             document.querySelectorAll('#page-export-pdca .tab-content').forEach(c => c.style.display = 'none');
             document.getElementById('pdca-tab-open').style.display = 'block';
         });
